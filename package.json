@@ -1,0 +1,33 @@
+{
+	"name": "ansi2html",
+	"version": "1.0.0",
+	"description": "Convert ansi sequences in strings to HTML spans",
+	"keywords": ["ansi", "html"],
+	"author": "drudru <drudru@gmail.com>",
+	"main": "./ansi2html.js",
+	"repository" :
+		{ 
+		  "type" : "git",
+		  "url" : "git://github.com/drudru/ansi2html.git"
+		},
+    "bugs" : 
+    	{ 
+	    	"url" : "http://github.com/drudru/ansi2html/issues" 
+    	},
+	"engines": 
+		{ 
+			"node": "*"
+		},
+	"scripts": 
+		{ 
+			"test": "make test",
+			"build": "make build"
+		},
+	"devDependencies":
+		{
+			"mocha": "*",
+			"should": "*",
+			"jshint": "*",
+			"jslint": "*"
+		}
+}
