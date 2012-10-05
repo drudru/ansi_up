@@ -1,5 +1,5 @@
 
-_ansi2html_ is a simple library for converting text embedded with ANSI terminal color commands into HTML spans that render the proper coloring. This is compliant with AMD (require.js).
+_ansi2html_ is a simple library for converting text embedded with ANSI terminal color commands into HTML spans that render the proper coloring. This is compliant with AMD (require.js). This code has been used in production since early 2012.
 
 Turn this:
 
@@ -26,7 +26,7 @@ Turn this:
 
 Into this:
 
-![](http://github.com/brightroll/ansi2html/raw/master/sample.png) 
+![](http://github.com/drudru/ansi2html/raw/master/sample.png) 
 
 ## Browser Example
 
