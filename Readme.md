@@ -1,5 +1,5 @@
 
-_ansi2html_ is a simple library for converting text embedded with ANSI terminal color commands into HTML spans that render the proper coloring. This is compliant with AMD (require.js). This code has been used in production since early 2012. This is a new project, but I will actively maintain it and welcome all feedback. Thanks for reading. 
+_ansi_up_ is a simple library for converting text embedded with ANSI terminal color commands into HTML spans that render the proper coloring. This is compliant with AMD (require.js). This code has been used in production since early 2012. This is a new project, but I will actively maintain it and welcome all feedback. Thanks for reading. 
 
 Turn this:
 
@@ -11,16 +11,16 @@ Turn this:
 
 Into this:
 
-![](http://github.com/drudru/ansi2html/raw/master/sample.png) 
+![](http://github.com/drudru/ansi_up/raw/master/sample.png) 
 
 ## Browser Example
 
-    <script src="ansi2html.js" type="text/javascript"></script>
+    <script src="ansi_up.js" type="text/javascript"></script>
     <script type="text/javascript">
 
     var txt  = "\n\n\033[1;33;40m 33;40  \033[1;33;41m 33;41  \033[1;33;42m 33;42  \033[1;33;43m 33;43  \033[1;33;44m 33;44  \033[1;33;45m 33;45  \033[1;33;46m 33;46  \033[1m\033[0\n\n\033[1;33;42m >> Tests OK\n\n"
 
-    var html = ansi2html.ansi_to_html(txt);
+    var html = ansi_up.ansi_to_html(txt);
 
     var cdiv = document.getElementById("console");
 
@@ -32,11 +32,11 @@ There are examples in the repo that demonstrate this as well as a require.js and
 
 ## Installation
 
-    $ npm install ansi2html
+    $ npm install ansi_up
 
 ## API
 
-_ansi2html_ should be called via the functions defined on the module. It is recommended that the HTML is rendered with a monospace font and black background. See the examples, for a basic CSS definition.
+_ansi_up_ should be called via the functions defined on the module. It is recommended that the HTML is rendered with a monospace font and black background. See the examples, for a basic CSS definition.
 
 #### escape_for_html (txt)
 
@@ -55,7 +55,7 @@ Currently we are not using a build system, so there is just one file. Feel free 
 
 ## Running tests
 
-To run the tests for _ansi2html_, run `npm install` to install dependencies and then:
+To run the tests for _ansi_up_, run `npm install` to install dependencies and then:
 
     $ make test
 
