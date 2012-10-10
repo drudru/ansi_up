@@ -1,12 +1,12 @@
-// ansi2html.js
+// ansi_up.js
 // version : 1.0.0
 // author : Dru Nelson
 // license : MIT
-// http://github.com/drudru/ansi2html
+// http://github.com/drudru/ansi_up
 
 (function (Date, undefined) {
 
-    var ansi2html,
+    var ansi_up,
         VERSION = "1.0.0",
 
         // check for nodeJS
@@ -18,12 +18,12 @@
           ["85,85,85", "255, 85, 85", "0, 255, 0", "255, 255, 85", "85, 85, 255", "255, 85, 255", "85, 255, 255", "255,255,255" ]
         ];
 
-    function Ansi2HTML() {
+    function Ansi_Up() {
       this.fg = this.bg = null;
       this.bright = 0;
     }
 
-    Ansi2HTML.prototype.escape_for_html = function (txt) {
+    Ansi_Up.prototype.escape_for_html = function (txt) {
       return txt.replace(/[&<>]/gm, function(str) {
         if (str == "&") return "&amp;";
         if (str == "<") return "&lt;";
@@ -31,13 +31,13 @@
       });
     };
 
-    Ansi2HTML.prototype.linkify = function (txt) {
+    Ansi_Up.prototype.linkify = function (txt) {
       return txt.replace(/(https?:\/\/[^\s]+)/gm, function(str) {
         return "<a href=\"" + str + "\">" + str + "</a>";
       });
     };
 
-    Ansi2HTML.prototype.ansi_to_html = function (txt) {
+    Ansi_Up.prototype.ansi_to_html = function (txt) {
 
       var data4 = txt.split(/\033\[/);
 
@@ -63,7 +63,7 @@
       return escaped_data;
     };
 
-    Ansi2HTML.prototype.process_chunk = function (text) {
+    Ansi_Up.prototype.process_chunk = function (text) {
 
       // Do proper handling of sequences (aka - injest vi split(';') into state machine
       //match,codes,txt = text.match(/([\d;]+)m(.*)/m);
@@ -104,40 +104,40 @@
     };
 
     // Module exports
-    ansi2html = {
+    ansi_up = {
 
       escape_for_html: function (txt) {
-        var a2h = new Ansi2HTML();
+        var a2h = new Ansi_Up();
         return a2h.escape_for_html(txt);
       },
 
       linkify: function (txt) {
-        var a2h = new Ansi2HTML();
+        var a2h = new Ansi_Up();
         return a2h.linkify(txt);
       },
 
       ansi_to_html: function (txt) {
-        var a2h = new Ansi2HTML();
+        var a2h = new Ansi_Up();
         return a2h.ansi_to_html(txt);
       },
 
       ansi_to_html_obj: function () {
-        return new Ansi2HTML();
+        return new Ansi_Up();
       }
     };
 
     // CommonJS module is defined
     if (hasModule) {
-        module.exports = ansi2html;
+        module.exports = ansi_up;
     }
     /*global ender:false */
     if (typeof window !== 'undefined' && typeof ender === 'undefined') {
-        window.ansi2html = ansi2html;
+        window.ansi_up = ansi_up;
     }
     /*global define:false */
     if (typeof define === "function" && define.amd) {
-        define("ansi2html", [], function () {
-            return ansi2html;
+        define("ansi_up", [], function () {
+            return ansi_up;
         });
     }
 })(Date);

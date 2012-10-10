@@ -1,8 +1,8 @@
-var ansi2html = require('../ansi2html');
+var ansi_up = require('../ansi_up');
 
 var should = require('should');
 
-describe('ansi2html', function() {
+describe('ansi_up', function() {
 
 	describe('escape_for_html', function() {
 		
@@ -13,7 +13,7 @@ describe('ansi2html', function() {
 				var start = "&";
 				var expected = "&amp;";
 
-				var l = ansi2html.escape_for_html(start);
+				var l = ansi_up.escape_for_html(start);
 				l.should.eql(expected);
 			});
 
@@ -22,7 +22,7 @@ describe('ansi2html', function() {
 				var start = "abcd&efgh";
 				var expected = "abcd&amp;efgh";
 
-				var l = ansi2html.escape_for_html(start);
+				var l = ansi_up.escape_for_html(start);
 				l.should.eql(expected);
 			});
 
@@ -31,7 +31,7 @@ describe('ansi2html', function() {
 				var start = " & & ";
 				var expected = " &amp; &amp; ";
 
-				var l = ansi2html.escape_for_html(start);
+				var l = ansi_up.escape_for_html(start);
 				l.should.eql(expected);
 			});
 
@@ -40,7 +40,7 @@ describe('ansi2html', function() {
 				var start = " &amp; ";
 				var expected = " &amp;amp; ";
 
-				var l = ansi2html.escape_for_html(start);
+				var l = ansi_up.escape_for_html(start);
 				l.should.eql(expected);
 			});
 
@@ -53,7 +53,7 @@ describe('ansi2html', function() {
 				var start = "<";
 				var expected = "&lt;";
 
-				var l = ansi2html.escape_for_html(start);
+				var l = ansi_up.escape_for_html(start);
 				l.should.eql(expected);
 			});
 
@@ -62,7 +62,7 @@ describe('ansi2html', function() {
 				var start = "abcd<efgh";
 				var expected = "abcd&lt;efgh";
 
-				var l = ansi2html.escape_for_html(start);
+				var l = ansi_up.escape_for_html(start);
 				l.should.eql(expected);
 			});
 
@@ -71,7 +71,7 @@ describe('ansi2html', function() {
 				var start = " < < ";
 				var expected = " &lt; &lt; ";
 
-				var l = ansi2html.escape_for_html(start);
+				var l = ansi_up.escape_for_html(start);
 				l.should.eql(expected);
 			});
 
@@ -84,7 +84,7 @@ describe('ansi2html', function() {
 				var start = ">";
 				var expected = "&gt;";
 
-				var l = ansi2html.escape_for_html(start);
+				var l = ansi_up.escape_for_html(start);
 				l.should.eql(expected);
 			});
 
@@ -93,7 +93,7 @@ describe('ansi2html', function() {
 				var start = "abcd>efgh";
 				var expected = "abcd&gt;efgh";
 
-				var l = ansi2html.escape_for_html(start);
+				var l = ansi_up.escape_for_html(start);
 				l.should.eql(expected);
 			});
 
@@ -102,7 +102,7 @@ describe('ansi2html', function() {
 				var start = " > > ";
 				var expected = " &gt; &gt; ";
 
-				var l = ansi2html.escape_for_html(start);
+				var l = ansi_up.escape_for_html(start);
 				l.should.eql(expected);
 			});
 
@@ -115,7 +115,7 @@ describe('ansi2html', function() {
 				var start = "<&>/\\'\"";
 				var expected = "&lt;&amp;&gt;/\\'\"";
 
-				var l = ansi2html.escape_for_html(start);
+				var l = ansi_up.escape_for_html(start);
 				l.should.eql(expected);
 			});
 
@@ -130,7 +130,7 @@ describe('ansi2html', function() {
 				var start = "http://link.to/me";
 				var expected = "<a href=\"http://link.to/me\">http://link.to/me</a>";
 
-				var l = ansi2html.linkify(start);
+				var l = ansi_up.linkify(start);
 				l.should.eql(expected);
 			});
 
@@ -146,7 +146,7 @@ describe('ansi2html', function() {
 
       var expected = "<span style=\"color:rgb(0, 187, 0)\"> " + fg + " </span>";
 
-      var l = ansi2html.ansi_to_html(start);
+      var l = ansi_up.ansi_to_html(start);
       l.should.eql(expected);
     });
 
@@ -159,7 +159,7 @@ describe('ansi2html', function() {
 
       var expected = "<span style=\"color:rgb(0, 187, 0)\"> " + fg + "  </span>";
 
-      var l = ansi2html.ansi_to_html(start);
+      var l = ansi_up.ansi_to_html(start);
       l.should.eql(expected);
     });
 
@@ -171,7 +171,7 @@ describe('ansi2html', function() {
 
       var expected = "<span style=\"color:rgb(0, 255, 0)\"> " + attr + ";" + fg + " </span>";
 
-      var l = ansi2html.ansi_to_html(start);
+      var l = ansi_up.ansi_to_html(start);
       l.should.eql(expected);
     });
 
@@ -184,7 +184,7 @@ describe('ansi2html', function() {
 
       var expected = "<span style=\"color:rgb(255, 255, 85);background-color:rgb(0, 187, 0)\"> " + attr + ";" + bg + ";" + fg + " </span>";
 
-      var l = ansi2html.ansi_to_html(start);
+      var l = ansi_up.ansi_to_html(start);
       l.should.eql(expected);
     });
 
@@ -197,7 +197,7 @@ describe('ansi2html', function() {
 
       var expected = "\n <span style=\"color:rgb(0, 187, 0)\"> " + fg + "  </span> \n  <span style=\"background-color:rgb(0, 187, 0)\"> " + bg + "  </span> \n zimpper ";
 
-      var l = ansi2html.ansi_to_html(start);
+      var l = ansi_up.ansi_to_html(start);
       l.should.eql(expected);
     });
 
