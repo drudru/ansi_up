@@ -67,7 +67,7 @@
 
       // Do proper handling of sequences (aka - injest vi split(';') into state machine
       //match,codes,txt = text.match(/([\d;]+)m(.*)/m);
-      var matches = text.match(/([\d;]+?)m([^]*)/m);
+      var matches = text.match(/([\d;]*)m([^]*)/m);
 
       if (!matches) return text;
 
@@ -79,7 +79,7 @@
 
         var num = parseInt(num_str);
 
-        if (num === 0) {
+        if (isNaN(num) || num === 0) {
           self.fg = self.bg = null;
           self.bright = 0;
         } else if (num === 1) {
