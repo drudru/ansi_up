@@ -14,8 +14,26 @@
 
         // Normal and then Bright
         ANSI_COLORS = [
-          ["0,0,0", "187, 0, 0", "0, 187, 0", "187, 187, 0", "0, 0, 187", "187, 0, 187", "0, 187, 187", "255,255,255" ],
-          ["85,85,85", "255, 85, 85", "0, 255, 0", "255, 255, 85", "85, 85, 255", "255, 85, 255", "85, 255, 255", "255,255,255" ]
+          [
+            { color: "0, 0, 0",        class: "ansi-black"   },
+            { color: "187, 0, 0",      class: "ansi-red"     },
+            { color: "0, 187, 0",      class: "ansi-green"   },
+            { color: "187, 187, 0",    class: "ansi-yellow"  },
+            { color: "0, 0, 187",      class: "ansi-blue"    },
+            { color: "187, 0, 187",    class: "ansi-magenta" },
+            { color: "0, 187, 187",    class: "ansi-cyan"    },
+            { color: "255,255,255",    class: "ansi-white"   }
+          ],
+          [
+            { color: "85, 85, 85",     class: "ansi-bright-black"   },
+            { color: "255, 85, 85",    class: "ansi-bright-red"     },
+            { color: "0, 255, 0",      class: "ansi-bright-green"   },
+            { color: "255, 255, 85",   class: "ansi-bright-yellow"  },
+            { color: "85, 85, 255",    class: "ansi-bright-blue"    },
+            { color: "255, 85, 255",   class: "ansi-bright-magenta" },
+            { color: "85, 255, 255",   class: "ansi-bright-cyan"    },
+            { color: "255, 255, 255",  class: "ansi-bright-white"   }
+          ]
         ];
 
     function Ansi_Up() {
@@ -37,7 +55,7 @@
       });
     };
 
-    Ansi_Up.prototype.ansi_to_html = function (txt) {
+    Ansi_Up.prototype.ansi_to_html = function (txt, options) {
 
       var data4 = txt.split(/\033\[/);
 
@@ -45,7 +63,7 @@
 
       var self = this;
       var data5 = data4.map(function (chunk) {
-        return self.process_chunk(chunk);
+        return self.process_chunk(chunk, options);
       });
 
       data5.unshift(first);
@@ -63,7 +81,12 @@
       return escaped_data;
     };
 
-    Ansi_Up.prototype.process_chunk = function (text) {
+    Ansi_Up.prototype.process_chunk = function (text, options) {
+
+      // Are we using classes or styles?
+      options = typeof options == 'undefined' ? {} : options;
+      var use_classes = typeof options.use_classes != 'undefined' && options.use_classes;
+      var key = use_classes ? 'class' : 'color';
 
       // Do proper handling of sequences (aka - injest vi split(';') into state machine
       //match,codes,txt = text.match(/([\d;]+)m(.*)/m);
@@ -85,21 +108,35 @@
         } else if (num === 1) {
           self.bright = 1;
         } else if ((num >= 30) && (num < 38)) {
-          self.fg = "rgb(" + ANSI_COLORS[self.bright][(num % 10)] + ")";
+          self.fg = ANSI_COLORS[self.bright][(num % 10)][key];
         } else if ((num >= 40) && (num < 48)) {
-          self.bg = "rgb(" + ANSI_COLORS[0][(num % 10)] + ")";
+          self.bg = ANSI_COLORS[0][(num % 10)][key];
         }
       });
 
       if ((self.fg === null) && (self.bg === null)) {
         return orig_txt;
       } else {
-        var style = [];
-        if (self.fg)
-          style.push("color:" + self.fg);
-        if (self.bg)
-          style.push("background-color:" + self.bg);
-        return ["<span style=\"" + style.join(';') + "\">", orig_txt, "</span>"];
+        var styles = classes = [];
+        if (self.fg) {
+          if (use_classes) {
+            classes.push(self.fg);
+          } else {
+            styles.push("color:rgb(" + self.fg + ")");
+          }
+        }
+        if (self.bg) {
+          if (use_classes) {
+            classes.push(self.bg);
+          } else {
+            styles.push("background-color:rgb(" + self.bg + ")");
+          }
+        }
+        if (use_classes) {
+          return ["<span class=\"" + classes.join(' ') + "\">", orig_txt, "</span>"];
+        } else {
+          return ["<span style=\"" + styles.join(';') + "\">", orig_txt, "</span>"];
+        }
       }
     };
 
@@ -116,9 +153,9 @@
         return a2h.linkify(txt);
       },
 
-      ansi_to_html: function (txt) {
+      ansi_to_html: function (txt, options) {
         var a2h = new Ansi_Up();
-        return a2h.ansi_to_html(txt);
+        return a2h.ansi_to_html(txt, options);
       },
 
       ansi_to_html_obj: function () {
