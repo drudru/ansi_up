@@ -59,7 +59,7 @@ This replaces any links in the text with anchor tags that display the link. The 
 
 This replaces ANSI terminal escape codes with SPAN tags that wrap the content. By default the styles are inline on the SPAN tags.
 
-The options parameter is optional and if you pass an object with the key/value pair 'use_classes: true' classes will be set on the SPAN tag instead of inline styles. The classes used are of the format ansi-* and ansi-bright-* where * is the colour name, i.e black/red/green/yellow/blue/magenta/cyan/white.
+The options parameter is optional and if you pass an object with the key/value pair 'use_classes: true' classes will be set on the SPAN tag instead of inline styles. The classes used are of the format ````ansi-*-fg/bg```` and ````ansi-bright-*-fg/bg```` where * is the colour name, i.e black/red/green/yellow/blue/magenta/cyan/white.
 
 ## Building
 

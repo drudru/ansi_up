@@ -120,14 +120,14 @@
         var styles = classes = [];
         if (self.fg) {
           if (use_classes) {
-            classes.push(self.fg);
+            classes.push(self.fg + "-fg");
           } else {
             styles.push("color:rgb(" + self.fg + ")");
           }
         }
         if (self.bg) {
           if (use_classes) {
-            classes.push(self.bg);
+            classes.push(self.bg + "-bg");
           } else {
             styles.push("background-color:rgb(" + self.bg + ")");
           }
