@@ -5,7 +5,7 @@ var should = require('should');
 describe('ansi_up', function() {
 
 	describe('escape_for_html', function() {
-		
+
 		describe('ampersands', function() {
 
 			it('should escape a single ampersand', function() {
@@ -124,7 +124,7 @@ describe('ansi_up', function() {
 	});
 
 	describe('linkify', function() {
-		
+
 			it('should linkify a url', function() {
 				this.timeout(1);
 				var start = "http://link.to/me";
@@ -137,7 +137,7 @@ describe('ansi_up', function() {
 	});
 
 	describe('ansi to html', function() {
-		
+
     it('should transform a foreground to html', function() {
       this.timeout(1);
       var attr = 0;

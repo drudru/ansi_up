@@ -1,5 +1,5 @@
 
-_ansi_up_ is a simple library for converting text embedded with ANSI terminal color commands into HTML spans that render the proper coloring. This is compliant with AMD (require.js). This code has been used in production since early 2012. This is a new project, but I will actively maintain it and welcome all feedback. Thanks for reading. 
+_ansi_up_ is a simple library for converting text embedded with ANSI terminal color commands into HTML spans that render the proper coloring. This is compliant with AMD (require.js). This code has been used in production since early 2012. This is a new project, but I will actively maintain it and welcome all feedback. Thanks for reading.
 
 Turn this:
 
@@ -11,7 +11,7 @@ Turn this:
 
 Into this:
 
-![](http://github.com/drudru/ansi_up/raw/master/sample.png) 
+![](http://github.com/drudru/ansi_up/raw/master/sample.png)
 
 ## Browser Example
 
@@ -55,9 +55,12 @@ This does the minimum escaping of text to make it compliant with HTML. In partic
 
 This replaces any links in the text with anchor tags that display the link. The links should have at least one whitespace character surrounding it.
 
-#### ansi_to_html (txt)
+#### ansi_to_html (txt, options)
 
-This replaces ANSI terminal escape codes with SPAN tags that wrap the content. The styles are inline on the SPAN tags.
+This replaces ANSI terminal escape codes with SPAN tags that wrap the content. By default the styles are inline on the SPAN tags.
+
+The options parameter is optional and if you pass an object with the key/value pair 'use_classes: true' classes will be set on the SPAN tag instead of inline styles. The classes used are of the format ````ansi-*-fg/bg```` and ````ansi-bright-*-fg/bg```` where * is the colour name, i.e black/red/green/yellow/blue/magenta/cyan/white.
+
 ## Building
 
 Currently we are not using a build system, so there is just one file. Feel free to include the file in your asset minification process.
@@ -68,11 +71,11 @@ To run the tests for _ansi_up_, run `npm install` to install dependencies and th
 
     $ make test
 
-## License 
+## License
 
 (The MIT License)
 
-Copyright (c) 2011 Dru Nelson 
+Copyright (c) 2011 Dru Nelson
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
