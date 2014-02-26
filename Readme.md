@@ -1,4 +1,3 @@
-
 _ansi_up_ is a simple library for converting text embedded with ANSI terminal color commands into HTML spans that render the proper coloring. This is compliant with AMD (require.js). This code has been used in production since early 2012. This is a new project, but I will actively maintain it and welcome all feedback. Thanks for reading.
 
 Turn this:
@@ -11,7 +10,7 @@ Turn this:
 
 Into this:
 
-![](http://github.com/drudru/ansi_up/raw/master/sample.png)
+![](https://raw.github.com/drudru/ansi_up/master/sample.png)
 
 ## Browser Example
 
