@@ -78,6 +78,16 @@ To run the tests for _ansi_up_, run `npm install` to install dependencies and th
 
     $ make test
 
+## Credits
+
+This code was developed by Dru Nelson (<https://github.com/drudru>).
+
+Thanks goes to the following contributors for their patches:
+
+- James R. White (<https://github.com/jamesrwhite>)
+- Aaron Stone (<https://github.com/sodabrew>)
+
+
 ## License
 
 (The MIT License)
