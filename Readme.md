@@ -1,10 +1,11 @@
 # ansi_up.js
 
-_ansi_up_ is a simple library for converting text embedded with ANSI terminal color commands into HTML spans that render the proper coloring. It also properly escapes HTML unsafe characters (&,<,>,etc.) into their proper HTML representation. In addition, it can also make any URLs actual URL links.
+__ansi_up__ is a simple library for converting text that contains [ANSI color escape codes](http://en.wikipedia.org/wiki/ANSI_escape_code#Colors) into equivalent HTML spans.
+At the same, it also properly escapes HTML unsafe characters (&,<,>,etc.) into their proper HTML representation. It can also transform any text that looks like a URL into an HTML anchor tag.
 
 This is compliant with AMD (require.js). This code has been used in production since early 2012. This project is actively maintained and welcomes all feedback. Thanks for reading.
 
-Turn this:
+Turn this terminal output:
 
     ESC[1;Foreground
     [1;30m 30  [1;30m 30  [1;30m 30  [1;30m 30  [1;30m 30  [1;30m 30  [1;30m 30  [1;30m 30  [0m
@@ -12,12 +13,13 @@ Turn this:
     [1;32m 32  [1;32m 32  [1;32m 32  [1;32m 32  [1;32m 32  [1;32m 32  [1;32m 32  [1;32m 32  [0m
     ...
 
-Into this:
+Into this browser output:
 
 ![](https://raw.github.com/drudru/ansi_up/master/sample.png)
 
 ## Browser Example
 
+```HTML
     <script src="ansi_up.js" type="text/javascript"></script>
     <script type="text/javascript">
 
@@ -30,15 +32,17 @@ Into this:
     cdiv.innerHTML = html;
 
     </script>
+```
 
 ## Node Example
 
+```JavaScript
     var ansi_up = require('ansi_up');
 
     var txt  = "\n\n\033[1;33;40m 33;40  \033[1;33;41m 33;41  \033[1;33;42m 33;42  \033[1;33;43m 33;43  \033[1;33;44m 33;44  \033[1;33;45m 33;45  \033[1;33;46m 33;46  \033[1m\033[0\n\n\033[1;33;42m >> Tests OK\n\n"
 
     var html = ansi_up.ansi_to_html(txt);
-
+```
 
 There are examples in the repo that demonstrate an AMD/require.js/ jQuery example as well as a simple browser example.
 
