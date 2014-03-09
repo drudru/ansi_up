@@ -9,6 +9,12 @@ test:
 				--reporter $(REPORTER) \
 				$(TESTS)
 
+test_verbose:
+		@NODE_ENV=test ./node_modules/.bin/mocha \
+				--require should \
+				--reporter spec \
+				$(TESTS)
+
 lint:
 		./node_modules/.bin/jslint \
 				--white --vars --plusplus --continue ansi2html.js
