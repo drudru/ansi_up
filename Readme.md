@@ -1,4 +1,8 @@
-_ansi_up_ is a simple library for converting text embedded with ANSI terminal color commands into HTML spans that render the proper coloring. This is compliant with AMD (require.js). This code has been used in production since early 2012. This is a new project, but I will actively maintain it and welcome all feedback. Thanks for reading.
+# ansi_up.js
+
+_ansi_up_ is a simple library for converting text embedded with ANSI terminal color commands into HTML spans that render the proper coloring. It also properly escapes HTML unsafe characters (&,<,>,etc.) into their proper HTML representation. In addition, it can also make any URLs actual URL links.
+
+This is compliant with AMD (require.js). This code has been used in production since early 2012. This project is actively maintained and welcomes all feedback. Thanks for reading.
 
 Turn this:
 
@@ -52,7 +56,7 @@ This does the minimum escaping of text to make it compliant with HTML. In partic
 
 #### linkify (txt)
 
-This replaces any links in the text with anchor tags that display the link. The links should have at least one whitespace character surrounding it.
+This replaces any links in the text with anchor tags that display the link. The links should have at least one whitespace character surrounding it. Also, you should apply this after you have run ansi_to_html on the text.
 
 #### ansi_to_html (txt, options)
 
@@ -62,7 +66,7 @@ The options parameter is optional and if you pass an object with the key/value p
 
 ## Building
 
-Currently we are not using a build system, so there is just one file. Feel free to include the file in your asset minification process.
+This just uses 'make'. The result is just one file. Feel free to include the file in your asset minification process.
 
 ## Running tests
 
