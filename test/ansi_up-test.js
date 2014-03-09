@@ -164,6 +164,18 @@ describe('ansi_up', function() {
         l.should.eql(expected);
       });
 
+      it('should transform an empty code to a normal/reset html', function() {
+        this.timeout(1);
+        var attr = 0;
+        var fg = 32;
+        var start = "\033[" + attr + ";" + fg + "m " + fg + "  \033[m x";
+
+        var expected = "<span style=\"color:rgb(0, 187, 0)\"> " + fg + "  </span> x";
+
+        var l = ansi_up.ansi_to_html(start);
+        l.should.eql(expected);
+      });
+
       it('should transform a bold attr;foreground to html', function() {
         this.timeout(1);
         var attr = 1;
