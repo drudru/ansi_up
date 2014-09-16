@@ -90,7 +90,7 @@
 
       // Do proper handling of sequences (aka - injest vi split(';') into state machine
       //match,codes,txt = text.match(/([\d;]+)m(.*)/m);
-      var matches = text.match(/([\d;]*)m([^\0]*)/m);
+      var matches = text.match(/([\d;]*)m([\s\S]*)/m);
 
       if (!matches) return text;
 
