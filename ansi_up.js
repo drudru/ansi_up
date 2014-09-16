@@ -1,5 +1,5 @@
 // ansi_up.js
-// version : 1.1.0
+// version : 1.1.2
 // author : Dru Nelson
 // license : MIT
 // http://github.com/drudru/ansi_up
@@ -7,7 +7,7 @@
 (function (Date, undefined) {
 
     var ansi_up,
-        VERSION = "1.1.0",
+        VERSION = "1.1.2",
 
         // check for nodeJS
         hasModule = (typeof module !== 'undefined'),
@@ -88,8 +88,13 @@
       var use_classes = typeof options.use_classes != 'undefined' && options.use_classes;
       var key = use_classes ? 'class' : 'color';
 
-      // Do proper handling of sequences (aka - injest vi split(';') into state machine
-      //match,codes,txt = text.match(/([\d;]+)m(.*)/m);
+      // Each 'chunk' is the text after the CSI (ESC + '[') and before the next CSI/EOF.
+      //
+      // This regex matches two groups within a chunk.
+      // The first group matches all of the number+semicolon command sequences
+      // before the 'm' character. These are the graphics or SGR commands.
+      // The second group is the text (including newlines) that is colored by
+      // the first group's commands.
       var matches = text.match(/([\d;]*)m([\s\S]*)/m);
 
       if (!matches) return text;
