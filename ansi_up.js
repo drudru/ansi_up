@@ -37,7 +37,7 @@
         ];
 
     function Ansi_Up() {
-      this.fg = this.bg = null;
+      this.fg = this.bg = this.underline = this.invert = null;
       this.bright = 0;
     }
 
@@ -106,20 +106,26 @@
       nums.map(function (num_str) {
 
         var num = parseInt(num_str);
-
         if (isNaN(num) || num === 0) {
-          self.fg = self.bg = null;
+          self.fg = self.bg = self.underline = self.invert = null;
           self.bright = 0;
         } else if (num === 1) {
           self.bright = 1;
+        } else if (num === 4) { //underline on
+          self.underline = 1;
+        } else if (num === 7) {
+          self.invert = 1;
+        } else if (num === 24) { //underline off
+          self.underline = null;
         } else if ((num >= 30) && (num < 38)) {
           self.fg = ANSI_COLORS[self.bright][(num % 10)][key];
         } else if ((num >= 40) && (num < 48)) {
           self.bg = ANSI_COLORS[0][(num % 10)][key];
-        }
+        } 
+
       });
 
-      if ((self.fg === null) && (self.bg === null)) {
+      if ((self.fg === null) && (self.bg === null) && !self.invert) {
         return orig_txt;
       } else {
         var styles = classes = [];
@@ -137,6 +143,23 @@
             styles.push("background-color:rgb(" + self.bg + ")");
           }
         }
+        if (self.underline) {
+          if (use_classes) {
+            classes.push("ansi-underline");
+          } else {
+            styles.push("text-decoration: underline");
+          }
+        }
+        if (self.invert) {
+          if (use_classes) {
+            //don't know what to put here
+          } else {
+             styles.push("background-color:rgb(" + (self.fg?self.fg:'255,255,255') + ")");
+             styles.push("color:rgb(" + (self.bg?self.bg:'0,0,0') + ")");
+          }
+        }
+
+
         if (use_classes) {
           return ["<span class=\"" + classes.join(' ') + "\">", orig_txt, "</span>"];
         } else {
