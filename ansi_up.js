@@ -114,8 +114,12 @@
           self.bright = 1;
         } else if ((num >= 30) && (num < 38)) {
           self.fg = ANSI_COLORS[self.bright][(num % 10)][key];
+        } else if ((num >= 90) && (num < 98)) {
+          self.fg = ANSI_COLORS[1][(num % 10)][key];
         } else if ((num >= 40) && (num < 48)) {
           self.bg = ANSI_COLORS[0][(num % 10)][key];
+        } else if ((num >= 100) && (num < 108)) {
+          self.bg = ANSI_COLORS[1][(num % 10)][key];
         }
       });
 

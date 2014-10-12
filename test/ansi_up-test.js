@@ -188,6 +188,17 @@ describe('ansi_up', function() {
         l.should.eql(expected);
       });
 
+      it('should transform a bold-foreground to html', function() {
+        this.timeout(1);
+        var fg = 92;
+        var start = "\033[" + fg + "m " + fg + " \033[0m";
+
+        var expected = "<span style=\"color:rgb(0, 255, 0)\"> " + fg + " </span>";
+
+        var l = ansi_up.ansi_to_html(start);
+        l.should.eql(expected);
+      });
+
       it('should transform a bold attr;background;foreground to html', function() {
         this.timeout(1);
         var attr = 1;
@@ -200,6 +211,19 @@ describe('ansi_up', function() {
         var l = ansi_up.ansi_to_html(start);
         l.should.eql(expected);
       });
+
+      it('should transform a bold-background;foreground to html', function() {
+        this.timeout(1);
+        var fg = 33;
+        var bg = 102;
+        var start = "\033[" + bg + ";" + fg + "m " + bg + ";" + fg + " \033[0m";
+
+        var expected = "<span style=\"color:rgb(187, 187, 0);background-color:rgb(0, 255, 0)\"> " + bg + ";" + fg + " </span>";
+
+        var l = ansi_up.ansi_to_html(start);
+        l.should.eql(expected);
+      });
+
 
       it('should transform a complex multi-line sequence to html', function() {
         this.timeout(1);
