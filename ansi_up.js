@@ -57,7 +57,11 @@
 
     Ansi_Up.prototype.ansi_to_html = function (txt, options) {
 
-      var data4 = txt.split(/\033\[/);
+      options = typeof options == 'undefined' ? {} : options;
+      var use_pattern = typeof options.pattern != 'undefined' && options.pattern;
+      var pattern = use_pattern ? options.pattern : /\033\[/;
+
+      var data4 = txt.split(pattern);
 
       var first = data4.shift(); // the first chunk is not the result of the split
 
