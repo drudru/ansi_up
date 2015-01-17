@@ -15,24 +15,24 @@
         // Normal and then Bright
         ANSI_COLORS = [
           [
-            { color: "0, 0, 0",        class: "ansi-black"   },
-            { color: "187, 0, 0",      class: "ansi-red"     },
-            { color: "0, 187, 0",      class: "ansi-green"   },
-            { color: "187, 187, 0",    class: "ansi-yellow"  },
-            { color: "0, 0, 187",      class: "ansi-blue"    },
-            { color: "187, 0, 187",    class: "ansi-magenta" },
-            { color: "0, 187, 187",    class: "ansi-cyan"    },
-            { color: "255,255,255",    class: "ansi-white"   }
+            { color: "0, 0, 0",        'class': "ansi-black"   },
+            { color: "187, 0, 0",      'class': "ansi-red"     },
+            { color: "0, 187, 0",      'class': "ansi-green"   },
+            { color: "187, 187, 0",    'class': "ansi-yellow"  },
+            { color: "0, 0, 187",      'class': "ansi-blue"    },
+            { color: "187, 0, 187",    'class': "ansi-magenta" },
+            { color: "0, 187, 187",    'class': "ansi-cyan"    },
+            { color: "255,255,255",    'class': "ansi-white"   }
           ],
           [
-            { color: "85, 85, 85",     class: "ansi-bright-black"   },
-            { color: "255, 85, 85",    class: "ansi-bright-red"     },
-            { color: "0, 255, 0",      class: "ansi-bright-green"   },
-            { color: "255, 255, 85",   class: "ansi-bright-yellow"  },
-            { color: "85, 85, 255",    class: "ansi-bright-blue"    },
-            { color: "255, 85, 255",   class: "ansi-bright-magenta" },
-            { color: "85, 255, 255",   class: "ansi-bright-cyan"    },
-            { color: "255, 255, 255",  class: "ansi-bright-white"   }
+            { color: "85, 85, 85",     'class': "ansi-bright-black"   },
+            { color: "255, 85, 85",    'class': "ansi-bright-red"     },
+            { color: "0, 255, 0",      'class': "ansi-bright-green"   },
+            { color: "255, 255, 85",   'class': "ansi-bright-yellow"  },
+            { color: "85, 85, 255",    'class': "ansi-bright-blue"    },
+            { color: "255, 85, 255",   'class': "ansi-bright-magenta" },
+            { color: "85, 255, 255",   'class': "ansi-bright-cyan"    },
+            { color: "255, 255, 255",  'class': "ansi-bright-white"   }
           ]
         ];
 
