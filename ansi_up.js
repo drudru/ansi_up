@@ -1,5 +1,5 @@
 // ansi_up.js
-// version : 1.1.2
+// version : 1.1.3
 // author : Dru Nelson
 // license : MIT
 // http://github.com/drudru/ansi_up
@@ -7,7 +7,7 @@
 (function (Date, undefined) {
 
     var ansi_up,
-        VERSION = "1.1.2",
+        VERSION = "1.1.3",
 
         // check for nodeJS
         hasModule = (typeof module !== 'undefined'),
