@@ -56,7 +56,6 @@
     };
 
     Ansi_Up.prototype.ansi_to_html = function (txt, options) {
-
       var data4 = txt.split(/\033\[/);
 
       var first = data4.shift(); // the first chunk is not the result of the split
@@ -75,8 +74,12 @@
         a.push(b);
         return a;
       }, []);
-
-      var escaped_data = flattened_data.join('');
+      
+      if (typeof flattened_data == 'string') {
+        var escaped_data = first;
+      } else {
+        var escaped_data = flattened_data.join('');
+      }
 
       return escaped_data;
     };
