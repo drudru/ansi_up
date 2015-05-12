@@ -303,7 +303,19 @@ describe('ansi_up', function() {
         l.should.eql(expected);
       });
     });
+    it('should correctly convert a string similar to CSI', function() {
+      // https://github.com/drudru/ansi_up/pull/15
+      this.timeout(1);
+      // "[1;31m" is a plain text. not an escape sequence.
+      var start = "foo\033[1@bar[1;31mbaz\033[0m";
+      var l = ansi_up.ansi_to_html(start);
 
+      // is all plain texts exist?
+      l.should.containEql('foo');
+      l.should.containEql('bar');
+      l.should.containEql('baz');
+      l.should.containEql('1;31m');
+    });
   });
 });
 

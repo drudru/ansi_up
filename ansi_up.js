@@ -95,7 +95,7 @@
       // before the 'm' character. These are the graphics or SGR commands.
       // The second group is the text (including newlines) that is colored by
       // the first group's commands.
-      var matches = text.match(/([\d;]*)m([\s\S]*)/m);
+      var matches = text.match(/^([\d;]*)m([\s\S]*)/m);
 
       if (!matches) return text;
 
