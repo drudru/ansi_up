@@ -68,15 +68,7 @@
 
       data5.unshift(first);
 
-      var flattened_data = data5.reduce( function (a, b) {
-        if (Array.isArray(b))
-          return a.concat(b);
-
-        a.push(b);
-        return a;
-      }, []);
-
-      var escaped_data = flattened_data.join('');
+      var escaped_data = data5.join('');
 
       return escaped_data;
     };
@@ -142,9 +134,9 @@
           }
         }
         if (use_classes) {
-          return ["<span class=\"" + classes.join(' ') + "\">", orig_txt, "</span>"];
+          return "<span class=\"" + classes.join(' ') + "\">" + orig_txt + "</span>";
         } else {
-          return ["<span style=\"" + styles.join(';') + "\">", orig_txt, "</span>"];
+          return "<span style=\"" + styles.join(';') + "\">"  + orig_txt + "</span>";
         }
       }
     };
