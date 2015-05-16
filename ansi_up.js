@@ -90,17 +90,29 @@
 
       // Each 'chunk' is the text after the CSI (ESC + '[') and before the next CSI/EOF.
       //
-      // This regex matches two groups within a chunk.
-      // The first group matches all of the number+semicolon command sequences
-      // before the 'm' character. These are the graphics or SGR commands.
-      // The second group is the text (including newlines) that is colored by
-      // the first group's commands.
-      var matches = text.match(/([\d;]*)m([\s\S]*)/m);
+      // This regex matches four groups within a chunk.
+      //
+      // The first and third groups match code type.
+      // We supported only SGR command. It has empty first group and 'm' in third.
+      //
+      // The second group matches all of the number+semicolon command sequences
+      // before the 'm' (or other trailing) character.
+      // These are the graphics or SGR commands.
+      //
+      // The last group is the text (including newlines) that is colored by
+      // the other group's commands.
+      var matches = text.match(/^([!\x3c-\x3f]*)([\d;]*)([\x20-\x2c]*[\x40-\x7e])([\s\S]*)/m);
 
       if (!matches) return text;
 
-      var orig_txt = matches[2];
-      var nums = matches[1].split(';');
+      var orig_txt = matches[4];
+      var nums = matches[2].split(';');
+
+      // We currently support only "SGR" (Select Graphic Rendition)
+      // Simply ignore if not a SGR command.
+      if (matches[1] !== '' || matches[3] !== 'm') {
+        return orig_txt;
+      }
 
       var self = this;
       nums.map(function (num_str) {

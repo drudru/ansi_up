@@ -303,7 +303,58 @@ describe('ansi_up', function() {
         l.should.eql(expected);
       });
     });
+    it('should correctly convert a string similar to CSI', function() {
+      // https://github.com/drudru/ansi_up/pull/15
+      this.timeout(1);
+      // "[1;31m" is a plain text. not an escape sequence.
+      var start = "foo\033[1@bar[1;31mbaz\033[0m";
+      var l = ansi_up.ansi_to_html(start);
 
+      // is all plain texts exist?
+      l.should.containEql('foo');
+      l.should.containEql('bar');
+      l.should.containEql('baz');
+      l.should.containEql('1;31m');
+    });
+    describe('ignore unsupported CSI', function() {
+      it('(italic)', function() {
+        this.timeout(1);
+        var start = "foo\033[3mbar\033[0mbaz";
+        var l = ansi_up.ansi_to_html(start);
+        l.should.eql('foobarbaz');
+      });
+      it('(cursor-up)', function() {
+        this.timeout(1);
+        var start = "foo\033[1Abar";
+        var l = ansi_up.ansi_to_html(start);
+        l.should.eql('foobar');
+      });
+      it('(scroll-left)', function() {
+        this.timeout(1);
+        // <ESC>[1 @ (including ascii space)
+        var start = "foo\033[1 @bar";
+        var l = ansi_up.ansi_to_html(start);
+        l.should.eql('foobar');
+      });
+      it('(DECMC)', function() {
+        this.timeout(1);
+        var start = "foo\033[?11ibar";
+        var l = ansi_up.ansi_to_html(start);
+        l.should.eql('foobar');
+      });
+      it('(RLIMGCP)', function() {
+        this.timeout(1);
+        var start = "foo\033[<!3ibar";
+        var l = ansi_up.ansi_to_html(start);
+        l.should.eql('foobar');
+      });
+      it('(DECSCL)', function() {
+        this.timeout(1);
+        var start = "foo\033[61;0\"pbar"
+        var l = ansi_up.ansi_to_html(start);
+        l.should.eql('foobar');
+      });
+    });
   });
 });
 
