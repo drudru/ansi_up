@@ -52,21 +52,23 @@ There are examples in the repo that demonstrate an AMD/require.js/ jQuery exampl
 
 ## API
 
-_ansi_up_ should be called via the functions defined on the module. It is recommended that the HTML is rendered with a monospace font and black background. See the examples, for a basic CSS definition.
+_ansi_up_ should be called via the functions defined on the module. It is recommended that the HTML is rendered with a monospace font and black background. See the examples, for a basic theme as a CSS definition.
+
+#### ansi_to_html (txt, options)
+
+This replaces ANSI terminal escape codes with SPAN tags that wrap the content. See the example output above.
+
+This function only interprets ANSI SGR (Select Graphic Rendition) codes that can be represented in HTML. For example, cursor movement codes are ignored and hidden from output.
+
+The default style uses colors that are very close to the prescribed standard. The standard assumes that the text will have a black background. These colors are set as inline styles on the SPAN tags. Another option is to set 'use_classes: true' in the options argument. This will instead set classes on the spans so the colors can be set via CSS. The class names used are of the format ````ansi-*-fg/bg```` and ````ansi-bright-*-fg/bg```` where * is the colour name, i.e black/red/green/yellow/blue/magenta/cyan/white. See the examples directory for a complete CSS theme for these classes.
 
 #### escape_for_html (txt)
 
-This does the minimum escaping of text to make it compliant with HTML. In particular, the '&','<', and '>' characters are escaped.
+This does the minimum escaping of text to make it compliant with HTML. In particular, the '&','<', and '>' characters are escaped. This should be run prior to ansi_to_html.
 
 #### linkify (txt)
 
 This replaces any links in the text with anchor tags that display the link. The links should have at least one whitespace character surrounding it. Also, you should apply this after you have run ansi_to_html on the text.
-
-#### ansi_to_html (txt, options)
-
-This replaces ANSI terminal escape codes with SPAN tags that wrap the content. By default the styles are inline on the SPAN tags.
-
-The options parameter is optional and if you pass an object with the key/value pair 'use_classes: true' classes will be set on the SPAN tag instead of inline styles. The classes used are of the format ````ansi-*-fg/bg```` and ````ansi-bright-*-fg/bg```` where * is the colour name, i.e black/red/green/yellow/blue/magenta/cyan/white.
 
 ## Building
 
@@ -84,10 +86,10 @@ This code was developed by Dru Nelson (<https://github.com/drudru>).
 
 Thanks goes to the following contributors for their patches:
 
+- AIZAWA Hina (<https://github.com/fetus-hina>)
 - James R. White (<https://github.com/jamesrwhite>)
 - Aaron Stone (<https://github.com/sodabrew>)
 - Maximilian Antoni (<https://github.com/mantoni>)
-- AIZAWA Hina (<https://github.com/fetus-hina>)
 
 
 ## License
