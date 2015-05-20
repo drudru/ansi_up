@@ -9,7 +9,6 @@ describe('ansi_up', function() {
 		describe('ampersands', function() {
 
 			it('should escape a single ampersand', function() {
-				this.timeout(1);
 				var start = "&";
 				var expected = "&amp;";
 
@@ -18,7 +17,6 @@ describe('ansi_up', function() {
 			});
 
 			it('should escape some text with ampersands', function() {
-				this.timeout(1);
 				var start = "abcd&efgh";
 				var expected = "abcd&amp;efgh";
 
@@ -27,7 +25,6 @@ describe('ansi_up', function() {
 			});
 
 			it('should escape multiple ampersands', function() {
-				this.timeout(1);
 				var start = " & & ";
 				var expected = " &amp; &amp; ";
 
@@ -36,20 +33,17 @@ describe('ansi_up', function() {
 			});
 
 			it('should escape an already escaped ampersand', function() {
-				this.timeout(1);
 				var start = " &amp; ";
 				var expected = " &amp;amp; ";
 
 				var l = ansi_up.escape_for_html(start);
 				l.should.eql(expected);
 			});
-
-	  });
+		});
 
 		describe('less-than', function() {
 
 			it('should escape a single less-than', function() {
-				this.timeout(1);
 				var start = "<";
 				var expected = "&lt;";
 
@@ -58,7 +52,6 @@ describe('ansi_up', function() {
 			});
 
 			it('should escape some text with less-thans', function() {
-				this.timeout(1);
 				var start = "abcd<efgh";
 				var expected = "abcd&lt;efgh";
 
@@ -67,7 +60,6 @@ describe('ansi_up', function() {
 			});
 
 			it('should escape multiple less-thans', function() {
-				this.timeout(1);
 				var start = " < < ";
 				var expected = " &lt; &lt; ";
 
@@ -75,12 +67,11 @@ describe('ansi_up', function() {
 				l.should.eql(expected);
 			});
 
-	  });
+		});
 
 		describe('greater-than', function() {
 
 			it('should escape a single greater-than', function() {
-				this.timeout(1);
 				var start = ">";
 				var expected = "&gt;";
 
@@ -89,7 +80,6 @@ describe('ansi_up', function() {
 			});
 
 			it('should escape some text with greater-thans', function() {
-				this.timeout(1);
 				var start = "abcd>efgh";
 				var expected = "abcd&gt;efgh";
 
@@ -98,7 +88,6 @@ describe('ansi_up', function() {
 			});
 
 			it('should escape multiple greater-thans', function() {
-				this.timeout(1);
 				var start = " > > ";
 				var expected = " &gt; &gt; ";
 
@@ -106,12 +95,11 @@ describe('ansi_up', function() {
 				l.should.eql(expected);
 			});
 
-	  });
+		});
 
 		describe('mixed characters', function() {
 
 			it('should escape a mix of characters that require escaping', function() {
-				this.timeout(1);
 				var start = "<&>/\\'\"";
 				var expected = "&lt;&amp;&gt;/\\'\"";
 
@@ -119,14 +107,13 @@ describe('ansi_up', function() {
 				l.should.eql(expected);
 			});
 
-	  });
+		});
 
 	});
 
 	describe('linkify', function() {
 
 			it('should linkify a url', function() {
-				this.timeout(1);
 				var start = "http://link.to/me";
 				var expected = "<a href=\"http://link.to/me\">http://link.to/me</a>";
 
@@ -140,7 +127,6 @@ describe('ansi_up', function() {
 
     describe('default colors', function() {
       it('should transform a foreground to html', function() {
-        this.timeout(1);
         var attr = 0;
         var fg = 32;
         var start = "\033[" + fg + "m " + fg + " \033[0m";
@@ -153,7 +139,6 @@ describe('ansi_up', function() {
 
 
       it('should transform a attr;foreground to html', function() {
-        this.timeout(1);
         var attr = 0;
         var fg = 32;
         var start = "\033[" + attr + ";" + fg + "m " + fg + "  \033[0m";
@@ -165,7 +150,6 @@ describe('ansi_up', function() {
       });
 
       it('should transform an empty code to a normal/reset html', function() {
-        this.timeout(1);
         var attr = 0;
         var fg = 32;
         var start = "\033[" + attr + ";" + fg + "m " + fg + "  \033[m x";
@@ -177,7 +161,6 @@ describe('ansi_up', function() {
       });
 
       it('should transform a bold attr;foreground to html', function() {
-        this.timeout(1);
         var attr = 1;
         var fg = 32;
         var start = "\033[" + attr + ";" + fg + "m " + attr + ";" + fg + " \033[0m";
@@ -189,7 +172,6 @@ describe('ansi_up', function() {
       });
 
       it('should transform a bold-foreground to html', function() {
-        this.timeout(1);
         var fg = 92;
         var start = "\033[" + fg + "m " + fg + " \033[0m";
 
@@ -200,7 +182,6 @@ describe('ansi_up', function() {
       });
 
       it('should transform a bold attr;background;foreground to html', function() {
-        this.timeout(1);
         var attr = 1;
         var fg = 33;
         var bg = 42;
@@ -213,7 +194,6 @@ describe('ansi_up', function() {
       });
 
       it('should transform a bold-background;foreground to html', function() {
-        this.timeout(1);
         var fg = 33;
         var bg = 102;
         var start = "\033[" + bg + ";" + fg + "m " + bg + ";" + fg + " \033[0m";
@@ -226,7 +206,6 @@ describe('ansi_up', function() {
 
 
       it('should transform a complex multi-line sequence to html', function() {
-        this.timeout(1);
         var attr = 1;
         var fg = 32;
         var bg = 42;
@@ -241,7 +220,6 @@ describe('ansi_up', function() {
 
     describe('themed colors', function() {
       it('should transform a foreground to html', function() {
-        this.timeout(1);
         var attr = 0;
         var fg = 32;
         var start = "\033[" + fg + "m " + fg + " \033[0m";
@@ -254,7 +232,6 @@ describe('ansi_up', function() {
 
 
       it('should transform a attr;foreground to html', function() {
-        this.timeout(1);
         var attr = 0;
         var fg = 32;
         var start = "\033[" + attr + ";" + fg + "m " + fg + "  \033[0m";
@@ -266,7 +243,6 @@ describe('ansi_up', function() {
       });
 
       it('should transform a bold attr;foreground to html', function() {
-        this.timeout(1);
         var attr = 1;
         var fg = 32;
         var start = "\033[" + attr + ";" + fg + "m " + attr + ";" + fg + " \033[0m";
@@ -278,7 +254,6 @@ describe('ansi_up', function() {
       });
 
       it('should transform a bold attr;background;foreground to html', function() {
-        this.timeout(1);
         var attr = 1;
         var fg = 33;
         var bg = 42;
@@ -291,7 +266,6 @@ describe('ansi_up', function() {
       });
 
       it('should transform a complex multi-line sequence to html', function() {
-        this.timeout(1);
         var attr = 1;
         var fg = 32;
         var bg = 42;
@@ -303,53 +277,46 @@ describe('ansi_up', function() {
         l.should.eql(expected);
       });
     });
-    it('should correctly convert a string similar to CSI', function() {
-      // https://github.com/drudru/ansi_up/pull/15
-      this.timeout(1);
-      // "[1;31m" is a plain text. not an escape sequence.
-      var start = "foo\033[1@bar[1;31mbaz\033[0m";
-      var l = ansi_up.ansi_to_html(start);
-
-      // is all plain texts exist?
-      l.should.containEql('foo');
-      l.should.containEql('bar');
-      l.should.containEql('baz');
-      l.should.containEql('1;31m');
-    });
     describe('ignore unsupported CSI', function() {
+      it('should correctly convert a string similar to CSI', function() {
+        // https://github.com/drudru/ansi_up/pull/15
+        // "[1;31m" is a plain text. not an escape sequence.
+        var start = "foo\033[1@bar[1;31mbaz\033[0m";
+        var l = ansi_up.ansi_to_html(start);
+
+        // is all plain texts exist?
+        l.should.containEql('foo');
+        l.should.containEql('bar');
+        l.should.containEql('baz');
+        l.should.containEql('1;31m');
+      });
       it('(italic)', function() {
-        this.timeout(1);
         var start = "foo\033[3mbar\033[0mbaz";
         var l = ansi_up.ansi_to_html(start);
         l.should.eql('foobarbaz');
       });
       it('(cursor-up)', function() {
-        this.timeout(1);
         var start = "foo\033[1Abar";
         var l = ansi_up.ansi_to_html(start);
         l.should.eql('foobar');
       });
       it('(scroll-left)', function() {
-        this.timeout(1);
         // <ESC>[1 @ (including ascii space)
         var start = "foo\033[1 @bar";
         var l = ansi_up.ansi_to_html(start);
         l.should.eql('foobar');
       });
       it('(DECMC)', function() {
-        this.timeout(1);
         var start = "foo\033[?11ibar";
         var l = ansi_up.ansi_to_html(start);
         l.should.eql('foobar');
       });
       it('(RLIMGCP)', function() {
-        this.timeout(1);
         var start = "foo\033[<!3ibar";
         var l = ansi_up.ansi_to_html(start);
         l.should.eql('foobar');
       });
       it('(DECSCL)', function() {
-        this.timeout(1);
         var start = "foo\033[61;0\"pbar"
         var l = ansi_up.ansi_to_html(start);
         l.should.eql('foobar');
