@@ -56,29 +56,18 @@
     };
 
     Ansi_Up.prototype.ansi_to_html = function (txt, options) {
-
-      var data4 = txt.split(/\033\[/);
-
-      var first = data4.shift(); // the first chunk is not the result of the split
-
       var self = this;
-      var data5 = data4.map(function (chunk) {
+
+      var raw_text_chunks = txt.split(/\033\[/);
+      var first_chunk = raw_text_chunks.shift(); // the first chunk is not the result of the split
+
+      var color_chunks = raw_text_chunks.map(function (chunk) {
         return self.process_chunk(chunk, options);
       });
 
-      data5.unshift(first);
+      color_chunks.unshift(first_chunk);
 
-      var flattened_data = data5.reduce( function (a, b) {
-        if (Array.isArray(b))
-          return a.concat(b);
-
-        a.push(b);
-        return a;
-      }, []);
-
-      var escaped_data = flattened_data.join('');
-
-      return escaped_data;
+      return color_chunks.join('');
     };
 
     Ansi_Up.prototype.process_chunk = function (text, options) {
@@ -154,9 +143,9 @@
           }
         }
         if (use_classes) {
-          return ["<span class=\"" + classes.join(' ') + "\">", orig_txt, "</span>"];
+          return "<span class=\"" + classes.join(' ') + "\">" + orig_txt + "</span>";
         } else {
-          return ["<span style=\"" + styles.join(';') + "\">", orig_txt, "</span>"];
+          return "<span style=\"" + styles.join(';') + "\">"  + orig_txt + "</span>";
         }
       }
     };
