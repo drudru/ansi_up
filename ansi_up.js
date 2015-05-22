@@ -56,21 +56,18 @@
     };
 
     Ansi_Up.prototype.ansi_to_html = function (txt, options) {
-
-      var data4 = txt.split(/\033\[/);
-
-      var first = data4.shift(); // the first chunk is not the result of the split
-
       var self = this;
-      var data5 = data4.map(function (chunk) {
+
+      var raw_text_chunks = txt.split(/\033\[/);
+      var first_chunk = raw_text_chunks.shift(); // the first chunk is not the result of the split
+
+      var color_chunks = raw_text_chunks.map(function (chunk) {
         return self.process_chunk(chunk, options);
       });
 
-      data5.unshift(first);
+      color_chunks.unshift(first_chunk);
 
-      var escaped_data = data5.join('');
-
-      return escaped_data;
+      return color_chunks.join('');
     };
 
     Ansi_Up.prototype.process_chunk = function (text, options) {
