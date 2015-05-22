@@ -1,7 +1,7 @@
 {
   "name": "ansi_up",
   "main": "ansi_up.js",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "homepage": "https://github.com/drudru/ansi_up",
   "authors": [
     "drudru <drudru@gmail.com>"
