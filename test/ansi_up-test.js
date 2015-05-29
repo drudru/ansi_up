@@ -216,6 +216,50 @@ describe('ansi_up', function() {
         var l = ansi_up.ansi_to_html(start);
         l.should.eql(expected);
       });
+
+      describe('transform extend colors (palette)', function() {
+        it('system color, foreground', function() {
+          var start = "\033[38;5;1m" + "red" + "\033[0m";
+          var expected = '<span style="color:rgb(187, 0, 0)">red</span>';
+          var l = ansi_up.ansi_to_html(start);
+          l.should.eql(expected);
+        });
+
+        it('system color, foreground (bright)', function() {
+          var start = "\033[38;5;9m" + "red" + "\033[0m";
+          var expected = '<span style="color:rgb(255, 85, 85)">red</span>';
+          var l = ansi_up.ansi_to_html(start);
+          l.should.eql(expected);
+        });
+
+        it('system color, background', function() {
+          var start = "\033[48;5;1m" + "red" + "\033[0m";
+          var expected = '<span style="background-color:rgb(187, 0, 0)">red</span>';
+          var l = ansi_up.ansi_to_html(start);
+          l.should.eql(expected);
+        });
+
+        it('system color, background (bright)', function() {
+          var start = "\033[48;5;9m" + "red" + "\033[0m";
+          var expected = '<span style="background-color:rgb(255, 85, 85)">red</span>';
+          var l = ansi_up.ansi_to_html(start);
+          l.should.eql(expected);
+        });
+
+        it('palette, foreground', function() {
+          var start = "\033[38;5;171m" + "foo" + "\033[0m";
+          var expected = '<span style="color:rgb(215, 95, 255)">foo</span>';
+          var l = ansi_up.ansi_to_html(start);
+          l.should.eql(expected);
+        });
+
+        it('palette, background', function() {
+          var start = "\033[48;5;171m" + "foo" + "\033[0m";
+          var expected = '<span style="background-color:rgb(215, 95, 255)">foo</span>';
+          var l = ansi_up.ansi_to_html(start);
+          l.should.eql(expected);
+        });
+      });
     });
 
     describe('themed colors', function() {
@@ -275,6 +319,50 @@ describe('ansi_up', function() {
 
         var l = ansi_up.ansi_to_html(start, {use_classes: true});
         l.should.eql(expected);
+      });
+
+      describe('transform extend colors (palette)', function() {
+        it('system color, foreground', function() {
+          var start = "\033[38;5;1m" + "red" + "\033[0m";
+          var expected = '<span class="ansi-red-fg">red</span>';
+          var l = ansi_up.ansi_to_html(start, {use_classes: true});
+          l.should.eql(expected);
+        });
+
+        it('system color, foreground (bright)', function() {
+          var start = "\033[38;5;9m" + "red" + "\033[0m";
+          var expected = '<span class="ansi-bright-red-fg">red</span>';
+          var l = ansi_up.ansi_to_html(start, {use_classes: true});
+          l.should.eql(expected);
+        });
+
+        it('system color, background', function() {
+          var start = "\033[48;5;1m" + "red" + "\033[0m";
+          var expected = '<span class="ansi-red-bg">red</span>';
+          var l = ansi_up.ansi_to_html(start, {use_classes: true});
+          l.should.eql(expected);
+        });
+
+        it('system color, background (bright)', function() {
+          var start = "\033[48;5;9m" + "red" + "\033[0m";
+          var expected = '<span class="ansi-bright-red-bg">red</span>';
+          var l = ansi_up.ansi_to_html(start, {use_classes: true});
+          l.should.eql(expected);
+        });
+
+        it('palette, foreground', function() {
+          var start = "\033[38;5;171m" + "foo" + "\033[0m";
+          var expected = '<span class="ansi-palette-171-fg">foo</span>';
+          var l = ansi_up.ansi_to_html(start, {use_classes: true});
+          l.should.eql(expected);
+        });
+
+        it('palette, background', function() {
+          var start = "\033[48;5;171m" + "foo" + "\033[0m";
+          var expected = '<span class="ansi-palette-171-bg">foo</span>';
+          var l = ansi_up.ansi_to_html(start, {use_classes: true});
+          l.should.eql(expected);
+        });
       });
     });
     describe('ignore unsupported CSI', function() {
