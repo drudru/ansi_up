@@ -146,51 +146,56 @@
 
       var self = this;
 
-      // ESC [ 38;5;n;o;p m ... foreground extend color
-      // ESC [ 48;5;n;o;p m ... background extend color
-      if (nums.length > 2 && (nums[0] === '38' || nums[0] === '48') && nums[1] === '5') {
-        var is_foreground = (nums[0] === '38');
-        var palette_index = parseInt(nums[2]);
-        if (palette_index >= 0 && palette_index <= 255) {
-          if (!use_classes) {
-            if (!PALETTE_COLORS) {
-              self.setup_palette.call(self);
-            }
-            if (is_foreground) {
-              self.fg = PALETTE_COLORS[palette_index];
-            } else {
-              self.bg = PALETTE_COLORS[palette_index];
-            }
-          } else {
-            var klass = (palette_index >= 16)
-                  ? ('ansi-palette-' + palette_index)
-                  : ANSI_COLORS[palette_index > 7 ? 1 : 0][palette_index % 8]['class'];
-            if (is_foreground) {
-              self.fg = klass;
-            } else {
-              self.bg = klass;
-            }
-          }
-        }
-      } else {
-        nums.map(function (num_str) {
-          var num = parseInt(num_str);
+      while (nums.length > 0) {
+        var num_str = nums.shift();
+        var num = parseInt(num_str);
 
-          if (isNaN(num) || num === 0) {
-            self.fg = self.bg = null;
-            self.bright = 0;
-          } else if (num === 1) {
-            self.bright = 1;
-          } else if ((num >= 30) && (num < 38)) {
-            self.fg = ANSI_COLORS[self.bright][(num % 10)][key];
-          } else if ((num >= 90) && (num < 98)) {
-            self.fg = ANSI_COLORS[1][(num % 10)][key];
-          } else if ((num >= 40) && (num < 48)) {
-            self.bg = ANSI_COLORS[0][(num % 10)][key];
-          } else if ((num >= 100) && (num < 108)) {
-            self.bg = ANSI_COLORS[1][(num % 10)][key];
-          }
-        });
+        if (isNaN(num) || num === 0) {
+          self.fg = self.bg = null;
+          self.bright = 0;
+        } else if (num === 1) {
+          self.bright = 1;
+        } else if ((num >= 30) && (num < 38)) {
+          self.fg = ANSI_COLORS[self.bright][(num % 10)][key];
+        } else if ((num >= 90) && (num < 98)) {
+          self.fg = ANSI_COLORS[1][(num % 10)][key];
+        } else if ((num >= 40) && (num < 48)) {
+          self.bg = ANSI_COLORS[0][(num % 10)][key];
+        } else if ((num >= 100) && (num < 108)) {
+          self.bg = ANSI_COLORS[1][(num % 10)][key];
+        } else if (num === 38 || num === 48) { // extend color (38=fg, 48=bg)
+          (function() {
+            var is_foreground = (num === 38);
+            if (nums.length >= 1) {
+              var mode = nums.shift();
+              if (mode === '5' && nums.length >= 1) { // palette color
+                var palette_index = parseInt(nums.shift());
+                if (palette_index >= 0 && palette_index <= 255) {
+                  if (!use_classes) {
+                    if (!PALETTE_COLORS) {
+                      self.setup_palette.call(self);
+                    }
+                    if (is_foreground) {
+                      self.fg = PALETTE_COLORS[palette_index];
+                    } else {
+                      self.bg = PALETTE_COLORS[palette_index];
+                    }
+                  } else {
+                    var klass = (palette_index >= 16)
+                          ? ('ansi-palette-' + palette_index)
+                          : ANSI_COLORS[palette_index > 7 ? 1 : 0][palette_index % 8]['class'];
+                    if (is_foreground) {
+                      self.fg = klass;
+                    } else {
+                      self.bg = klass;
+                    }
+                  }
+                }
+              // } else if(mode === '2' && num.length >= 3) { // true color (not supported yet)
+              }
+            }
+          })();
+        }
       }
 
       if ((self.fg === null) && (self.bg === null)) {

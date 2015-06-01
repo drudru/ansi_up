@@ -259,6 +259,20 @@ describe('ansi_up', function() {
           var l = ansi_up.ansi_to_html(start);
           l.should.eql(expected);
         });
+
+        it('combination of bold and palette', function() {
+          var start = "\033[1;38;5;171m" + "foo" + "\033[0m";
+          var expected = '<span style="color:rgb(215, 95, 255)">foo</span>';
+          var l = ansi_up.ansi_to_html(start);
+          l.should.eql(expected);
+        });
+
+        it('combination of palette and bold', function() {
+          var start = "\033[38;5;171;1m" + "foo" + "\033[0m";
+          var expected = '<span style="color:rgb(215, 95, 255)">foo</span>';
+          var l = ansi_up.ansi_to_html(start);
+          l.should.eql(expected);
+        });
       });
     });
 
@@ -360,6 +374,20 @@ describe('ansi_up', function() {
         it('palette, background', function() {
           var start = "\033[48;5;171m" + "foo" + "\033[0m";
           var expected = '<span class="ansi-palette-171-bg">foo</span>';
+          var l = ansi_up.ansi_to_html(start, {use_classes: true});
+          l.should.eql(expected);
+        });
+
+        it('combination of bold and palette', function() {
+          var start = "\033[1;38;5;171m" + "foo" + "\033[0m";
+          var expected = '<span class="ansi-palette-171-fg">foo</span>';
+          var l = ansi_up.ansi_to_html(start, {use_classes: true});
+          l.should.eql(expected);
+        });
+
+        it('combination of palette and bold', function() {
+          var start = "\033[38;5;171;1m" + "foo" + "\033[0m";
+          var expected = '<span class="ansi-palette-171-fg">foo</span>';
           var l = ansi_up.ansi_to_html(start, {use_classes: true});
           l.should.eql(expected);
         });
