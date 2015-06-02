@@ -34,12 +34,53 @@
             { color: "85, 255, 255",   'class': "ansi-bright-cyan"    },
             { color: "255, 255, 255",  'class': "ansi-bright-white"   }
           ]
-        ];
+        ],
+
+        // 256 Colors Palette
+        PALETTE_COLORS;
 
     function Ansi_Up() {
       this.fg = this.bg = null;
       this.bright = 0;
     }
+
+    Ansi_Up.prototype.setup_palette = function() {
+      PALETTE_COLORS = [];
+      // Index 0..15 : System color
+      (function() {
+        var i, j;
+        for (i = 0; i < 2; ++i) {
+          for (j = 0; j < 8; ++j) {
+            PALETTE_COLORS.push(ANSI_COLORS[i][j]['color']);
+          }
+        }
+      })();
+
+      // Index 16..231 : RGB 6x6x6
+      // https://gist.github.com/jasonm23/2868981#file-xterm-256color-yaml
+      (function() {
+        var levels = [0, 95, 135, 175, 215, 255];
+        var format = function (r, g, b) { return levels[r] + ', ' + levels[g] + ', ' + levels[b] };
+        var r, g, b;
+        for (r = 0; r < 6; ++r) {
+          for (g = 0; g < 6; ++g) {
+            for (b = 0; b < 6; ++b) {
+              PALETTE_COLORS.push(format.call(this, r, g, b));
+            }
+          }
+        }
+      })();
+
+      // Index 232..255 : Grayscale
+      (function() {
+        var level = 8;
+        var format = function(level) { return level + ', ' + level + ', ' + level };
+        var i;
+        for (i = 0; i < 24; ++i, level += 10) {
+          PALETTE_COLORS.push(format.call(this, level));
+        }
+      })();
+    };
 
     Ansi_Up.prototype.escape_for_html = function (txt) {
       return txt.replace(/[&<>]/gm, function(str) {
@@ -104,8 +145,9 @@
       }
 
       var self = this;
-      nums.map(function (num_str) {
 
+      while (nums.length > 0) {
+        var num_str = nums.shift();
         var num = parseInt(num_str);
 
         if (isNaN(num) || num === 0) {
@@ -121,8 +163,40 @@
           self.bg = ANSI_COLORS[0][(num % 10)][key];
         } else if ((num >= 100) && (num < 108)) {
           self.bg = ANSI_COLORS[1][(num % 10)][key];
+        } else if (num === 38 || num === 48) { // extend color (38=fg, 48=bg)
+          (function() {
+            var is_foreground = (num === 38);
+            if (nums.length >= 1) {
+              var mode = nums.shift();
+              if (mode === '5' && nums.length >= 1) { // palette color
+                var palette_index = parseInt(nums.shift());
+                if (palette_index >= 0 && palette_index <= 255) {
+                  if (!use_classes) {
+                    if (!PALETTE_COLORS) {
+                      self.setup_palette.call(self);
+                    }
+                    if (is_foreground) {
+                      self.fg = PALETTE_COLORS[palette_index];
+                    } else {
+                      self.bg = PALETTE_COLORS[palette_index];
+                    }
+                  } else {
+                    var klass = (palette_index >= 16)
+                          ? ('ansi-palette-' + palette_index)
+                          : ANSI_COLORS[palette_index > 7 ? 1 : 0][palette_index % 8]['class'];
+                    if (is_foreground) {
+                      self.fg = klass;
+                    } else {
+                      self.bg = klass;
+                    }
+                  }
+                }
+              // } else if(mode === '2' && num.length >= 3) { // true color (not supported yet)
+              }
+            }
+          })();
         }
-      });
+      }
 
       if ((self.fg === null) && (self.bg === null)) {
         return orig_txt;
