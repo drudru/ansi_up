@@ -40,7 +40,7 @@
         PALETTE_COLORS;
 
     function Ansi_Up() {
-      this.fg = this.bg = null;
+      this.fg = this.bg = this.fg_truecolor = this.bg_truecolor = null;
       this.bright = 0;
     }
 
@@ -191,7 +191,28 @@
                     }
                   }
                 }
-              // } else if(mode === '2' && num.length >= 3) { // true color (not supported yet)
+              } else if(mode === '2' && nums.length >= 3) { // true color
+                var r = parseInt(nums.shift());
+                var g = parseInt(nums.shift());
+                var b = parseInt(nums.shift());
+                if ((r >= 0 && r <= 255) && (g >= 0 && g <= 255) && (b >= 0 && b <= 255)) {
+                  var color = r + ', ' + g + ', ' + b;
+                  if (!use_classes) {
+                    if (is_foreground) {
+                      self.fg = color;
+                    } else {
+                      self.bg = color;
+                    }
+                  } else {
+                    if (is_foreground) {
+                      self.fg = 'ansi-truecolor';
+                      self.fg_truecolor = color;
+                    } else {
+                      self.bg = 'ansi-truecolor';
+                      self.bg_truecolor = color;
+                    }
+                  }
+                }
               }
             }
           })();
@@ -201,10 +222,27 @@
       if ((self.fg === null) && (self.bg === null)) {
         return orig_txt;
       } else {
-        var styles = classes = [];
+        var styles = [];
+        var classes = [];
+        var data = {};
+        var render_data = function (data) {
+          var fragments = [];
+          var key;
+          for (key in data) {
+            if (data.hasOwnProperty(key)) {
+              fragments.push('data-' + key + '="' + this.escape_for_html(data[key]) + '"');
+            }
+          }
+          return fragments.length > 0 ? ' ' + fragments.join(' ') : '';
+        };
+
         if (self.fg) {
           if (use_classes) {
             classes.push(self.fg + "-fg");
+            if (self.fg_truecolor !== null) {
+              data['ansi-truecolor-fg'] = self.fg_truecolor;
+              self.fg_truecolor = null;
+            }
           } else {
             styles.push("color:rgb(" + self.fg + ")");
           }
@@ -212,14 +250,18 @@
         if (self.bg) {
           if (use_classes) {
             classes.push(self.bg + "-bg");
+            if (self.bg_truecolor !== null) {
+              data['ansi-truecolor-bg'] = self.bg_truecolor;
+              self.bg_truecolor = null;
+            }
           } else {
             styles.push("background-color:rgb(" + self.bg + ")");
           }
         }
         if (use_classes) {
-          return "<span class=\"" + classes.join(' ') + "\">" + orig_txt + "</span>";
+          return '<span class="' + classes.join(' ') + '"' + render_data.call(self, data) + '>' + orig_txt + '</span>';
         } else {
-          return "<span style=\"" + styles.join(';') + "\">"  + orig_txt + "</span>";
+          return '<span style="' + styles.join(';') + '"' + render_data.call(self, data) + '>' + orig_txt + '</span>';
         }
       }
     };
