@@ -4,126 +4,126 @@ var should = require('should');
 
 describe('ansi_up', function() {
 
-	describe('escape_for_html', function() {
+  describe('escape_for_html', function() {
 
-		describe('ampersands', function() {
+    describe('ampersands', function() {
 
-			it('should escape a single ampersand', function() {
-				var start = "&";
-				var expected = "&amp;";
+      it('should escape a single ampersand', function() {
+        var start = "&";
+        var expected = "&amp;";
 
-				var l = ansi_up.escape_for_html(start);
-				l.should.eql(expected);
-			});
+        var l = ansi_up.escape_for_html(start);
+        l.should.eql(expected);
+      });
 
-			it('should escape some text with ampersands', function() {
-				var start = "abcd&efgh";
-				var expected = "abcd&amp;efgh";
+      it('should escape some text with ampersands', function() {
+        var start = "abcd&efgh";
+        var expected = "abcd&amp;efgh";
 
-				var l = ansi_up.escape_for_html(start);
-				l.should.eql(expected);
-			});
+        var l = ansi_up.escape_for_html(start);
+        l.should.eql(expected);
+      });
 
-			it('should escape multiple ampersands', function() {
-				var start = " & & ";
-				var expected = " &amp; &amp; ";
+      it('should escape multiple ampersands', function() {
+        var start = " & & ";
+        var expected = " &amp; &amp; ";
 
-				var l = ansi_up.escape_for_html(start);
-				l.should.eql(expected);
-			});
+        var l = ansi_up.escape_for_html(start);
+        l.should.eql(expected);
+      });
 
-			it('should escape an already escaped ampersand', function() {
-				var start = " &amp; ";
-				var expected = " &amp;amp; ";
+      it('should escape an already escaped ampersand', function() {
+        var start = " &amp; ";
+        var expected = " &amp;amp; ";
 
-				var l = ansi_up.escape_for_html(start);
-				l.should.eql(expected);
-			});
-		});
+        var l = ansi_up.escape_for_html(start);
+        l.should.eql(expected);
+      });
+    });
 
-		describe('less-than', function() {
+    describe('less-than', function() {
 
-			it('should escape a single less-than', function() {
-				var start = "<";
-				var expected = "&lt;";
+      it('should escape a single less-than', function() {
+        var start = "<";
+        var expected = "&lt;";
 
-				var l = ansi_up.escape_for_html(start);
-				l.should.eql(expected);
-			});
+        var l = ansi_up.escape_for_html(start);
+        l.should.eql(expected);
+      });
 
-			it('should escape some text with less-thans', function() {
-				var start = "abcd<efgh";
-				var expected = "abcd&lt;efgh";
+      it('should escape some text with less-thans', function() {
+        var start = "abcd<efgh";
+        var expected = "abcd&lt;efgh";
 
-				var l = ansi_up.escape_for_html(start);
-				l.should.eql(expected);
-			});
+        var l = ansi_up.escape_for_html(start);
+        l.should.eql(expected);
+      });
 
-			it('should escape multiple less-thans', function() {
-				var start = " < < ";
-				var expected = " &lt; &lt; ";
+      it('should escape multiple less-thans', function() {
+        var start = " < < ";
+        var expected = " &lt; &lt; ";
 
-				var l = ansi_up.escape_for_html(start);
-				l.should.eql(expected);
-			});
+        var l = ansi_up.escape_for_html(start);
+        l.should.eql(expected);
+      });
 
-		});
+    });
 
-		describe('greater-than', function() {
+    describe('greater-than', function() {
 
-			it('should escape a single greater-than', function() {
-				var start = ">";
-				var expected = "&gt;";
+      it('should escape a single greater-than', function() {
+        var start = ">";
+        var expected = "&gt;";
 
-				var l = ansi_up.escape_for_html(start);
-				l.should.eql(expected);
-			});
+        var l = ansi_up.escape_for_html(start);
+        l.should.eql(expected);
+      });
 
-			it('should escape some text with greater-thans', function() {
-				var start = "abcd>efgh";
-				var expected = "abcd&gt;efgh";
+      it('should escape some text with greater-thans', function() {
+        var start = "abcd>efgh";
+        var expected = "abcd&gt;efgh";
 
-				var l = ansi_up.escape_for_html(start);
-				l.should.eql(expected);
-			});
+        var l = ansi_up.escape_for_html(start);
+        l.should.eql(expected);
+      });
 
-			it('should escape multiple greater-thans', function() {
-				var start = " > > ";
-				var expected = " &gt; &gt; ";
+      it('should escape multiple greater-thans', function() {
+        var start = " > > ";
+        var expected = " &gt; &gt; ";
 
-				var l = ansi_up.escape_for_html(start);
-				l.should.eql(expected);
-			});
+        var l = ansi_up.escape_for_html(start);
+        l.should.eql(expected);
+      });
 
-		});
+    });
 
-		describe('mixed characters', function() {
+    describe('mixed characters', function() {
 
-			it('should escape a mix of characters that require escaping', function() {
-				var start = "<&>/\\'\"";
-				var expected = "&lt;&amp;&gt;/\\'\"";
+      it('should escape a mix of characters that require escaping', function() {
+        var start = "<&>/\\'\"";
+        var expected = "&lt;&amp;&gt;/\\'\"";
 
-				var l = ansi_up.escape_for_html(start);
-				l.should.eql(expected);
-			});
+        var l = ansi_up.escape_for_html(start);
+        l.should.eql(expected);
+      });
 
-		});
+    });
 
-	});
+  });
 
-	describe('linkify', function() {
+  describe('linkify', function() {
 
-			it('should linkify a url', function() {
-				var start = "http://link.to/me";
-				var expected = "<a href=\"http://link.to/me\">http://link.to/me</a>";
+      it('should linkify a url', function() {
+        var start = "http://link.to/me";
+        var expected = "<a href=\"http://link.to/me\">http://link.to/me</a>";
 
-				var l = ansi_up.linkify(start);
-				l.should.eql(expected);
-			});
+        var l = ansi_up.linkify(start);
+        l.should.eql(expected);
+      });
 
-	});
+  });
 
-	describe('ansi to html', function() {
+  describe('ansi to html', function() {
 
     describe('default colors', function() {
       it('should transform a foreground to html', function() {
