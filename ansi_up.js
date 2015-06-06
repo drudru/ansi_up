@@ -97,13 +97,21 @@
     };
 
     Ansi_Up.prototype.ansi_to_html = function (txt, options) {
-      var self = this;
+      return this.process(txt, options, true);
+    };
 
+    Ansi_Up.prototype.ansi_to_text = function (txt) {
+      var options = {};
+      return this.process(txt, options, false);
+    };
+
+    Ansi_Up.prototype.process = function (txt, options, markup) {
+      var self = this;
       var raw_text_chunks = txt.split(/\033\[/);
       var first_chunk = raw_text_chunks.shift(); // the first chunk is not the result of the split
 
       var color_chunks = raw_text_chunks.map(function (chunk) {
-        return self.process_chunk(chunk, options);
+        return self.process_chunk(chunk, options, markup);
       });
 
       color_chunks.unshift(first_chunk);
@@ -111,7 +119,7 @@
       return color_chunks.join('');
     };
 
-    Ansi_Up.prototype.process_chunk = function (text, options) {
+    Ansi_Up.prototype.process_chunk = function (text, options, markup) {
 
       // Are we using classes or styles?
       options = typeof options == 'undefined' ? {} : options;
@@ -141,6 +149,10 @@
       // We currently support only "SGR" (Select Graphic Rendition)
       // Simply ignore if not a SGR command.
       if (matches[1] !== '' || matches[3] !== 'm') {
+        return orig_txt;
+      }
+
+      if (!markup) {
         return orig_txt;
       }
 
@@ -240,6 +252,11 @@
       ansi_to_html: function (txt, options) {
         var a2h = new Ansi_Up();
         return a2h.ansi_to_html(txt, options);
+      },
+
+      ansi_to_text: function (txt) {
+        var a2h = new Ansi_Up();
+        return a2h.ansi_to_text(txt);
       },
 
       ansi_to_html_obj: function () {
