@@ -481,5 +481,22 @@ describe('ansi_up', function() {
       });
     });
   });
+  describe('ansi to text', function() {
+    it('should remove color sequence', function() {
+      var start = "foo \033[1;32mbar\033[0m baz";
+      var l = ansi_up.ansi_to_text(start);
+      l.should.eql("foo bar baz");
+    });
+    it('should remove unsupported sequence', function() {
+      var start = "foo \033[1Abar";
+      var l = ansi_up.ansi_to_text(start);
+      l.should.eql('foo bar');
+    });
+    it('should keep multiline', function() {
+      var start = "foo \033[1;32mbar\nbaz\033[0m qux";
+      var l = ansi_up.ansi_to_text(start);
+      l.should.eql("foo bar\nbaz qux");
+    });
+  });
 });
 
