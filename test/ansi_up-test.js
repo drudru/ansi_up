@@ -274,6 +274,27 @@ describe('ansi_up', function() {
           l.should.eql(expected);
         });
       });
+
+      describe('transform extend colors (true color)', function() {
+        it('foreground', function() {
+          var start = "\033[38;2;42;142;242m" + "foo" + "\033[0m";
+          var expected = '<span style="color:rgb(42, 142, 242)">foo</span>';
+          var l = ansi_up.ansi_to_html(start);
+          l.should.eql(expected);
+        });
+        it('background', function() {
+          var start = "\033[48;2;42;142;242m" + "foo" + "\033[0m";
+          var expected = '<span style="background-color:rgb(42, 142, 242)">foo</span>';
+          var l = ansi_up.ansi_to_html(start);
+          l.should.eql(expected);
+        });
+        it('both foreground and background', function() {
+          var start = "\033[38;2;42;142;242;48;2;1;2;3m" + "foo" + "\033[0m";
+          var expected = '<span style="color:rgb(42, 142, 242);background-color:rgb(1, 2, 3)">foo</span>';
+          var l = ansi_up.ansi_to_html(start);
+          l.should.eql(expected);
+        });
+      });
     });
 
     describe('themed colors', function() {
@@ -388,6 +409,27 @@ describe('ansi_up', function() {
         it('combination of palette and bold', function() {
           var start = "\033[38;5;171;1m" + "foo" + "\033[0m";
           var expected = '<span class="ansi-palette-171-fg">foo</span>';
+          var l = ansi_up.ansi_to_html(start, {use_classes: true});
+          l.should.eql(expected);
+        });
+      });
+
+      describe('transform extend colors (true color)', function() {
+        it('foreground', function() {
+          var start = "\033[38;2;42;142;242m" + "foo" + "\033[0m";
+          var expected = '<span class="ansi-truecolor-fg" data-ansi-truecolor-fg="42, 142, 242">foo</span>';
+          var l = ansi_up.ansi_to_html(start, {use_classes: true});
+          l.should.eql(expected);
+        });
+        it('background', function() {
+          var start = "\033[48;2;42;142;242m" + "foo" + "\033[0m";
+          var expected = '<span class="ansi-truecolor-bg" data-ansi-truecolor-bg="42, 142, 242">foo</span>';
+          var l = ansi_up.ansi_to_html(start, {use_classes: true});
+          l.should.eql(expected);
+        });
+        it('both foreground and background', function() {
+          var start = "\033[38;2;42;142;242;48;2;1;2;3m" + "foo" + "\033[0m";
+          var expected = '<span class="ansi-truecolor-fg ansi-truecolor-bg" data-ansi-truecolor-fg="42, 142, 242" data-ansi-truecolor-bg="1, 2, 3">foo</span>';
           var l = ansi_up.ansi_to_html(start, {use_classes: true});
           l.should.eql(expected);
         });
