@@ -217,6 +217,39 @@ describe('ansi_up', function() {
         l.should.eql(expected);
       });
 
+      it('should transform a foreground and background and reset foreground to html', function() {
+        var fg = 37;
+        var bg = 42;
+        var start = "\n\033[40m \033[49m\033[" + fg + ";" + bg + "m " + bg + " \033[39m foobar ";
+
+        var expected = "\n<span style=\"background-color:rgb(0, 0, 0)\"> </span><span style=\"color:rgb(255,255,255);background-color:rgb(0, 187, 0)\"> " + bg + " </span><span style=\"background-color:rgb(0, 187, 0)\"> foobar </span>";
+
+        var l = ansi_up.ansi_to_html(start);
+        l.should.eql(expected);
+      });
+
+      it('should transform a foreground and background and reset background to html', function() {
+        var fg = 37;
+        var bg = 42;
+        var start = "\n\033[40m \033[49m\033[" + fg + ";" + bg + "m " + fg + " \033[49m foobar ";
+
+        var expected = "\n<span style=\"background-color:rgb(0, 0, 0)\"> </span><span style=\"color:rgb(255,255,255);background-color:rgb(0, 187, 0)\"> " + fg + " </span><span style=\"color:rgb(255,255,255)\"> foobar </span>";
+
+        var l = ansi_up.ansi_to_html(start);
+        l.should.eql(expected);
+      });
+
+      it('should transform a foreground and background and reset them to html', function() {
+        var fg = 37;
+        var bg = 42;
+        var start = "\n\033[40m \033[49m\033[" + fg + ";" + bg + "m " + fg + ';' + bg + " \033[39;49m foobar ";
+
+        var expected = "\n<span style=\"background-color:rgb(0, 0, 0)\"> </span><span style=\"color:rgb(255,255,255);background-color:rgb(0, 187, 0)\"> " + fg + ';' + bg + " </span> foobar ";
+
+        var l = ansi_up.ansi_to_html(start);
+        l.should.eql(expected);
+      });
+
       describe('transform extend colors (palette)', function() {
         it('system color, foreground', function() {
           var start = "\033[38;5;1m" + "red" + "\033[0m";
