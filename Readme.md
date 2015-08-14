@@ -90,7 +90,8 @@ Thanks goes to the following contributors for their patches:
 - James R. White (<https://github.com/jamesrwhite>)
 - Aaron Stone (<https://github.com/sodabrew>)
 - Maximilian Antoni (<https://github.com/mantoni>)
-
+- Jim Bauwens (<https://github.com/jimbauwens>)
+- Jacek Jędrzejewski (<https://github.com/eXtreme>)
 
 ## License
 

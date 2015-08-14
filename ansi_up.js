@@ -167,6 +167,10 @@
           self.bright = 0;
         } else if (num === 1) {
           self.bright = 1;
+        } else if (num == 39) {
+          self.fg = null;
+        } else if (num == 49) {
+          self.bg = null;
         } else if ((num >= 30) && (num < 38)) {
           self.fg = ANSI_COLORS[self.bright][(num % 10)][key];
         } else if ((num >= 90) && (num < 98)) {
