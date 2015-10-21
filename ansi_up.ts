@@ -16,6 +16,11 @@ interface AU_Color
     class_name:string;
 }
 
+interface Ansi_Colors {
+    brightColors: AU_Color[];
+    normalColors: AU_Color[];
+}
+
 function rgx(tmplObj, ...subst) {
     // Use the 'raw' value so we don't have to double backslash in a template string
     let regexText:string = tmplObj.raw[0];
@@ -30,40 +35,34 @@ export default class AnsiUp
 {
     VERSION = "2.0.0";
 
-    ansi_colors =
-    [
-        // Normal colors
-        [
-        { rgb: [  0,   0,   0],  class_name: "ansi-black"   },
-        { rgb: [187,   0,   0],  class_name: "ansi-red"     },
-        { rgb: [  0, 187,   0],  class_name: "ansi-green"   },
-        { rgb: [187, 187,   0],  class_name: "ansi-yellow"  },
-        { rgb: [  0,   0, 187],  class_name: "ansi-blue"    },
-        { rgb: [187,   0, 187],  class_name: "ansi-magenta" },
-        { rgb: [  0, 187, 187],  class_name: "ansi-cyan"    },
-        { rgb: [255, 255, 255],  class_name: "ansi-white"   }
-        ],
-
-        // Bright colors
-        [
-        { rgb: [ 85,  85,  85],  class_name: "ansi-bright-black"   },
-        { rgb: [255,  85,  85],  class_name: "ansi-bright-red"     },
-        { rgb: [  0, 255,   0],  class_name: "ansi-bright-green"   },
-        { rgb: [255, 255,  85],  class_name: "ansi-bright-yellow"  },
-        { rgb: [ 85,  85, 255],  class_name: "ansi-bright-blue"    },
-        { rgb: [255,  85, 255],  class_name: "ansi-bright-magenta" },
-        { rgb: [ 85, 255, 255],  class_name: "ansi-bright-cyan"    },
-        { rgb: [255, 255, 255],  class_name: "ansi-bright-white"   }
-        ]
-    ];
+       private ansi_colors: Ansi_Colors = {
+        brightColors: [
+            { rgb: [85, 85, 85], class_name: "ansi-bright-black" },
+            { rgb: [255, 85, 85], class_name: "ansi-bright-red" },
+            { rgb: [0, 255, 0], class_name: "ansi-bright-green" },
+            { rgb: [255, 255, 85], class_name: "ansi-bright-yellow" },
+            { rgb: [85, 85, 255], class_name: "ansi-bright-blue" },
+            { rgb: [255, 85, 255], class_name: "ansi-bright-magenta" },
+            { rgb: [85, 255, 255], class_name: "ansi-bright-cyan" },
+            { rgb: [255, 255, 255], class_name: "ansi-bright-white" }],
+        normalColors: [
+            { rgb: [0, 0, 0], class_name: "ansi-black" },
+            { rgb: [187, 0, 0], class_name: "ansi-red" },
+            { rgb: [0, 187, 0], class_name: "ansi-green" },
+            { rgb: [187, 187, 0], class_name: "ansi-yellow" },
+            { rgb: [0, 0, 187], class_name: "ansi-blue" },
+            { rgb: [187, 0, 187], class_name: "ansi-magenta" },
+            { rgb: [0, 187, 187], class_name: "ansi-cyan" },
+            { rgb: [255, 255, 255], class_name: "ansi-white" })]
+    };
 
     // 256 Colors Palette
     // CSS RGB strings - ex. "255, 255, 255"
-    palette_256:AU_Color[];
+    private palette_256:AU_Color[];
 
-    fg:AU_Color;
-    bg:AU_Color;
-    bright:boolean;
+    private fg:AU_Color;
+    private bg:AU_Color;
+    private bright:boolean;
 
     private _use_classes:boolean;
     private _ignore_invalid:boolean;
@@ -71,7 +70,7 @@ export default class AnsiUp
 
     constructor()
     {
-        this.setup_256_palette();
+        
         this._use_classes = false;
         
         this.bright = false;
@@ -104,10 +103,11 @@ export default class AnsiUp
         this.palette_256 = [];
 
         // Index 0..15 : Ansi-Colors
-        this.ansi_colors.forEach( palette => {
-            palette.forEach( rec => {
-                this.palette_256.push(rec);
-            });
+         this.ansi_colors.brightColors.forEach(rec => {
+            this.palette_256.push(rec);
+        });
+        this.ansi_colors.normalColors.forEach(rec => {
+            this.palette_256.push(rec);
         });
 
         // Index 16..231 : RGB 6x6x6
@@ -243,6 +243,9 @@ export default class AnsiUp
       // and the following text
       //
 
+        //the palette_256 is only used in this method.  No need to do the work if you dont have to. 
+      this.setup_256_palette();
+      
       // Lazy regex creation to keep nicely commented code here
       if (!this._sgr_regex) {
           this._sgr_regex = rgx`
@@ -292,15 +295,16 @@ export default class AnsiUp
           } else if (num == 49) {
               this.bg = null;
           } else if ((num >= 30) && (num < 38)) {
-              let bidx = this.bright ? 1 : 0;
-              this.fg = this.ansi_colors[bidx][(num - 30)];
-          } else if ((num >= 90) && (num < 98)) {
-              this.fg = this.ansi_colors[1][(num - 90)];
-          } else if ((num >= 40) && (num < 48)) {
-              this.bg = this.ansi_colors[0][(num - 40)];
-          } else if ((num >= 100) && (num < 108)) {
-              this.bg = this.ansi_colors[1][(num - 100)];
-        } else if (num === 38 || num === 48) {
+             this.fg = this.bright
+                    ? this.ansi_colors.brightColors[(num - 30)]
+                    : this.ansi_colors.normalColors[(num - 30)];
+            } else if ((num >= 90) && (num < 98)) {
+                this.fg = this.ansi_colors.brightColors[(num - 90)];
+            } else if ((num >= 40) && (num < 48)) {
+                this.bg = this.ansi_colors.normalColors[(num - 40)];
+            } else if ((num >= 100) && (num < 108)) {
+                this.bg = this.ansi_colors.brightColors[(num - 100)];
+            } else if (num === 38 || num === 48) {
             
             // extended set foreground/background color
             
