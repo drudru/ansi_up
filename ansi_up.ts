@@ -61,27 +61,23 @@ export default class AnsiUp
     // CSS RGB strings - ex. "255, 255, 255"
     palette_256:AU_Color[];
 
-    fg:AU_Color;
-    bg:AU_Color;
-    bright:boolean;
+    fg:AU_Color = null;
+    bg:AU_Color = null;
+    bright:boolean = false;
 
-    private _use_classes:boolean;
-    private _ignore_invalid:boolean;
+    private _use_classes:boolean = false;
+    private _ignore_invalid:boolean = true;
     private _sgr_regex:RegExp;
 
     constructor()
     {
         this.setup_256_palette();
-        this._use_classes = false;
-        
-        this.bright = false;
-        this.fg = this.bg = null;
-        this._ignore_invalid = true;
+       
     }
     
     set use_classes(arg:boolean)
     {
-        this._use_classes = true;
+        this._use_classes = arg;
     }
     
     get use_classes():boolean
@@ -91,7 +87,7 @@ export default class AnsiUp
     
     set ignore_invalid(arg:boolean)
     {
-        this._ignore_invalid = true;
+        this._ignore_invalid = arg;
     }
     
     get ignore_invalid():boolean
