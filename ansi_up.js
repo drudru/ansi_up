@@ -4,6 +4,16 @@
 // license : MIT
 // http://github.com/drudru/ansi_up
 
+var Convert = require('ansi-to-html');
+var convert = new Convert();
+
+console.log(convert.toHtml('\x1b[42mgreen\x1b[46mcyan'));
+
+/*
+    prints:
+    <span style="color:#000">black<span style="color:#AAA">white</span></span>
+*/
+
 (function (Date, undefined) {
 
     var ansi_up,
