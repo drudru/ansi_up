@@ -100,6 +100,12 @@
       return this.process(txt, options, true);
     };
 
+    Ansi_Up.prototype.ansi_to_json = function (txt, options) {
+      options = options || {};
+      options.json = true;
+      return this.process(txt, options, true);
+    };
+
     Ansi_Up.prototype.ansi_to_text = function (txt) {
       var options = {};
       return this.process(txt, options, false);
@@ -114,17 +120,41 @@
         return self.process_chunk(chunk, options, markup);
       });
 
-      color_chunks.unshift(first_chunk);
+      if (options && options.json) {
+          var first = self.process_chunk_json("");
+          first.content = first_chunk;
+          color_chunks.unshift(first);
+          if (options.remove_empty) {
+              color_chunks = color_chunks.filter(function (c) {
+                  return !c.isEmpty();
+              });
+          }
+          return color_chunks;
+      } else {
+          color_chunks.unshift(first_chunk);
+      }
 
       return color_chunks.join('');
     };
 
-    Ansi_Up.prototype.process_chunk = function (text, options, markup) {
+    Ansi_Up.prototype.process_chunk_json = function (text, options, markup) {
 
       // Are we using classes or styles?
       options = typeof options == 'undefined' ? {} : options;
-      var use_classes = typeof options.use_classes != 'undefined' && options.use_classes;
-      var key = use_classes ? 'class' : 'color';
+      var use_classes = options.use_classes = typeof options.use_classes != 'undefined' && options.use_classes;
+      var key = options.key = use_classes ? 'class' : 'color';
+
+      var result = {
+          content: text,
+          fg: null,
+          bg: null,
+          fg_truecolor: null,
+          bg_truecolor: null,
+          was_processed: false,
+          isEmpty: function () {
+              return !this.content;
+          }
+      };
 
       // Each 'chunk' is the text after the CSI (ESC + '[') and before the next CSI/EOF.
       //
@@ -141,19 +171,19 @@
       // the other group's commands.
       var matches = text.match(/^([!\x3c-\x3f]*)([\d;]*)([\x20-\x2c]*[\x40-\x7e])([\s\S]*)/m);
 
-      if (!matches) return text;
+      if (!matches) return result;
 
-      var orig_txt = matches[4];
+      var orig_txt = result.content = matches[4];
       var nums = matches[2].split(';');
 
       // We currently support only "SGR" (Select Graphic Rendition)
       // Simply ignore if not a SGR command.
       if (matches[1] !== '' || matches[3] !== 'm') {
-        return orig_txt;
+        return result;
       }
 
       if (!markup) {
-        return orig_txt;
+        return result;
       }
 
       var self = this;
@@ -236,49 +266,73 @@
       }
 
       if ((self.fg === null) && (self.bg === null)) {
-        return orig_txt;
+        return result;
       } else {
         var styles = [];
         var classes = [];
         var data = {};
-        var render_data = function (data) {
-          var fragments = [];
-          var key;
-          for (key in data) {
-            if (data.hasOwnProperty(key)) {
-              fragments.push('data-' + key + '="' + this.escape_for_html(data[key]) + '"');
-            }
-          }
-          return fragments.length > 0 ? ' ' + fragments.join(' ') : '';
-        };
 
-        if (self.fg) {
-          if (use_classes) {
-            classes.push(self.fg + "-fg");
-            if (self.fg_truecolor !== null) {
-              data['ansi-truecolor-fg'] = self.fg_truecolor;
-              self.fg_truecolor = null;
-            }
-          } else {
-            styles.push("color:rgb(" + self.fg + ")");
+        result.fg = self.fg;
+        result.bg = self.bg;
+        result.fg_truecolor = self.fg_truecolor;
+        result.bg_truecolor = self.bg_truecolor;
+        result.was_processed = true;
+
+        return result;
+      }
+    };
+
+    Ansi_Up.prototype.process_chunk = function (text, options, markup) {
+
+      var self = this;
+      options = options || {};
+      var jsonChunk = this.process_chunk_json(text, options, markup);
+      if (options.json) { return jsonChunk; }
+      if (jsonChunk.isEmpty()) { return ""; }
+      if (!jsonChunk.was_processed) { return jsonChunk.content; }
+      var key = options.key;
+      var use_classes = options.use_classes;
+
+      var styles = [];
+      var classes = [];
+      var data = {};
+      var render_data = function (data) {
+        var fragments = [];
+        var key;
+        for (key in data) {
+          if (data.hasOwnProperty(key)) {
+            fragments.push('data-' + key + '="' + this.escape_for_html(data[key]) + '"');
           }
         }
-        if (self.bg) {
-          if (use_classes) {
-            classes.push(self.bg + "-bg");
-            if (self.bg_truecolor !== null) {
-              data['ansi-truecolor-bg'] = self.bg_truecolor;
-              self.bg_truecolor = null;
-            }
-          } else {
-            styles.push("background-color:rgb(" + self.bg + ")");
-          }
-        }
+        return fragments.length > 0 ? ' ' + fragments.join(' ') : '';
+      };
+
+      if (jsonChunk.fg) {
         if (use_classes) {
-          return '<span class="' + classes.join(' ') + '"' + render_data.call(self, data) + '>' + orig_txt + '</span>';
+          classes.push(jsonChunk.fg + "-fg");
+          if (jsonChunk.fg_truecolor !== null) {
+            data['ansi-truecolor-fg'] = jsonChunk.fg_truecolor;
+            jsonChunk.fg_truecolor = null;
+          }
         } else {
-          return '<span style="' + styles.join(';') + '"' + render_data.call(self, data) + '>' + orig_txt + '</span>';
+          styles.push("color:rgb(" + jsonChunk.fg + ")");
         }
+      }
+      if (jsonChunk.bg) {
+        if (use_classes) {
+          classes.push(jsonChunk.bg + "-bg");
+          if (jsonChunk.bg_truecolor !== null) {
+            data['ansi-truecolor-bg'] = jsonChunk.bg_truecolor;
+            jsonChunk.bg_truecolor = null;
+          }
+        } else {
+          styles.push("background-color:rgb(" + jsonChunk.bg + ")");
+        }
+      }
+      if (use_classes) {
+        return '<span class="' + classes.join(' ') + '"' + render_data.call(self, data) + '>' + jsonChunk.content + '</span>';
+      } else {
+        return '<span style="' + styles.join(';') + '"' + render_data.call(self, data) + '>' + jsonChunk.content + '</span>';
       }
     };
 
@@ -298,6 +352,11 @@
       ansi_to_html: function (txt, options) {
         var a2h = new Ansi_Up();
         return a2h.ansi_to_html(txt, options);
+      },
+
+      ansi_to_json: function (txt, options) {
+        var a2h = new Ansi_Up();
+        return a2h.ansi_to_json(txt, options);
       },
 
       ansi_to_text: function (txt) {

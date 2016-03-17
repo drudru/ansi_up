@@ -531,5 +531,17 @@ describe('ansi_up', function() {
       l.should.eql("foo bar\nbaz qux");
     });
   });
+  describe('ansi to json', function() {
+    it('should convert ansi to json', function() {
+      var attr = 0;
+      var fg = 32;
+      var start = "\033[" + fg + "m " + fg + " \033[0m";
+      var output = ansi_up.ansi_to_json(start, {
+          remove_empty: true
+      });
+      output[0].fg.should.eql("0, 187, 0");
+      output[0].content.should.eql(" 32 ");
+    });
+  });
 });
 
