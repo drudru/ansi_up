@@ -90,9 +90,12 @@
       });
     };
 
-    Ansi_Up.prototype.linkify = function (txt) {
+    Ansi_Up.prototype.linkify = function (txt, options) {
+      options = typeof options == 'undefined' ? {} : options;
+      var new_tab = typeof options.new_tab != 'undefined' && options.new_tab;
+
       return txt.replace(/(https?:\/\/[^\s]+)/gm, function(str) {
-        return "<a href=\"" + str + "\">" + str + "</a>";
+        return "<a href=\"" + str + "\" target=\"" + (new_tab ? "_blank" : "_self") + "\">" + str + "</a>";
       });
     };
 
@@ -290,9 +293,9 @@
         return a2h.escape_for_html(txt);
       },
 
-      linkify: function (txt) {
+      linkify: function (txt, options) {
         var a2h = new Ansi_Up();
-        return a2h.linkify(txt);
+        return a2h.linkify(txt, options);
       },
 
       ansi_to_html: function (txt, options) {

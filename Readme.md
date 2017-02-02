@@ -66,9 +66,11 @@ The default style uses colors that are very close to the prescribed standard. Th
 
 This does the minimum escaping of text to make it compliant with HTML. In particular, the '&','<', and '>' characters are escaped. This should be run prior to ansi_to_html.
 
-#### linkify (txt)
+#### linkify (txt, options)
 
 This replaces any links in the text with anchor tags that display the link. The links should have at least one whitespace character surrounding it. Also, you should apply this after you have run ansi_to_html on the text.
+
+By default links will open in the current context. To open in a new tab, set 'new_tab: true' in the options argument.
 
 ## Building
 
