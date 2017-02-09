@@ -1,35 +1,34 @@
 {
-    "name": "ansi_up",
-    "version": "2.0.0",
-    "description": "Convert ansi sequences in strings to colorful HTML",
-    "keywords": ["ansi", "html"],
-    "author": "drudru <drudru@gmail.com>",
-    "main": "./ansi_up.js",
-    "repository" :
-        {
-            "type" : "git",
-            "url" : "git://github.com/drudru/ansi_up.git"
-        },
-    "bugs" : 
-        {
-            "url" : "http://github.com/drudru/ansi_up/issues" 
-        },
-	"engines": 
-        {
-            "node": "*"
-        },
-	"scripts": 
-        {
-            "test": "gulp test",
-            "build": "gulp typescript"
-        },
-	"devDependencies":
-        {
-            "typescript": "^1.6",
-            "tsd": "^0.6",
-            "gulp": "^3.9.0",
-            "gulp-typescript": "^2.8.0",
-            "mocha": "*",
-            "should": "*"
-        }
+  "name": "ansi_up",
+  "version": "2.0.0",
+  "description": "Convert ansi sequences in strings to colorful HTML",
+  "keywords": [
+    "ansi",
+    "html"
+  ],
+  "author": "drudru <drudru@gmail.com>",
+  "main": "./ansi_up.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/drudru/ansi_up.git"
+  },
+  "bugs": {
+    "url": "http://github.com/drudru/ansi_up/issues"
+  },
+  "engines": {
+    "node": "*"
+  },
+  "scripts": {
+    "test": "gulp test",
+    "build": "gulp typescript"
+  },
+  "devDependencies": {
+    "@types/node": "^7.0.5",
+    "gulp": "^3.9.0",
+    "gulp-typescript": "^2.8.0",
+    "mocha": "*",
+    "should": "*",
+    "tsd": "^0.6",
+    "typescript": "^2.1"
+  }
 }

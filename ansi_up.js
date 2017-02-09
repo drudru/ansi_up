@@ -1,7 +1,9 @@
-// ansi_up.js
-// author : Dru Nelson
-// license : MIT
-// http://github.com/drudru/ansi_up
+/*! ansi_up.js
+ *  author : Dru Nelson
+ *  license : MIT
+ *  http://github.com/drudru/ansi_up
+ */
+"use strict";
 function rgx(tmplObj) {
     var subst = [];
     for (var _i = 1; _i < arguments.length; _i++) {
@@ -10,7 +12,7 @@ function rgx(tmplObj) {
     var regexText = tmplObj.raw[0];
     var wsrgx = /^\s+|\s+\n|\s+#[\s\S]+?\n/gm;
     var txt2 = regexText.replace(wsrgx, '');
-    return new RegExp(txt2);
+    return new RegExp(txt2, 'm');
 }
 var AnsiUp = (function () {
     function AnsiUp() {
@@ -123,31 +125,35 @@ var AnsiUp = (function () {
     AnsiUp.prototype.wrap_text = function (txt) {
         if (txt.length == 0)
             return txt;
-        if (this.fg == null && this.bg == null)
+        if (this.bright == false && this.fg == null && this.bg == null)
             return txt;
         var styles = [];
         var classes = [];
+        var fg = this.fg;
+        var bg = this.bg;
+        if (fg == null && this.bright)
+            fg = this.ansi_colors[1][7];
         if (this._use_classes == false) {
-            if (this.fg)
-                styles.push("color:rgb(" + this.fg.rgb.join(',') + ")");
-            if (this.bg)
-                styles.push("background-color:rgb(" + this.bg.rgb + ")");
+            if (fg)
+                styles.push("color:rgb(" + fg.rgb.join(',') + ")");
+            if (bg)
+                styles.push("background-color:rgb(" + bg.rgb + ")");
         }
         else {
-            if (this.fg) {
-                if (this.fg.class_name != 'truecolor') {
-                    classes.push(this.fg.class_name + "-fg");
+            if (fg) {
+                if (fg.class_name != 'truecolor') {
+                    classes.push(fg.class_name + "-fg");
                 }
                 else {
-                    styles.push("color:rgb(" + this.fg.rgb.join(',') + ")");
+                    styles.push("color:rgb(" + fg.rgb.join(',') + ")");
                 }
             }
-            if (this.bg) {
-                if (this.bg.class_name != 'truecolor') {
-                    classes.push(this.bg.class_name + "-bg");
+            if (bg) {
+                if (bg.class_name != 'truecolor') {
+                    classes.push(bg.class_name + "-bg");
                 }
                 else {
-                    styles.push("background-color:rgb(" + this.bg.rgb.join(',') + ")");
+                    styles.push("background-color:rgb(" + bg.rgb.join(',') + ")");
                 }
             }
         }
@@ -160,29 +166,8 @@ var AnsiUp = (function () {
         return "<span" + class_string + style_string + ">" + txt + "</span>";
     };
     AnsiUp.prototype.process_ansi = function (block) {
-        // This must only be called with a string that started with a CSI (the string split above)
-        // The CSI must not be in the string. We consider this string to be a 'block'.
-        // It has an ANSI command at the front that affects the text that follows it.
-        //
-        // This regex is designed to parse an ANSI terminal CSI command. To be more specific,
-        // we follow the XTERM conventions vs. the various other "standards".
-        // http://invisible-island.net/xterm/ctlseqs/ctlseqs.html
-        //
-        // All ansi codes are typically in the following format. We parse it and focus
-        // specifically on the graphics commands (SGR)
-        //
-        // CONTROL-SEQUENCE-INTRODUCER CSI             (ESC, '[') 
-        // PRIVATE-MODE-CHAR                           (!, <, >, ?)
-        // Numeric parameters separated by semicolons  ('0' - '9', ';')
-        // Intermediate-modifiers                      (0x20 - 0x2f)
-        // COMMAND-CHAR                                (0x40 - 0x7e)
-        // 
-        // We use a regex to parse into capture groups the PRIVATE-MODE-CHAR to the COMMAND
-        // and the following text
-        //
         if (!this._sgr_regex) {
             this._sgr_regex = (_a = ["\n              ^                           # beginning of line\n              ([!<-?]?)             # a private-mode char (!, <, =, >, ?)\n              ([d;]*)                    # any digits or semicolons\n              ([ -/]?               # an intermediate modifier\n               [@-~])               # the command\n              ([sS]*)                   # any text following this CSI sequence\n              "], _a.raw = ["\n              ^                           # beginning of line\n              ([!\\x3c-\\x3f]?)             # a private-mode char (!, <, =, >, ?)\n              ([\\d;]*)                    # any digits or semicolons\n              ([\\x20-\\x2f]?               # an intermediate modifier\n               [\\x40-\\x7e])               # the command\n              ([\\s\\S]*)                   # any text following this CSI sequence\n              "], rgx(_a));
-            this._sgr_regex.multiline = true;
         }
         var matches = block.match(this._sgr_regex);
         if (!matches) {
@@ -255,6 +240,7 @@ var AnsiUp = (function () {
         var _a;
     };
     return AnsiUp;
-})();
+}());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = AnsiUp;
+//# sourceMappingURL=ansi_up.js.map
