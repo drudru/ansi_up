@@ -1,109 +1,121 @@
-var ansi_up = require('../ansi_up');
+var AU = require('../ansi_up');
+var AnsiUp = AU.default;
 
 var should = require('should');
 
-describe('ansi_up', function() {
+describe('ansi_up', function () {
 
-  describe('escape_for_html', function() {
+  describe('escape_for_html', function () {
 
-    describe('ampersands', function() {
+    describe('ampersands', function () {
 
-      it('should escape a single ampersand', function() {
+      it('should escape a single ampersand', function () {
         var start = "&";
         var expected = "&amp;";
 
-        var l = ansi_up.escape_for_html(start);
+        var au = new AnsiUp();
+        var l = au.escape_for_html(start);
         l.should.eql(expected);
       });
 
-      it('should escape some text with ampersands', function() {
+      it('should escape some text with ampersands', function () {
         var start = "abcd&efgh";
         var expected = "abcd&amp;efgh";
 
-        var l = ansi_up.escape_for_html(start);
+        var au = new AnsiUp();
+        var l = au.escape_for_html(start);
         l.should.eql(expected);
       });
 
-      it('should escape multiple ampersands', function() {
+      it('should escape multiple ampersands', function () {
         var start = " & & ";
         var expected = " &amp; &amp; ";
 
-        var l = ansi_up.escape_for_html(start);
+        var au = new AnsiUp();
+        var l = au.escape_for_html(start);
         l.should.eql(expected);
       });
 
-      it('should escape an already escaped ampersand', function() {
+      it('should escape an already escaped ampersand', function () {
         var start = " &amp; ";
         var expected = " &amp;amp; ";
 
-        var l = ansi_up.escape_for_html(start);
+        var au = new AnsiUp();
+        var l = au.escape_for_html(start);
         l.should.eql(expected);
       });
     });
 
-    describe('less-than', function() {
+    describe('less-than', function () {
 
-      it('should escape a single less-than', function() {
+      it('should escape a single less-than', function () {
         var start = "<";
         var expected = "&lt;";
 
-        var l = ansi_up.escape_for_html(start);
+        var au = new AnsiUp();
+        var l = au.escape_for_html(start);
         l.should.eql(expected);
       });
 
-      it('should escape some text with less-thans', function() {
+      it('should escape some text with less-thans', function () {
         var start = "abcd<efgh";
         var expected = "abcd&lt;efgh";
 
-        var l = ansi_up.escape_for_html(start);
+        var au = new AnsiUp();
+        var l = au.escape_for_html(start);
         l.should.eql(expected);
       });
 
-      it('should escape multiple less-thans', function() {
+      it('should escape multiple less-thans', function () {
         var start = " < < ";
         var expected = " &lt; &lt; ";
 
-        var l = ansi_up.escape_for_html(start);
+        var au = new AnsiUp();
+        var l = au.escape_for_html(start);
         l.should.eql(expected);
       });
 
     });
 
-    describe('greater-than', function() {
+    describe('greater-than', function () {
 
-      it('should escape a single greater-than', function() {
+      it('should escape a single greater-than', function () {
         var start = ">";
         var expected = "&gt;";
 
-        var l = ansi_up.escape_for_html(start);
+        var au = new AnsiUp();
+        var l = au.escape_for_html(start);
         l.should.eql(expected);
       });
 
-      it('should escape some text with greater-thans', function() {
+      it('should escape some text with greater-thans', function () {
         var start = "abcd>efgh";
         var expected = "abcd&gt;efgh";
 
-        var l = ansi_up.escape_for_html(start);
+        var au = new AnsiUp();
+        var l = au.escape_for_html(start);
         l.should.eql(expected);
       });
 
-      it('should escape multiple greater-thans', function() {
+      it('should escape multiple greater-thans', function () {
         var start = " > > ";
         var expected = " &gt; &gt; ";
 
-        var l = ansi_up.escape_for_html(start);
+        var au = new AnsiUp();
+        var l = au.escape_for_html(start);
         l.should.eql(expected);
       });
 
     });
 
-    describe('mixed characters', function() {
+    describe('mixed characters', function () {
 
-      it('should escape a mix of characters that require escaping', function() {
+      it('should escape a mix of characters that require escaping', function () {
         var start = "<&>/\\'\"";
         var expected = "&lt;&amp;&gt;/\\'\"";
 
-        var l = ansi_up.escape_for_html(start);
+        var au = new AnsiUp();
+        var l = au.escape_for_html(start);
         l.should.eql(expected);
       });
 
@@ -111,261 +123,290 @@ describe('ansi_up', function() {
 
   });
 
-  describe('linkify', function() {
+  describe('linkify', function () {
 
-      it('should linkify a url', function() {
-        var start = "http://link.to/me";
-        var expected = "<a href=\"http://link.to/me\">http://link.to/me</a>";
+    it('should linkify a url', function () {
+      var start = "http://link.to/me";
+      var expected = "<a href=\"http://link.to/me\">http://link.to/me</a>";
 
-        var l = ansi_up.linkify(start);
-        l.should.eql(expected);
-      });
+      var au = new AnsiUp();
+      var l = au.linkify(start);
+      l.should.eql(expected);
+    });
 
   });
 
-  describe('ansi to html', function() {
+  describe('ansi to html', function () {
 
-    describe('default colors', function() {
-      it('should transform a foreground to html', function() {
+    describe('default colors', function () {
+      it('should transform a foreground to html', function () {
         var attr = 0;
         var fg = 32;
         var start = "\033[" + fg + "m " + fg + " \033[0m";
 
-        var expected = "<span style=\"color:rgb(0, 187, 0)\"> " + fg + " </span>";
+        var expected = "<span style=\"color:rgb(0,187,0)\"> " + fg + " </span>";
 
-        var l = ansi_up.ansi_to_html(start);
+        var au = new AnsiUp();
+        var l = au.ansi_to_html(start);
         l.should.eql(expected);
       });
 
 
-      it('should transform a attr;foreground to html', function() {
+      it('should transform a attr;foreground to html', function () {
         var attr = 0;
         var fg = 32;
         var start = "\033[" + attr + ";" + fg + "m " + fg + "  \033[0m";
 
-        var expected = "<span style=\"color:rgb(0, 187, 0)\"> " + fg + "  </span>";
+        var expected = "<span style=\"color:rgb(0,187,0)\"> " + fg + "  </span>";
 
-        var l = ansi_up.ansi_to_html(start);
+        var au = new AnsiUp();
+        var l = au.ansi_to_html(start);
         l.should.eql(expected);
       });
 
-      it('should transform an empty code to a normal/reset html', function() {
+      it('should transform an empty code to a normal/reset html', function () {
         var attr = 0;
         var fg = 32;
         var start = "\033[" + attr + ";" + fg + "m " + fg + "  \033[m x";
 
-        var expected = "<span style=\"color:rgb(0, 187, 0)\"> " + fg + "  </span> x";
+        var expected = "<span style=\"color:rgb(0,187,0)\"> " + fg + "  </span> x";
 
-        var l = ansi_up.ansi_to_html(start);
+        var au = new AnsiUp();
+        var l = au.ansi_to_html(start);
         l.should.eql(expected);
       });
 
-      it('should transform a bold attr;foreground to html', function() {
+      it('should transform a bold attr;foreground to html', function () {
         var attr = 1;
         var fg = 32;
         var start = "\033[" + attr + ";" + fg + "m " + attr + ";" + fg + " \033[0m";
 
-        var expected = "<span style=\"color:rgb(0, 255, 0)\"> " + attr + ";" + fg + " </span>";
+        var expected = "<span style=\"color:rgb(0,255,0)\"> " + attr + ";" + fg + " </span>";
 
-        var l = ansi_up.ansi_to_html(start);
+        var au = new AnsiUp();
+        var l = au.ansi_to_html(start);
         l.should.eql(expected);
       });
 
-      it('should transform a bold-foreground to html', function() {
+      it('should transform a bold-foreground to html', function () {
         var fg = 92;
         var start = "\033[" + fg + "m " + fg + " \033[0m";
 
-        var expected = "<span style=\"color:rgb(0, 255, 0)\"> " + fg + " </span>";
+        var expected = "<span style=\"color:rgb(0,255,0)\"> " + fg + " </span>";
 
-        var l = ansi_up.ansi_to_html(start);
+        var au = new AnsiUp();
+        var l = au.ansi_to_html(start);
         l.should.eql(expected);
       });
 
-      it('should transform a bold attr;background;foreground to html', function() {
+      it('should transform a bold attr;background;foreground to html', function () {
         var attr = 1;
         var fg = 33;
         var bg = 42;
         var start = "\033[" + attr + ";" + bg + ";" + fg + "m " + attr + ";" + bg + ";" + fg + " \033[0m";
 
-        var expected = "<span style=\"color:rgb(255, 255, 85);background-color:rgb(0, 187, 0)\"> " + attr + ";" + bg + ";" + fg + " </span>";
+        var expected = "<span style=\"color:rgb(255,255,85);background-color:rgb(0,187,0)\"> " + attr + ";" + bg + ";" + fg + " </span>";
 
-        var l = ansi_up.ansi_to_html(start);
+        var au = new AnsiUp();
+        var l = au.ansi_to_html(start);
         l.should.eql(expected);
       });
 
-      it('should transform a bold-background;foreground to html', function() {
+      it('should transform a bold-background;foreground to html', function () {
         var fg = 33;
         var bg = 102;
         var start = "\033[" + bg + ";" + fg + "m " + bg + ";" + fg + " \033[0m";
 
-        var expected = "<span style=\"color:rgb(187, 187, 0);background-color:rgb(0, 255, 0)\"> " + bg + ";" + fg + " </span>";
+        var expected = "<span style=\"color:rgb(187,187,0);background-color:rgb(0,255,0)\"> " + bg + ";" + fg + " </span>";
 
-        var l = ansi_up.ansi_to_html(start);
+        var au = new AnsiUp();
+        var l = au.ansi_to_html(start);
         l.should.eql(expected);
       });
 
 
-      it('should transform a complex multi-line sequence to html', function() {
+      it('should transform a complex multi-line sequence to html', function () {
         var attr = 1;
         var fg = 32;
         var bg = 42;
         var start = "\n \033[" + fg + "m " + fg + "  \033[0m \n  \033[" + bg + "m " + bg + "  \033[0m \n zimpper ";
 
-        var expected = "\n <span style=\"color:rgb(0, 187, 0)\"> " + fg + "  </span> \n  <span style=\"background-color:rgb(0, 187, 0)\"> " + bg + "  </span> \n zimpper ";
+        var expected = "\n <span style=\"color:rgb(0,187,0)\"> " + fg + "  </span> \n  <span style=\"background-color:rgb(0,187,0)\"> " + bg + "  </span> \n zimpper ";
 
-        var l = ansi_up.ansi_to_html(start);
+        var au = new AnsiUp();
+        var l = au.ansi_to_html(start);
         l.should.eql(expected);
       });
 
-      it('should transform a foreground and background and reset foreground to html', function() {
+      it('should transform a foreground and background and reset foreground to html', function () {
         var fg = 37;
         var bg = 42;
         var start = "\n\033[40m \033[49m\033[" + fg + ";" + bg + "m " + bg + " \033[39m foobar ";
 
-        var expected = "\n<span style=\"background-color:rgb(0, 0, 0)\"> </span><span style=\"color:rgb(255,255,255);background-color:rgb(0, 187, 0)\"> " + bg + " </span><span style=\"background-color:rgb(0, 187, 0)\"> foobar </span>";
+        var expected = "\n<span style=\"background-color:rgb(0,0,0)\"> </span><span style=\"color:rgb(255,255,255);background-color:rgb(0,187,0)\"> " + bg + " </span><span style=\"background-color:rgb(0,187,0)\"> foobar </span>";
 
-        var l = ansi_up.ansi_to_html(start);
+        var au = new AnsiUp();
+        var l = au.ansi_to_html(start);
         l.should.eql(expected);
       });
 
-      it('should transform a foreground and background and reset background to html', function() {
+      it('should transform a foreground and background and reset background to html', function () {
         var fg = 37;
         var bg = 42;
         var start = "\n\033[40m \033[49m\033[" + fg + ";" + bg + "m " + fg + " \033[49m foobar ";
 
-        var expected = "\n<span style=\"background-color:rgb(0, 0, 0)\"> </span><span style=\"color:rgb(255,255,255);background-color:rgb(0, 187, 0)\"> " + fg + " </span><span style=\"color:rgb(255,255,255)\"> foobar </span>";
+        var expected = "\n<span style=\"background-color:rgb(0,0,0)\"> </span><span style=\"color:rgb(255,255,255);background-color:rgb(0,187,0)\"> " + fg + " </span><span style=\"color:rgb(255,255,255)\"> foobar </span>";
 
-        var l = ansi_up.ansi_to_html(start);
+        var au = new AnsiUp();
+        var l = au.ansi_to_html(start);
         l.should.eql(expected);
       });
 
-      it('should transform a foreground and background and reset them to html', function() {
+      it('should transform a foreground and background and reset them to html', function () {
         var fg = 37;
         var bg = 42;
         var start = "\n\033[40m \033[49m\033[" + fg + ";" + bg + "m " + fg + ';' + bg + " \033[39;49m foobar ";
 
-        var expected = "\n<span style=\"background-color:rgb(0, 0, 0)\"> </span><span style=\"color:rgb(255,255,255);background-color:rgb(0, 187, 0)\"> " + fg + ';' + bg + " </span> foobar ";
+        var expected = "\n<span style=\"background-color:rgb(0,0,0)\"> </span><span style=\"color:rgb(255,255,255);background-color:rgb(0,187,0)\"> " + fg + ';' + bg + " </span> foobar ";
 
-        var l = ansi_up.ansi_to_html(start);
+        var au = new AnsiUp();
+        var l = au.ansi_to_html(start);
         l.should.eql(expected);
       });
 
-      describe('transform extend colors (palette)', function() {
-        it('system color, foreground', function() {
+      describe('transform extend colors (palette)', function () {
+        it('system color, foreground', function () {
           var start = "\033[38;5;1m" + "red" + "\033[0m";
-          var expected = '<span style="color:rgb(187, 0, 0)">red</span>';
-          var l = ansi_up.ansi_to_html(start);
+          var expected = '<span style="color:rgb(187,0,0)">red</span>';
+          var au = new AnsiUp();
+          var l = au.ansi_to_html(start);
           l.should.eql(expected);
         });
 
-        it('system color, foreground (bright)', function() {
+        it('system color, foreground (bright)', function () {
           var start = "\033[38;5;9m" + "red" + "\033[0m";
-          var expected = '<span style="color:rgb(255, 85, 85)">red</span>';
-          var l = ansi_up.ansi_to_html(start);
+          var expected = '<span style="color:rgb(255,85,85)">red</span>';
+          var au = new AnsiUp();
+          var l = au.ansi_to_html(start);
           l.should.eql(expected);
         });
 
-        it('system color, background', function() {
+        it('system color, background', function () {
           var start = "\033[48;5;1m" + "red" + "\033[0m";
-          var expected = '<span style="background-color:rgb(187, 0, 0)">red</span>';
-          var l = ansi_up.ansi_to_html(start);
+          var expected = '<span style="background-color:rgb(187,0,0)">red</span>';
+          var au = new AnsiUp();
+          var l = au.ansi_to_html(start);
           l.should.eql(expected);
         });
 
-        it('system color, background (bright)', function() {
+        it('system color, background (bright)', function () {
           var start = "\033[48;5;9m" + "red" + "\033[0m";
-          var expected = '<span style="background-color:rgb(255, 85, 85)">red</span>';
-          var l = ansi_up.ansi_to_html(start);
+          var expected = '<span style="background-color:rgb(255,85,85)">red</span>';
+          var au = new AnsiUp();
+          var l = au.ansi_to_html(start);
           l.should.eql(expected);
         });
 
-        it('palette, foreground', function() {
+        it('palette, foreground', function () {
           var start = "\033[38;5;171m" + "foo" + "\033[0m";
-          var expected = '<span style="color:rgb(215, 95, 255)">foo</span>';
-          var l = ansi_up.ansi_to_html(start);
+          var expected = '<span style="color:rgb(215,95,255)">foo</span>';
+          var au = new AnsiUp();
+          var l = au.ansi_to_html(start);
           l.should.eql(expected);
         });
 
-        it('palette, background', function() {
+        it('palette, background', function () {
           var start = "\033[48;5;171m" + "foo" + "\033[0m";
-          var expected = '<span style="background-color:rgb(215, 95, 255)">foo</span>';
-          var l = ansi_up.ansi_to_html(start);
+          var expected = '<span style="background-color:rgb(215,95,255)">foo</span>';
+          var au = new AnsiUp();
+          var l = au.ansi_to_html(start);
           l.should.eql(expected);
         });
 
-        it('combination of bold and palette', function() {
+        it('combination of bold and palette', function () {
           var start = "\033[1;38;5;171m" + "foo" + "\033[0m";
-          var expected = '<span style="color:rgb(215, 95, 255)">foo</span>';
-          var l = ansi_up.ansi_to_html(start);
+          var expected = '<span style="color:rgb(215,95,255)">foo</span>';
+          var au = new AnsiUp();
+          var l = au.ansi_to_html(start);
           l.should.eql(expected);
         });
 
-        it('combination of palette and bold', function() {
+        it('combination of palette and bold', function () {
           var start = "\033[38;5;171;1m" + "foo" + "\033[0m";
-          var expected = '<span style="color:rgb(215, 95, 255)">foo</span>';
-          var l = ansi_up.ansi_to_html(start);
+          var expected = '<span style="color:rgb(215,95,255)">foo</span>';
+          var au = new AnsiUp();
+          var l = au.ansi_to_html(start);
           l.should.eql(expected);
         });
       });
 
-      describe('transform extend colors (true color)', function() {
-        it('foreground', function() {
+      describe('transform extend colors (true color)', function () {
+        it('foreground', function () {
           var start = "\033[38;2;42;142;242m" + "foo" + "\033[0m";
-          var expected = '<span style="color:rgb(42, 142, 242)">foo</span>';
-          var l = ansi_up.ansi_to_html(start);
+          var expected = '<span style="color:rgb(42,142,242)">foo</span>';
+          var au = new AnsiUp();
+          var l = au.ansi_to_html(start);
           l.should.eql(expected);
         });
-        it('background', function() {
+        it('background', function () {
           var start = "\033[48;2;42;142;242m" + "foo" + "\033[0m";
-          var expected = '<span style="background-color:rgb(42, 142, 242)">foo</span>';
-          var l = ansi_up.ansi_to_html(start);
+          var expected = '<span style="background-color:rgb(42,142,242)">foo</span>';
+          var au = new AnsiUp();
+          var l = au.ansi_to_html(start);
           l.should.eql(expected);
         });
-        it('both foreground and background', function() {
+        it('both foreground and background', function () {
           var start = "\033[38;2;42;142;242;48;2;1;2;3m" + "foo" + "\033[0m";
-          var expected = '<span style="color:rgb(42, 142, 242);background-color:rgb(1, 2, 3)">foo</span>';
-          var l = ansi_up.ansi_to_html(start);
+          var expected = '<span style="color:rgb(42,142,242);background-color:rgb(1,2,3)">foo</span>';
+          var au = new AnsiUp();
+          var l = au.ansi_to_html(start);
           l.should.eql(expected);
         });
       });
     });
 
-    describe('themed colors', function() {
-      it('should transform a foreground to html', function() {
+    describe('themed colors', function () {
+      it('should transform a foreground to html', function () {
         var attr = 0;
         var fg = 32;
         var start = "\033[" + fg + "m " + fg + " \033[0m";
 
         var expected = "<span class=\"ansi-green-fg\"> " + fg + " </span>";
 
-        var l = ansi_up.ansi_to_html(start, {use_classes: true});
+        var au = new AnsiUp();
+        au.use_classes = true;
+        var l = au.ansi_to_html(start);
         l.should.eql(expected);
       });
 
 
-      it('should transform a attr;foreground to html', function() {
+      it('should transform a attr;foreground to html', function () {
         var attr = 0;
         var fg = 32;
         var start = "\033[" + attr + ";" + fg + "m " + fg + "  \033[0m";
 
         var expected = "<span class=\"ansi-green-fg\"> " + fg + "  </span>";
 
-        var l = ansi_up.ansi_to_html(start, {use_classes: true});
+        var au = new AnsiUp();
+        au.use_classes = true;
+        var l = au.ansi_to_html(start);
         l.should.eql(expected);
       });
 
-      it('should transform a bold attr;foreground to html', function() {
+      it('should transform a bold attr;foreground to html', function () {
         var attr = 1;
         var fg = 32;
         var start = "\033[" + attr + ";" + fg + "m " + attr + ";" + fg + " \033[0m";
 
         var expected = "<span class=\"ansi-bright-green-fg\"> " + attr + ";" + fg + " </span>";
 
-        var l = ansi_up.ansi_to_html(start, {use_classes: true});
+        var au = new AnsiUp();
+        au.use_classes = true;
+        var l = au.ansi_to_html(start);
         l.should.eql(expected);
       });
 
-      it('should transform a bold attr;background;foreground to html', function() {
+      it('should transform a bold attr;background;foreground to html', function () {
         var attr = 1;
         var fg = 33;
         var bg = 42;
@@ -373,11 +414,13 @@ describe('ansi_up', function() {
 
         var expected = "<span class=\"ansi-bright-yellow-fg ansi-green-bg\"> " + attr + ";" + bg + ";" + fg + " </span>";
 
-        var l = ansi_up.ansi_to_html(start, {use_classes: true});
+        var au = new AnsiUp();
+        au.use_classes = true;
+        var l = au.ansi_to_html(start);
         l.should.eql(expected);
       });
 
-      it('should transform a complex multi-line sequence to html', function() {
+      it('should transform a complex multi-line sequence to html', function () {
         var attr = 1;
         var fg = 32;
         var bg = 42;
@@ -385,95 +428,120 @@ describe('ansi_up', function() {
 
         var expected = "\n <span class=\"ansi-green-fg\"> " + fg + "  </span> \n  <span class=\"ansi-green-bg\"> " + bg + "  </span> \n zimpper ";
 
-        var l = ansi_up.ansi_to_html(start, {use_classes: true});
+        var au = new AnsiUp();
+        au.use_classes = true;
+        var l = au.ansi_to_html(start);
         l.should.eql(expected);
       });
 
-      describe('transform extend colors (palette)', function() {
-        it('system color, foreground', function() {
+      describe('transform extend colors (palette)', function () {
+        it('system color, foreground', function () {
           var start = "\033[38;5;1m" + "red" + "\033[0m";
           var expected = '<span class="ansi-red-fg">red</span>';
-          var l = ansi_up.ansi_to_html(start, {use_classes: true});
+          var au = new AnsiUp();
+          au.use_classes = true;
+          var l = au.ansi_to_html(start);
           l.should.eql(expected);
         });
 
-        it('system color, foreground (bright)', function() {
+        it('system color, foreground (bright)', function () {
           var start = "\033[38;5;9m" + "red" + "\033[0m";
           var expected = '<span class="ansi-bright-red-fg">red</span>';
-          var l = ansi_up.ansi_to_html(start, {use_classes: true});
+          var au = new AnsiUp();
+          au.use_classes = true;
+          var l = au.ansi_to_html(start);
           l.should.eql(expected);
         });
 
-        it('system color, background', function() {
+        it('system color, background', function () {
           var start = "\033[48;5;1m" + "red" + "\033[0m";
           var expected = '<span class="ansi-red-bg">red</span>';
-          var l = ansi_up.ansi_to_html(start, {use_classes: true});
+          var au = new AnsiUp();
+          au.use_classes = true;
+          var l = au.ansi_to_html(start);
           l.should.eql(expected);
         });
 
-        it('system color, background (bright)', function() {
+        it('system color, background (bright)', function () {
           var start = "\033[48;5;9m" + "red" + "\033[0m";
           var expected = '<span class="ansi-bright-red-bg">red</span>';
-          var l = ansi_up.ansi_to_html(start, {use_classes: true});
+          var au = new AnsiUp();
+          au.use_classes = true;
+          var l = au.ansi_to_html(start);
           l.should.eql(expected);
         });
 
-        it('palette, foreground', function() {
+        it('palette, foreground', function () {
           var start = "\033[38;5;171m" + "foo" + "\033[0m";
-          var expected = '<span class="ansi-palette-171-fg">foo</span>';
-          var l = ansi_up.ansi_to_html(start, {use_classes: true});
+          var expected = '<span style="color:rgb(215,95,255)">foo</span>';          
+          var au = new AnsiUp();
+          au.use_classes = true;
+          var l = au.ansi_to_html(start);
           l.should.eql(expected);
         });
 
-        it('palette, background', function() {
+        it('palette, background', function () {
           var start = "\033[48;5;171m" + "foo" + "\033[0m";
-          var expected = '<span class="ansi-palette-171-bg">foo</span>';
-          var l = ansi_up.ansi_to_html(start, {use_classes: true});
+          var expected = '<span style="background-color:rgb(215,95,255)">foo</span>';
+          var au = new AnsiUp();
+          au.use_classes = true;
+          var l = au.ansi_to_html(start);
           l.should.eql(expected);
         });
 
-        it('combination of bold and palette', function() {
+        it('combination of bold and palette', function () {
           var start = "\033[1;38;5;171m" + "foo" + "\033[0m";
-          var expected = '<span class="ansi-palette-171-fg">foo</span>';
-          var l = ansi_up.ansi_to_html(start, {use_classes: true});
+          var expected = '<span style="color:rgb(215,95,255)">foo</span>';
+          var au = new AnsiUp();
+          au.use_classes = true;
+          var l = au.ansi_to_html(start);
           l.should.eql(expected);
         });
 
-        it('combination of palette and bold', function() {
+        it('combination of palette and bold', function () {
           var start = "\033[38;5;171;1m" + "foo" + "\033[0m";
-          var expected = '<span class="ansi-palette-171-fg">foo</span>';
-          var l = ansi_up.ansi_to_html(start, {use_classes: true});
+          var expected = '<span style="color:rgb(215,95,255)">foo</span>';
+          var au = new AnsiUp();
+          au.use_classes = true;
+          var l = au.ansi_to_html(start);
           l.should.eql(expected);
         });
       });
 
-      describe('transform extend colors (true color)', function() {
-        it('foreground', function() {
+      describe('transform extend colors (true color)', function () {
+        it('foreground', function () {
           var start = "\033[38;2;42;142;242m" + "foo" + "\033[0m";
-          var expected = '<span class="ansi-truecolor-fg" data-ansi-truecolor-fg="42, 142, 242">foo</span>';
-          var l = ansi_up.ansi_to_html(start, {use_classes: true});
+          var expected = '<span style="color:rgb(42,142,242)">foo</span>';
+          var au = new AnsiUp();
+          au.use_classes = true;
+          var l = au.ansi_to_html(start);
           l.should.eql(expected);
         });
-        it('background', function() {
+        it('background', function () {
           var start = "\033[48;2;42;142;242m" + "foo" + "\033[0m";
-          var expected = '<span class="ansi-truecolor-bg" data-ansi-truecolor-bg="42, 142, 242">foo</span>';
-          var l = ansi_up.ansi_to_html(start, {use_classes: true});
+          var expected = '<span style="background-color:rgb(42,142,242)">foo</span>';
+          var au = new AnsiUp();
+          au.use_classes = true;
+          var l = au.ansi_to_html(start);
           l.should.eql(expected);
         });
-        it('both foreground and background', function() {
+        it('both foreground and background', function () {
           var start = "\033[38;2;42;142;242;48;2;1;2;3m" + "foo" + "\033[0m";
-          var expected = '<span class="ansi-truecolor-fg ansi-truecolor-bg" data-ansi-truecolor-fg="42, 142, 242" data-ansi-truecolor-bg="1, 2, 3">foo</span>';
-          var l = ansi_up.ansi_to_html(start, {use_classes: true});
+          var expected = '<span style="color:rgb(42,142,242);background-color:rgb(1,2,3)">foo</span>';
+          var au = new AnsiUp();
+          au.use_classes = true;
+          var l = au.ansi_to_html(start);
           l.should.eql(expected);
         });
       });
     });
-    describe('ignore unsupported CSI', function() {
-      it('should correctly convert a string similar to CSI', function() {
+    describe('ignore unsupported CSI', function () {
+      it('should correctly convert a string similar to CSI', function () {
         // https://github.com/drudru/ansi_up/pull/15
         // "[1;31m" is a plain text. not an escape sequence.
         var start = "foo\033[1@bar[1;31mbaz\033[0m";
-        var l = ansi_up.ansi_to_html(start);
+        var au = new AnsiUp();
+        var l = au.ansi_to_html(start);
 
         // is all plain texts exist?
         l.should.containEql('foo');
@@ -481,55 +549,65 @@ describe('ansi_up', function() {
         l.should.containEql('baz');
         l.should.containEql('1;31m');
       });
-      it('(italic)', function() {
+      it('(italic)', function () {
         var start = "foo\033[3mbar\033[0mbaz";
-        var l = ansi_up.ansi_to_html(start);
+        var au = new AnsiUp();
+        var l = au.ansi_to_html(start);
         l.should.eql('foobarbaz');
       });
-      it('(cursor-up)', function() {
+      it('(cursor-up)', function () {
         var start = "foo\033[1Abar";
-        var l = ansi_up.ansi_to_html(start);
+        var au = new AnsiUp();
+        var l = au.ansi_to_html(start);
         l.should.eql('foobar');
       });
-      it('(scroll-left)', function() {
+      it('(scroll-left)', function () {
         // <ESC>[1 @ (including ascii space)
         var start = "foo\033[1 @bar";
-        var l = ansi_up.ansi_to_html(start);
+        var au = new AnsiUp();
+        var l = au.ansi_to_html(start);
         l.should.eql('foobar');
       });
-      it('(DECMC)', function() {
+      it('(DECMC)', function () {
         var start = "foo\033[?11ibar";
-        var l = ansi_up.ansi_to_html(start);
+        var au = new AnsiUp();
+        var l = au.ansi_to_html(start);
         l.should.eql('foobar');
       });
-      it('(RLIMGCP)', function() {
+      /* I cannot find this in the XTERM specs
+      it('(RLIMGCP)', function () {
         var start = "foo\033[<!3ibar";
-        var l = ansi_up.ansi_to_html(start);
+        var au = new AnsiUp();
+        var l = au.ansi_to_html(start);
         l.should.eql('foobar');
       });
-      it('(DECSCL)', function() {
+      */
+      it('(DECSCL)', function () {
         var start = "foo\033[61;0\"pbar"
-        var l = ansi_up.ansi_to_html(start);
+        var au = new AnsiUp();
+        var l = au.ansi_to_html(start);
         l.should.eql('foobar');
       });
     });
   });
-  describe('ansi to text', function() {
-    it('should remove color sequence', function() {
+  describe('ansi to text', function () {
+    it('should remove color sequence', function () {
       var start = "foo \033[1;32mbar\033[0m baz";
-      var l = ansi_up.ansi_to_text(start);
+      var au = new AnsiUp();
+      var l = au.ansi_to_text(start);
       l.should.eql("foo bar baz");
     });
-    it('should remove unsupported sequence', function() {
+    it('should remove unsupported sequence', function () {
       var start = "foo \033[1Abar";
-      var l = ansi_up.ansi_to_text(start);
+      var au = new AnsiUp();
+      var l = au.ansi_to_text(start);
       l.should.eql('foo bar');
     });
-    it('should keep multiline', function() {
+    it('should keep multiline', function () {
       var start = "foo \033[1;32mbar\nbaz\033[0m qux";
-      var l = ansi_up.ansi_to_text(start);
+      var au = new AnsiUp();
+      var l = au.ansi_to_text(start);
       l.should.eql("foo bar\nbaz qux");
     });
   });
 });
-
