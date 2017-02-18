@@ -15,13 +15,4 @@ test_verbose:
 				--reporter spec \
 				$(TESTS)
 
-lint:
-		./node_modules/.bin/jslint \
-				--white --vars --plusplus --continue ansi2html.js
-		./node_modules/.bin/jslint \
-				--white --vars --plusplus --continue test/ansi2html-test.js
-
-hint:
-		node_modules/.bin/jshint ansi2html.js
-
-.PHONY:	test lint hint
+.PHONY:	test
