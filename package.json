@@ -20,16 +20,12 @@
     "node": "*"
   },
   "scripts": {
-    "test": "gulp test",
-    "build": "gulp typescript"
+    "test": "make test",
+    "build": "make typescript"
   },
   "devDependencies": {
-    "@types/node": "^7.0.5",
-    "gulp": "^3.9.0",
-    "gulp-typescript": "^2.8.0",
     "mocha": "*",
     "should": "*",
-    "tsd": "^0.6",
     "typescript": "^2.1"
   }
 }

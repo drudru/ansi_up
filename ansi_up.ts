@@ -4,12 +4,6 @@
  *  http://github.com/drudru/ansi_up
  */
 
-interface SGR
-{
-    fg:AU_Color;
-    bg:AU_Color;
-    txt:string;
-}
 
 interface AU_Color
 {
@@ -63,11 +57,11 @@ export default class AnsiUp
 
     // 256 Colors Palette
     // CSS RGB strings - ex. "255, 255, 255"
-    palette_256:AU_Color[];
+    private palette_256:AU_Color[];
 
-    fg:AU_Color;
-    bg:AU_Color;
-    bright:boolean;
+    private fg:AU_Color;
+    private bg:AU_Color;
+    private bright:boolean;
 
     private _use_classes:boolean;
     private _ignore_invalid:boolean;
