@@ -85,7 +85,7 @@ export default class AnsiUp
 
     set use_classes(arg:boolean)
     {
-        this._use_classes = true;
+        this._use_classes = arg;
     }
 
     get use_classes():boolean
@@ -95,7 +95,7 @@ export default class AnsiUp
 
     set ignore_invalid(arg:boolean)
     {
-        this._ignore_invalid = true;
+        this._ignore_invalid = arg;
     }
 
     get ignore_invalid():boolean
