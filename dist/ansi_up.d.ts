@@ -1,9 +1,9 @@
-/*! ansi_up.js
- *  author : Dru Nelson
- *  license : MIT
- *  http://github.com/drudru/ansi_up
- */
-export default class AnsiUp {
+interface AU_Color {
+    rgb: number[];
+    class_name: string;
+}
+declare function rgx(tmplObj: any, ...subst: any[]): RegExp;
+declare class AnsiUp {
     VERSION: string;
     ansi_colors: {
         rgb: number[];

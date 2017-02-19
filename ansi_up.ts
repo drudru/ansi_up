@@ -1,7 +1,7 @@
-/*! ansi_up.js
- *  author : Dru Nelson
- *  license : MIT
- *  http://github.com/drudru/ansi_up
+/* ansi_up.js
+ * author : Dru Nelson
+ * license : MIT
+ * http://github.com/drudru/ansi_up
  */
 
 
@@ -24,7 +24,7 @@ function rgx(tmplObj, ...subst) {
     return new RegExp(txt2, 'm');
 }
 
-export default class AnsiUp
+class AnsiUp
 {
     VERSION = "2.0.0";
 
