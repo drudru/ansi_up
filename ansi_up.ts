@@ -64,17 +64,21 @@ class AnsiUp
     private bright:boolean;
 
     private _use_classes:boolean;
-    private _ignore_invalid:boolean;
+    private _escape_for_html;
     private _sgr_regex:RegExp;
+
+    private _buffer:string;
 
     constructor()
     {
         this.setup_256_palette();
         this._use_classes = false;
+        this._escape_for_html = true;
 
         this.bright = false;
         this.fg = this.bg = null;
-        this._ignore_invalid = true;
+
+        this._buffer = '';
     }
 
     set use_classes(arg:boolean)
@@ -87,14 +91,14 @@ class AnsiUp
         return this._use_classes;
     }
 
-    set ignore_invalid(arg:boolean)
+    set escape_for_html(arg:boolean)
     {
-        this._ignore_invalid = arg;
+        this._escape_for_html = arg;
     }
 
-    get ignore_invalid():boolean
+    get escape_for_html():boolean
     {
-        return this._ignore_invalid;
+        return this._escape_for_html;
     }
 
     private setup_256_palette():void
@@ -128,7 +132,7 @@ class AnsiUp
         }
     }
 
-    escape_for_html(txt:string):string
+    private old_escape_for_html(txt:string):string
     {
       return txt.replace(/[&<>]/gm, (str) => {
         if (str == "&") return "&amp;";
@@ -137,19 +141,105 @@ class AnsiUp
       });
     }
 
-    linkify(txt:string):string
+    private old_linkify(txt:string):string
     {
       return txt.replace(/(https?:\/\/[^\s]+)/gm, (str) => {
         return `<a href="${str}">${str}</a>`;
       });
-    };
+    }
 
-    ansi_to_html(pkt:string):string
+    private detect_incomplete_ansi(txt:string)
     {
-        var raw_text_pktks = pkt.split(/\033\[/);
-        var first_txt = this.wrap_text(raw_text_pktks.shift()); // the first pkt is not the result of the split
+        // Scan forwards for a potential command character
+        // If one exists, we must assume we are good
+        // [\x40-\x7e])               # the command
 
-        let blocks = raw_text_pktks.map( (block) => this.wrap_text(this.process_ansi(block)) );
+        if (/.*?[\x40-\x7e]/.test(txt) == false)
+            return true;
+        return false;
+    }
+
+    private detect_incomplete_link(txt:string)
+    {
+        // It would be nice if Javascript RegExp supported
+        // a hitEnd() method
+
+        // Scan backwards for first whitespace
+        var found = false;
+        for (var i = txt.length - 1; i > 0; i--) {
+            if (/\s|\033/.test(txt[i])) {
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            // Handle one other case
+            // Maybe the whole string is a URL?
+            if (/(https?:\/\/[^\s]+)/.test(txt))
+                return 0;
+            else
+                return -1;
+        }
+
+        // Test if possible prefix
+        var prefix = txt.substr(i + 1, 4);
+
+        if (prefix.length == 0) return -1;
+
+        if ("http".indexOf(prefix) == 0)
+            return (i + 1);
+    }
+
+    ansi_to_html(txt:string):string
+    {
+        var pkt = this._buffer + txt;
+        this._buffer = '';
+
+        var raw_text_pkts = pkt.split(/\033\[/);
+
+        if (raw_text_pkts.length == 1)
+            raw_text_pkts.push('');
+
+        // COMPLEX - BEGIN
+
+        // Validate the last chunks for:
+        // - incomplete ANSI sequence
+        // - incomplete ESC
+        // If any of these occur, we may have to buffer
+        var last_pkt = raw_text_pkts[raw_text_pkts.length - 1];
+
+        // - incomplete ANSI sequence
+        if ((last_pkt.length > 0) && this.detect_incomplete_ansi(last_pkt)) {
+            this._buffer = "\033[" + last_pkt;
+            raw_text_pkts.pop();
+            raw_text_pkts.push('');
+        } else {
+            // - incomplete ESC
+            if (last_pkt.slice(-1) == "\033") {
+                this._buffer = "\033";
+                console.log("raw", raw_text_pkts);
+                raw_text_pkts.pop();
+                raw_text_pkts.push(last_pkt.substr(0, last_pkt.length - 1));
+                console.log(raw_text_pkts);
+                console.log(last_pkt);
+            }
+            // - Incomplete ESC, only one packet
+            if (true
+                && (raw_text_pkts.length == 2)
+                && (raw_text_pkts[1] == '')
+                && (raw_text_pkts[0].slice(-1) == "\033")) {
+                this._buffer = "\033";
+                last_pkt = raw_text_pkts.shift();
+                raw_text_pkts.unshift(last_pkt.substr(0, last_pkt.length - 1));
+            }
+        }
+
+        // COMPLEX - END
+
+        var first_txt = this.wrap_text(raw_text_pkts.shift()); // the first pkt is not the result of the split
+
+        let blocks = raw_text_pkts.map( (block) => this.wrap_text(this.process_ansi(block)) );
 
          if (first_txt.length > 0)
             blocks.unshift(first_txt);
@@ -159,10 +249,10 @@ class AnsiUp
 
     ansi_to_text(txt:string):string
     {
-        var raw_text_pktks = txt.split(/\033\[/);
-        var first_txt = raw_text_pktks.shift(); // the first pkt is not the result of the split
+        var raw_text_pkts = txt.split(/\033\[/);
+        var first_txt = raw_text_pkts.shift(); // the first pkt is not the result of the split
 
-        let blocks = raw_text_pktks.map( (block) => this.process_ansi(block) );
+        let blocks = raw_text_pkts.map( (block) => this.process_ansi(block) );
 
         if (first_txt.length > 0)
             blocks.unshift(first_txt);
@@ -174,6 +264,9 @@ class AnsiUp
     {
         if (txt.length == 0)
             return txt;
+
+        if (this._escape_for_html)
+            txt = this.old_escape_for_html(txt);
 
         // If colors not set, default style is used
         if (this.bright == false && this.fg == null && this.bg == null)
@@ -265,11 +358,8 @@ class AnsiUp
       let matches = block.match(this._sgr_regex);
 
       // The regex should have handled all cases!
-      if (!matches) {
-          if (this._ignore_invalid)
+      if (!matches)
             return block;
-          throw new Error("should never happen");
-      }
 
       let orig_txt = matches[4];
 

@@ -35,9 +35,10 @@ var AnsiUp = (function () {
         ];
         this.setup_256_palette();
         this._use_classes = false;
+        this._escape_for_html = true;
         this.bright = false;
         this.fg = this.bg = null;
-        this._ignore_invalid = true;
+        this._buffer = '';
     }
     Object.defineProperty(AnsiUp.prototype, "use_classes", {
         get: function () {
@@ -49,12 +50,12 @@ var AnsiUp = (function () {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(AnsiUp.prototype, "ignore_invalid", {
+    Object.defineProperty(AnsiUp.prototype, "escape_for_html", {
         get: function () {
-            return this._ignore_invalid;
+            return this._escape_for_html;
         },
         set: function (arg) {
-            this._ignore_invalid = arg;
+            this._escape_for_html = arg;
         },
         enumerable: true,
         configurable: true
@@ -82,7 +83,7 @@ var AnsiUp = (function () {
             this.palette_256.push(c);
         }
     };
-    AnsiUp.prototype.escape_for_html = function (txt) {
+    AnsiUp.prototype.old_escape_for_html = function (txt) {
         return txt.replace(/[&<>]/gm, function (str) {
             if (str == "&")
                 return "&amp;";
@@ -92,26 +93,78 @@ var AnsiUp = (function () {
                 return "&gt;";
         });
     };
-    AnsiUp.prototype.linkify = function (txt) {
+    AnsiUp.prototype.old_linkify = function (txt) {
         return txt.replace(/(https?:\/\/[^\s]+)/gm, function (str) {
             return "<a href=\"" + str + "\">" + str + "</a>";
         });
     };
-    ;
-    AnsiUp.prototype.ansi_to_html = function (pkt) {
+    AnsiUp.prototype.detect_incomplete_ansi = function (txt) {
+        if (/.*?[\x40-\x7e]/.test(txt) == false)
+            return true;
+        return false;
+    };
+    AnsiUp.prototype.detect_incomplete_link = function (txt) {
+        var found = false;
+        for (var i = txt.length - 1; i > 0; i--) {
+            if (/\s|\033/.test(txt[i])) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            if (/(https?:\/\/[^\s]+)/.test(txt))
+                return 0;
+            else
+                return -1;
+        }
+        var prefix = txt.substr(i + 1, 4);
+        if (prefix.length == 0)
+            return -1;
+        if ("http".indexOf(prefix) == 0)
+            return (i + 1);
+    };
+    AnsiUp.prototype.ansi_to_html = function (txt) {
         var _this = this;
-        var raw_text_pktks = pkt.split(/\033\[/);
-        var first_txt = this.wrap_text(raw_text_pktks.shift());
-        var blocks = raw_text_pktks.map(function (block) { return _this.wrap_text(_this.process_ansi(block)); });
+        var pkt = this._buffer + txt;
+        this._buffer = '';
+        var raw_text_pkts = pkt.split(/\033\[/);
+        if (raw_text_pkts.length == 1)
+            raw_text_pkts.push('');
+        var last_pkt = raw_text_pkts[raw_text_pkts.length - 1];
+        if ((last_pkt.length > 0) && this.detect_incomplete_ansi(last_pkt)) {
+            this._buffer = "\033[" + last_pkt;
+            raw_text_pkts.pop();
+            raw_text_pkts.push('');
+        }
+        else {
+            if (last_pkt.slice(-1) == "\033") {
+                this._buffer = "\033";
+                console.log("raw", raw_text_pkts);
+                raw_text_pkts.pop();
+                raw_text_pkts.push(last_pkt.substr(0, last_pkt.length - 1));
+                console.log(raw_text_pkts);
+                console.log(last_pkt);
+            }
+            if (true
+                && (raw_text_pkts.length == 2)
+                && (raw_text_pkts[1] == '')
+                && (raw_text_pkts[0].slice(-1) == "\033")) {
+                this._buffer = "\033";
+                last_pkt = raw_text_pkts.shift();
+                raw_text_pkts.unshift(last_pkt.substr(0, last_pkt.length - 1));
+            }
+        }
+        var first_txt = this.wrap_text(raw_text_pkts.shift());
+        var blocks = raw_text_pkts.map(function (block) { return _this.wrap_text(_this.process_ansi(block)); });
         if (first_txt.length > 0)
             blocks.unshift(first_txt);
         return blocks.join('');
     };
     AnsiUp.prototype.ansi_to_text = function (txt) {
         var _this = this;
-        var raw_text_pktks = txt.split(/\033\[/);
-        var first_txt = raw_text_pktks.shift();
-        var blocks = raw_text_pktks.map(function (block) { return _this.process_ansi(block); });
+        var raw_text_pkts = txt.split(/\033\[/);
+        var first_txt = raw_text_pkts.shift();
+        var blocks = raw_text_pkts.map(function (block) { return _this.process_ansi(block); });
         if (first_txt.length > 0)
             blocks.unshift(first_txt);
         return blocks.join('');
@@ -119,6 +172,8 @@ var AnsiUp = (function () {
     AnsiUp.prototype.wrap_text = function (txt) {
         if (txt.length == 0)
             return txt;
+        if (this._escape_for_html)
+            txt = this.old_escape_for_html(txt);
         if (this.bright == false && this.fg == null && this.bg == null)
             return txt;
         var styles = [];
@@ -164,11 +219,8 @@ var AnsiUp = (function () {
             this._sgr_regex = (_a = ["\n              ^                           # beginning of line\n              ([!<-?]?)             # a private-mode char (!, <, =, >, ?)\n              ([d;]*)                    # any digits or semicolons\n              ([ -/]?               # an intermediate modifier\n               [@-~])               # the command\n              ([sS]*)                   # any text following this CSI sequence\n              "], _a.raw = ["\n              ^                           # beginning of line\n              ([!\\x3c-\\x3f]?)             # a private-mode char (!, <, =, >, ?)\n              ([\\d;]*)                    # any digits or semicolons\n              ([\\x20-\\x2f]?               # an intermediate modifier\n               [\\x40-\\x7e])               # the command\n              ([\\s\\S]*)                   # any text following this CSI sequence\n              "], rgx(_a));
         }
         var matches = block.match(this._sgr_regex);
-        if (!matches) {
-            if (this._ignore_invalid)
-                return block;
-            throw new Error("should never happen");
-        }
+        if (!matches)
+            return block;
         var orig_txt = matches[4];
         if (matches[1] !== '' || matches[3] !== 'm')
             return orig_txt;
