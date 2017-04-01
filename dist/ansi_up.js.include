@@ -1,3 +1,4 @@
+"use strict";
 function rgx(tmplObj) {
     var subst = [];
     for (var _i = 1; _i < arguments.length; _i++) {
@@ -85,11 +86,11 @@ var AnsiUp = (function () {
     };
     AnsiUp.prototype.old_escape_for_html = function (txt) {
         return txt.replace(/[&<>]/gm, function (str) {
-            if (str == "&")
+            if (str === "&")
                 return "&amp;";
-            if (str == "<")
+            if (str === "<")
                 return "&lt;";
-            if (str == ">")
+            if (str === ">")
                 return "&gt;";
         });
     };
@@ -99,14 +100,12 @@ var AnsiUp = (function () {
         });
     };
     AnsiUp.prototype.detect_incomplete_ansi = function (txt) {
-        if (/.*?[\x40-\x7e]/.test(txt) == false)
-            return true;
-        return false;
+        return !(/.*?[\x40-\x7e]/.test(txt));
     };
     AnsiUp.prototype.detect_incomplete_link = function (txt) {
         var found = false;
         for (var i = txt.length - 1; i > 0; i--) {
-            if (/\s|\033/.test(txt[i])) {
+            if (/\s|\x1B/.test(txt[i])) {
                 found = true;
                 break;
             }
@@ -118,38 +117,37 @@ var AnsiUp = (function () {
                 return -1;
         }
         var prefix = txt.substr(i + 1, 4);
-        if (prefix.length == 0)
+        if (prefix.length === 0)
             return -1;
-        if ("http".indexOf(prefix) == 0)
+        if ("http".indexOf(prefix) === 0)
             return (i + 1);
     };
     AnsiUp.prototype.ansi_to_html = function (txt) {
         var _this = this;
         var pkt = this._buffer + txt;
         this._buffer = '';
-        var raw_text_pkts = pkt.split(/\033\[/);
-        if (raw_text_pkts.length == 1)
+        var raw_text_pkts = pkt.split(/\x1B\[/);
+        if (raw_text_pkts.length === 1)
             raw_text_pkts.push('');
         var last_pkt = raw_text_pkts[raw_text_pkts.length - 1];
         if ((last_pkt.length > 0) && this.detect_incomplete_ansi(last_pkt)) {
-            this._buffer = "\033[" + last_pkt;
+            this._buffer = "\x1B[" + last_pkt;
             raw_text_pkts.pop();
             raw_text_pkts.push('');
         }
         else {
-            if (last_pkt.slice(-1) == "\033") {
-                this._buffer = "\033";
+            if (last_pkt.slice(-1) === "\x1B") {
+                this._buffer = "\x1B";
                 console.log("raw", raw_text_pkts);
                 raw_text_pkts.pop();
                 raw_text_pkts.push(last_pkt.substr(0, last_pkt.length - 1));
                 console.log(raw_text_pkts);
                 console.log(last_pkt);
             }
-            if (true
-                && (raw_text_pkts.length == 2)
-                && (raw_text_pkts[1] == '')
-                && (raw_text_pkts[0].slice(-1) == "\033")) {
-                this._buffer = "\033";
+            if ((raw_text_pkts.length === 2)
+                && (raw_text_pkts[1] === '')
+                && (raw_text_pkts[0].slice(-1) === "\x1B")) {
+                this._buffer = "\x1B";
                 last_pkt = raw_text_pkts.shift();
                 raw_text_pkts.unshift(last_pkt.substr(0, last_pkt.length - 1));
             }
@@ -162,7 +160,7 @@ var AnsiUp = (function () {
     };
     AnsiUp.prototype.ansi_to_text = function (txt) {
         var _this = this;
-        var raw_text_pkts = txt.split(/\033\[/);
+        var raw_text_pkts = txt.split(/\x1B\[/);
         var first_txt = raw_text_pkts.shift();
         var blocks = raw_text_pkts.map(function (block) { return _this.process_ansi(block); });
         if (first_txt.length > 0)
@@ -170,19 +168,19 @@ var AnsiUp = (function () {
         return blocks.join('');
     };
     AnsiUp.prototype.wrap_text = function (txt) {
-        if (txt.length == 0)
+        if (txt.length === 0)
             return txt;
         if (this._escape_for_html)
             txt = this.old_escape_for_html(txt);
-        if (this.bright == false && this.fg == null && this.bg == null)
+        if (!this.bright && this.fg === null && this.bg === null)
             return txt;
         var styles = [];
         var classes = [];
         var fg = this.fg;
         var bg = this.bg;
-        if (fg == null && this.bright)
+        if (fg === null && this.bright)
             fg = this.ansi_colors[1][7];
-        if (this._use_classes == false) {
+        if (!this._use_classes) {
             if (fg)
                 styles.push("color:rgb(" + fg.rgb.join(',') + ")");
             if (bg)
@@ -190,7 +188,7 @@ var AnsiUp = (function () {
         }
         else {
             if (fg) {
-                if (fg.class_name != 'truecolor') {
+                if (fg.class_name !== 'truecolor') {
                     classes.push(fg.class_name + "-fg");
                 }
                 else {
@@ -198,7 +196,7 @@ var AnsiUp = (function () {
                 }
             }
             if (bg) {
-                if (bg.class_name != 'truecolor') {
+                if (bg.class_name !== 'truecolor') {
                     classes.push(bg.class_name + "-bg");
                 }
                 else {
@@ -235,10 +233,10 @@ var AnsiUp = (function () {
             else if (num === 1) {
                 this.bright = true;
             }
-            else if (num == 39) {
+            else if (num === 39) {
                 this.fg = null;
             }
-            else if (num == 49) {
+            else if (num === 49) {
                 this.bg = null;
             }
             else if ((num >= 30) && (num < 38)) {

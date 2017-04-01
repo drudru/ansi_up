@@ -4,6 +4,7 @@
  * http://github.com/drudru/ansi_up
  */
 
+"use strict";
 
 interface AU_Color
 {
@@ -135,9 +136,9 @@ class AnsiUp
     private old_escape_for_html(txt:string):string
     {
       return txt.replace(/[&<>]/gm, (str) => {
-        if (str == "&") return "&amp;";
-        if (str == "<") return "&lt;";
-        if (str == ">") return "&gt;";
+        if (str === "&") return "&amp;";
+        if (str === "<") return "&lt;";
+        if (str === ">") return "&gt;";
       });
     }
 
@@ -154,9 +155,7 @@ class AnsiUp
         // If one exists, we must assume we are good
         // [\x40-\x7e])               # the command
 
-        if (/.*?[\x40-\x7e]/.test(txt) == false)
-            return true;
-        return false;
+        return !(/.*?[\x40-\x7e]/.test(txt));
     }
 
     private detect_incomplete_link(txt:string)
@@ -167,7 +166,7 @@ class AnsiUp
         // Scan backwards for first whitespace
         var found = false;
         for (var i = txt.length - 1; i > 0; i--) {
-            if (/\s|\033/.test(txt[i])) {
+            if (/\s|\x1B/.test(txt[i])) {
                 found = true;
                 break;
             }
@@ -185,9 +184,9 @@ class AnsiUp
         // Test if possible prefix
         var prefix = txt.substr(i + 1, 4);
 
-        if (prefix.length == 0) return -1;
+        if (prefix.length === 0) return -1;
 
-        if ("http".indexOf(prefix) == 0)
+        if ("http".indexOf(prefix) === 0)
             return (i + 1);
     }
 
@@ -196,9 +195,9 @@ class AnsiUp
         var pkt = this._buffer + txt;
         this._buffer = '';
 
-        var raw_text_pkts = pkt.split(/\033\[/);
+        var raw_text_pkts = pkt.split(/\x1B\[/);
 
-        if (raw_text_pkts.length == 1)
+        if (raw_text_pkts.length === 1)
             raw_text_pkts.push('');
 
         // COMPLEX - BEGIN
@@ -211,13 +210,13 @@ class AnsiUp
 
         // - incomplete ANSI sequence
         if ((last_pkt.length > 0) && this.detect_incomplete_ansi(last_pkt)) {
-            this._buffer = "\033[" + last_pkt;
+            this._buffer = "\x1B[" + last_pkt;
             raw_text_pkts.pop();
             raw_text_pkts.push('');
         } else {
             // - incomplete ESC
-            if (last_pkt.slice(-1) == "\033") {
-                this._buffer = "\033";
+            if (last_pkt.slice(-1) === "\x1B") {
+                this._buffer = "\x1B";
                 console.log("raw", raw_text_pkts);
                 raw_text_pkts.pop();
                 raw_text_pkts.push(last_pkt.substr(0, last_pkt.length - 1));
@@ -225,11 +224,10 @@ class AnsiUp
                 console.log(last_pkt);
             }
             // - Incomplete ESC, only one packet
-            if (true
-                && (raw_text_pkts.length == 2)
-                && (raw_text_pkts[1] == '')
-                && (raw_text_pkts[0].slice(-1) == "\033")) {
-                this._buffer = "\033";
+            if ((raw_text_pkts.length === 2)
+                && (raw_text_pkts[1] === '')
+                && (raw_text_pkts[0].slice(-1) === "\x1B")) {
+                this._buffer = "\x1B";
                 last_pkt = raw_text_pkts.shift();
                 raw_text_pkts.unshift(last_pkt.substr(0, last_pkt.length - 1));
             }
@@ -249,7 +247,7 @@ class AnsiUp
 
     ansi_to_text(txt:string):string
     {
-        var raw_text_pkts = txt.split(/\033\[/);
+        var raw_text_pkts = txt.split(/\x1B\[/);
         var first_txt = raw_text_pkts.shift(); // the first pkt is not the result of the split
 
         let blocks = raw_text_pkts.map( (block) => this.process_ansi(block) );
@@ -262,14 +260,14 @@ class AnsiUp
 
     private wrap_text(txt:string):string
     {
-        if (txt.length == 0)
+        if (txt.length === 0)
             return txt;
 
         if (this._escape_for_html)
             txt = this.old_escape_for_html(txt);
 
         // If colors not set, default style is used
-        if (this.bright == false && this.fg == null && this.bg == null)
+        if (!this.bright && this.fg === null && this.bg === null)
             return txt;
 
         let styles:string[] = [];
@@ -279,10 +277,10 @@ class AnsiUp
         let bg = this.bg;
 
         // Handle the case where we are told to be bright, but without a color
-        if (fg == null && this.bright)
+        if (fg === null && this.bright)
             fg = this.ansi_colors[1][7];
 
-        if (this._use_classes == false) {
+        if (!this._use_classes) {
             // USE INLINE STYLES
             if (fg)
                 styles.push(`color:rgb(${fg.rgb.join(',')})`);
@@ -291,14 +289,14 @@ class AnsiUp
         } else {
             // USE CLASSES
             if (fg) {
-                if (fg.class_name != 'truecolor') {
+                if (fg.class_name !== 'truecolor') {
                     classes.push(`${fg.class_name}-fg`);
                 } else {
                     styles.push(`color:rgb(${fg.rgb.join(',')})`);
                 }
             }
             if (bg) {
-                if (bg.class_name != 'truecolor') {
+                if (bg.class_name !== 'truecolor') {
                     classes.push(`${bg.class_name}-bg`);
                 } else {
                     styles.push(`background-color:rgb(${bg.rgb.join(',')})`);
@@ -383,9 +381,9 @@ class AnsiUp
               this.bright = false;
           } else if (num === 1) {
               this.bright = true;
-          } else if (num == 39) {
+          } else if (num === 39) {
               this.fg = null;
-          } else if (num == 49) {
+          } else if (num === 49) {
               this.bg = null;
           } else if ((num >= 30) && (num < 38)) {
               let bidx = this.bright ? 1 : 0;
