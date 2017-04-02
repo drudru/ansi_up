@@ -12,6 +12,19 @@ interface AU_Color
     class_name:string;
 }
 
+// This regex is designed to parse an ANSI terminal CSI command. To be more specific,
+// we follow the XTERM conventions vs. the various other "standards".
+// http://invisible-island.net/xterm/ctlseqs/ctlseqs.html
+//
+const SGR_REGEX = rgx`
+    ^                           # beginning of line
+    ([!\x3c-\x3f]?)             # a private-mode char (!, <, =, >, ?)
+    ([\d;]*)                    # any digits or semicolons
+    ([\x20-\x2f]?               # an intermediate modifier
+    [\x40-\x7e])               # the command
+    ([\s\S]*)                   # any text following this CSI sequence
+`;
+
 // ES5 template string transformer
 // NOTE: default is multiline (workaround for now til I can
 // determine flags inline)
@@ -200,40 +213,7 @@ class AnsiUp
         if (raw_text_pkts.length === 1)
             raw_text_pkts.push('');
 
-        // COMPLEX - BEGIN
-
-        // Validate the last chunks for:
-        // - incomplete ANSI sequence
-        // - incomplete ESC
-        // If any of these occur, we may have to buffer
-        var last_pkt = raw_text_pkts[raw_text_pkts.length - 1];
-
-        // - incomplete ANSI sequence
-        if ((last_pkt.length > 0) && this.detect_incomplete_ansi(last_pkt)) {
-            this._buffer = "\x1B[" + last_pkt;
-            raw_text_pkts.pop();
-            raw_text_pkts.push('');
-        } else {
-            // - incomplete ESC
-            if (last_pkt.slice(-1) === "\x1B") {
-                this._buffer = "\x1B";
-                console.log("raw", raw_text_pkts);
-                raw_text_pkts.pop();
-                raw_text_pkts.push(last_pkt.substr(0, last_pkt.length - 1));
-                console.log(raw_text_pkts);
-                console.log(last_pkt);
-            }
-            // - Incomplete ESC, only one packet
-            if ((raw_text_pkts.length === 2)
-                && (raw_text_pkts[1] === '')
-                && (raw_text_pkts[0].slice(-1) === "\x1B")) {
-                this._buffer = "\x1B";
-                last_pkt = raw_text_pkts.shift();
-                raw_text_pkts.unshift(last_pkt.substr(0, last_pkt.length - 1));
-            }
-        }
-
-        // COMPLEX - END
+        this.handle_incomplete_sequences(raw_text_pkts);
 
         var first_txt = this.wrap_text(raw_text_pkts.shift()); // the first pkt is not the result of the split
 
@@ -256,6 +236,43 @@ class AnsiUp
             blocks.unshift(first_txt);
 
         return blocks.join('');
+    }
+
+    private handle_incomplete_sequences(chunks:string[]):void {
+        // COMPLEX - BEGIN
+
+        // Validate the last chunks for:
+        // - incomplete ANSI sequence
+        // - incomplete ESC
+        // If any of these occur, we may have to buffer
+        var last_chunk = chunks[chunks.length - 1];
+
+        // - incomplete ANSI sequence
+        if ((last_chunk.length > 0) && this.detect_incomplete_ansi(last_chunk)) {
+            this._buffer = "\x1B[" + last_chunk;
+            chunks.pop();
+            chunks.push('');
+        } else {
+            // - incomplete ESC
+            if (last_chunk.slice(-1) === "\x1B") {
+                this._buffer = "\x1B";
+                console.log("raw", chunks);
+                chunks.pop();
+                chunks.push(last_chunk.substr(0, last_chunk.length - 1));
+                console.log(chunks);
+                console.log(last_chunk);
+            }
+            // - Incomplete ESC, only one packet
+            if ((chunks.length === 2)
+                && (chunks[1] === '')
+                && (chunks[0].slice(-1) === "\x1B")) {
+                this._buffer = "\x1B";
+                last_chunk = chunks.shift();
+                chunks.unshift(last_chunk.substr(0, last_chunk.length - 1));
+            }
+        }
+
+        // COMPLEX - END
     }
 
     private wrap_text(txt:string):string
@@ -322,10 +339,6 @@ class AnsiUp
       // The CSI must not be in the string. We consider this string to be a 'block'.
       // It has an ANSI command at the front that affects the text that follows it.
       //
-      // This regex is designed to parse an ANSI terminal CSI command. To be more specific,
-      // we follow the XTERM conventions vs. the various other "standards".
-      // http://invisible-island.net/xterm/ctlseqs/ctlseqs.html
-      //
       // All ansi codes are typically in the following format. We parse it and focus
       // specifically on the graphics commands (SGR)
       //
@@ -337,23 +350,8 @@ class AnsiUp
       //
       // We use a regex to parse into capture groups the PRIVATE-MODE-CHAR to the COMMAND
       // and the following text
-      //
 
-      // Lazy regex creation to keep nicely commented code here
-      // NOTE: default is multiline (workaround for now til I can
-      // determine flags inline)
-      if (!this._sgr_regex) {
-          this._sgr_regex = rgx`
-              ^                           # beginning of line
-              ([!\x3c-\x3f]?)             # a private-mode char (!, <, =, >, ?)
-              ([\d;]*)                    # any digits or semicolons
-              ([\x20-\x2f]?               # an intermediate modifier
-               [\x40-\x7e])               # the command
-              ([\s\S]*)                   # any text following this CSI sequence
-              `;
-      }
-
-      let matches = block.match(this._sgr_regex);
+      let matches = block.match(SGR_REGEX);
 
       // The regex should have handled all cases!
       if (!matches)

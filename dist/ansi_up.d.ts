@@ -2,6 +2,7 @@ interface AU_Color {
     rgb: number[];
     class_name: string;
 }
+declare const SGR_REGEX: RegExp;
 declare function rgx(tmplObj: any, ...subst: any[]): RegExp;
 declare class AnsiUp {
     VERSION: string;
@@ -27,6 +28,7 @@ declare class AnsiUp {
     private detect_incomplete_link(txt);
     ansi_to_html(txt: string): string;
     ansi_to_text(txt: string): string;
+    private handle_incomplete_sequences(chunks);
     private wrap_text(txt);
     private process_ansi(block);
 }

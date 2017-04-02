@@ -1,4 +1,5 @@
 "use strict";
+var SGR_REGEX = (_a = ["\n    ^                           # beginning of line\n    ([!<-?]?)             # a private-mode char (!, <, =, >, ?)\n    ([d;]*)                    # any digits or semicolons\n    ([ -/]?               # an intermediate modifier\n    [@-~])               # the command\n    ([sS]*)                   # any text following this CSI sequence\n"], _a.raw = ["\n    ^                           # beginning of line\n    ([!\\x3c-\\x3f]?)             # a private-mode char (!, <, =, >, ?)\n    ([\\d;]*)                    # any digits or semicolons\n    ([\\x20-\\x2f]?               # an intermediate modifier\n    [\\x40-\\x7e])               # the command\n    ([\\s\\S]*)                   # any text following this CSI sequence\n"], rgx(_a));
 function rgx(tmplObj) {
     var subst = [];
     for (var _i = 1; _i < arguments.length; _i++) {
@@ -129,29 +130,7 @@ var AnsiUp = (function () {
         var raw_text_pkts = pkt.split(/\x1B\[/);
         if (raw_text_pkts.length === 1)
             raw_text_pkts.push('');
-        var last_pkt = raw_text_pkts[raw_text_pkts.length - 1];
-        if ((last_pkt.length > 0) && this.detect_incomplete_ansi(last_pkt)) {
-            this._buffer = "\x1B[" + last_pkt;
-            raw_text_pkts.pop();
-            raw_text_pkts.push('');
-        }
-        else {
-            if (last_pkt.slice(-1) === "\x1B") {
-                this._buffer = "\x1B";
-                console.log("raw", raw_text_pkts);
-                raw_text_pkts.pop();
-                raw_text_pkts.push(last_pkt.substr(0, last_pkt.length - 1));
-                console.log(raw_text_pkts);
-                console.log(last_pkt);
-            }
-            if ((raw_text_pkts.length === 2)
-                && (raw_text_pkts[1] === '')
-                && (raw_text_pkts[0].slice(-1) === "\x1B")) {
-                this._buffer = "\x1B";
-                last_pkt = raw_text_pkts.shift();
-                raw_text_pkts.unshift(last_pkt.substr(0, last_pkt.length - 1));
-            }
-        }
+        this.handle_incomplete_sequences(raw_text_pkts);
         var first_txt = this.wrap_text(raw_text_pkts.shift());
         var blocks = raw_text_pkts.map(function (block) { return _this.wrap_text(_this.process_ansi(block)); });
         if (first_txt.length > 0)
@@ -166,6 +145,31 @@ var AnsiUp = (function () {
         if (first_txt.length > 0)
             blocks.unshift(first_txt);
         return blocks.join('');
+    };
+    AnsiUp.prototype.handle_incomplete_sequences = function (chunks) {
+        var last_chunk = chunks[chunks.length - 1];
+        if ((last_chunk.length > 0) && this.detect_incomplete_ansi(last_chunk)) {
+            this._buffer = "\x1B[" + last_chunk;
+            chunks.pop();
+            chunks.push('');
+        }
+        else {
+            if (last_chunk.slice(-1) === "\x1B") {
+                this._buffer = "\x1B";
+                console.log("raw", chunks);
+                chunks.pop();
+                chunks.push(last_chunk.substr(0, last_chunk.length - 1));
+                console.log(chunks);
+                console.log(last_chunk);
+            }
+            if ((chunks.length === 2)
+                && (chunks[1] === '')
+                && (chunks[0].slice(-1) === "\x1B")) {
+                this._buffer = "\x1B";
+                last_chunk = chunks.shift();
+                chunks.unshift(last_chunk.substr(0, last_chunk.length - 1));
+            }
+        }
     };
     AnsiUp.prototype.wrap_text = function (txt) {
         if (txt.length === 0)
@@ -213,10 +217,7 @@ var AnsiUp = (function () {
         return "<span" + class_string + style_string + ">" + txt + "</span>";
     };
     AnsiUp.prototype.process_ansi = function (block) {
-        if (!this._sgr_regex) {
-            this._sgr_regex = (_a = ["\n              ^                           # beginning of line\n              ([!<-?]?)             # a private-mode char (!, <, =, >, ?)\n              ([d;]*)                    # any digits or semicolons\n              ([ -/]?               # an intermediate modifier\n               [@-~])               # the command\n              ([sS]*)                   # any text following this CSI sequence\n              "], _a.raw = ["\n              ^                           # beginning of line\n              ([!\\x3c-\\x3f]?)             # a private-mode char (!, <, =, >, ?)\n              ([\\d;]*)                    # any digits or semicolons\n              ([\\x20-\\x2f]?               # an intermediate modifier\n               [\\x40-\\x7e])               # the command\n              ([\\s\\S]*)                   # any text following this CSI sequence\n              "], rgx(_a));
-        }
-        var matches = block.match(this._sgr_regex);
+        var matches = block.match(SGR_REGEX);
         if (!matches)
             return block;
         var orig_txt = matches[4];
@@ -281,8 +282,8 @@ var AnsiUp = (function () {
             }
         }
         return orig_txt;
-        var _a;
     };
     return AnsiUp;
 }());
+var _a;
 //# sourceMappingURL=ansi_up.js.map
