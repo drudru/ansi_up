@@ -35,6 +35,65 @@ var AnsiUp = (function () {
                 { rgb: [255, 255, 255], class_name: "ansi-bright-white" }
             ]
         ];
+        this.htmlFormatter = {
+            transform: function (fragment, instance) {
+                var txt = fragment.text;
+                if (txt.length === 0)
+                    return txt;
+                if (instance._escape_for_html)
+                    txt = instance.old_escape_for_html(txt);
+                if (!fragment.bright && fragment.fg === null && fragment.bg === null)
+                    return txt;
+                var styles = [];
+                var classes = [];
+                var fg = fragment.fg;
+                var bg = fragment.bg;
+                if (fg === null && fragment.bright)
+                    fg = instance.ansi_colors[1][7];
+                if (!instance._use_classes) {
+                    if (fg)
+                        styles.push("color:rgb(" + fg.rgb.join(',') + ")");
+                    if (bg)
+                        styles.push("background-color:rgb(" + bg.rgb + ")");
+                }
+                else {
+                    if (fg) {
+                        if (fg.class_name !== 'truecolor') {
+                            classes.push(fg.class_name + "-fg");
+                        }
+                        else {
+                            styles.push("color:rgb(" + fg.rgb.join(',') + ")");
+                        }
+                    }
+                    if (bg) {
+                        if (bg.class_name !== 'truecolor') {
+                            classes.push(bg.class_name + "-bg");
+                        }
+                        else {
+                            styles.push("background-color:rgb(" + bg.rgb.join(',') + ")");
+                        }
+                    }
+                }
+                var class_string = '';
+                var style_string = '';
+                if (classes.length)
+                    class_string = " class=\"" + classes.join(' ') + "\"";
+                if (styles.length)
+                    style_string = " style=\"" + styles.join(';') + "\"";
+                return "<span" + class_string + style_string + ">" + txt + "</span>";
+            },
+            compose: function (segments, instance) {
+                return segments.join("");
+            }
+        };
+        this.textFormatter = {
+            transform: function (fragment, instance) {
+                return fragment.text;
+            },
+            compose: function (segments, instance) {
+                return segments.join("");
+            }
+        };
         this.setup_256_palette();
         this._use_classes = false;
         this._escape_for_html = true;
@@ -123,7 +182,7 @@ var AnsiUp = (function () {
         if ("http".indexOf(prefix) === 0)
             return (i + 1);
     };
-    AnsiUp.prototype.ansi_to_html = function (txt) {
+    AnsiUp.prototype.ansi_to = function (txt, formatter) {
         var _this = this;
         var pkt = this._buffer + txt;
         this._buffer = '';
@@ -131,20 +190,20 @@ var AnsiUp = (function () {
         if (raw_text_pkts.length === 1)
             raw_text_pkts.push('');
         this.handle_incomplete_sequences(raw_text_pkts);
-        var first_txt = this.wrap_text(raw_text_pkts.shift());
-        var blocks = raw_text_pkts.map(function (block) { return _this.wrap_text(_this.process_ansi(block)); });
-        if (first_txt.length > 0)
-            blocks.unshift(first_txt);
-        return blocks.join('');
+        var first_chunk = this.with_state(raw_text_pkts.shift());
+        var blocks = raw_text_pkts.map(function (block) { return formatter.transform(_this.process_ansi(block), _this); });
+        if (first_chunk.text.length > 0)
+            blocks.unshift(formatter.transform(first_chunk, this));
+        return formatter.compose(blocks, this);
+    };
+    AnsiUp.prototype.ansi_to_html = function (txt) {
+        return this.ansi_to(txt, this.htmlFormatter);
     };
     AnsiUp.prototype.ansi_to_text = function (txt) {
-        var _this = this;
-        var raw_text_pkts = txt.split(/\x1B\[/);
-        var first_txt = raw_text_pkts.shift();
-        var blocks = raw_text_pkts.map(function (block) { return _this.process_ansi(block); });
-        if (first_txt.length > 0)
-            blocks.unshift(first_txt);
-        return blocks.join('');
+        return this.ansi_to(txt, this.textFormatter);
+    };
+    AnsiUp.prototype.with_state = function (text) {
+        return { bright: this.bright, fg: this.fg, bg: this.bg, text: text };
     };
     AnsiUp.prototype.handle_incomplete_sequences = function (chunks) {
         var last_chunk = chunks[chunks.length - 1];
@@ -171,58 +230,15 @@ var AnsiUp = (function () {
             }
         }
     };
-    AnsiUp.prototype.wrap_text = function (txt) {
-        if (txt.length === 0)
-            return txt;
-        if (this._escape_for_html)
-            txt = this.old_escape_for_html(txt);
-        if (!this.bright && this.fg === null && this.bg === null)
-            return txt;
-        var styles = [];
-        var classes = [];
-        var fg = this.fg;
-        var bg = this.bg;
-        if (fg === null && this.bright)
-            fg = this.ansi_colors[1][7];
-        if (!this._use_classes) {
-            if (fg)
-                styles.push("color:rgb(" + fg.rgb.join(',') + ")");
-            if (bg)
-                styles.push("background-color:rgb(" + bg.rgb + ")");
-        }
-        else {
-            if (fg) {
-                if (fg.class_name !== 'truecolor') {
-                    classes.push(fg.class_name + "-fg");
-                }
-                else {
-                    styles.push("color:rgb(" + fg.rgb.join(',') + ")");
-                }
-            }
-            if (bg) {
-                if (bg.class_name !== 'truecolor') {
-                    classes.push(bg.class_name + "-bg");
-                }
-                else {
-                    styles.push("background-color:rgb(" + bg.rgb.join(',') + ")");
-                }
-            }
-        }
-        var class_string = '';
-        var style_string = '';
-        if (classes.length)
-            class_string = " class=\"" + classes.join(' ') + "\"";
-        if (styles.length)
-            style_string = " style=\"" + styles.join(';') + "\"";
-        return "<span" + class_string + style_string + ">" + txt + "</span>";
-    };
     AnsiUp.prototype.process_ansi = function (block) {
         var matches = block.match(SGR_REGEX);
-        if (!matches)
-            return block;
+        if (!matches) {
+            return this.with_state(block);
+        }
         var orig_txt = matches[4];
-        if (matches[1] !== '' || matches[3] !== 'm')
-            return orig_txt;
+        if (matches[1] !== '' || matches[3] !== 'm') {
+            return this.with_state(orig_txt);
+        }
         var sgr_cmds = matches[2].split(';');
         while (sgr_cmds.length > 0) {
             var sgr_cmd_str = sgr_cmds.shift();
@@ -281,7 +297,7 @@ var AnsiUp = (function () {
                 }
             }
         }
-        return orig_txt;
+        return this.with_state(orig_txt);
     };
     return AnsiUp;
 }());

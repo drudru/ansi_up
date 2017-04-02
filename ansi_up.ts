@@ -12,6 +12,22 @@ interface AU_Color
     class_name:string;
 }
 
+// represents the output of process_ansi(): text with parsed ANSI data
+interface TextWithData {
+    fg:AU_Color;
+    bg:AU_Color;
+    bright:boolean;
+    text:string;
+}
+
+interface Formatter {
+    // invoked for each generated TextWithData fragment outputted by process_ansi()
+    transform(fragment:TextWithData, instance:AnsiUp):any;
+
+    // invoked on the set of outputs from transform
+    compose(segments:any[], instance:AnsiUp):any;
+}
+
 // This regex is designed to parse an ANSI terminal CSI command. To be more specific,
 // we follow the XTERM conventions vs. the various other "standards".
 // http://invisible-island.net/xterm/ctlseqs/ctlseqs.html
@@ -68,6 +84,81 @@ class AnsiUp
         { rgb: [255, 255, 255],  class_name: "ansi-bright-white"   }
         ]
     ];
+
+    htmlFormatter:Formatter = {
+        transform(fragment:TextWithData, instance:AnsiUp):string {
+            let txt = fragment.text;
+
+            if (txt.length === 0)
+                return txt;
+
+            if (instance._escape_for_html)
+                txt = instance.old_escape_for_html(txt);
+
+            // If colors not set, default style is used
+            if (!fragment.bright && fragment.fg === null && fragment.bg === null)
+                return txt;
+
+            let styles:string[] = [];
+            let classes:string[] = [];
+
+            let fg = fragment.fg;
+            let bg = fragment.bg;
+
+            // Handle the case where we are told to be bright, but without a color
+            if (fg === null && fragment.bright)
+                fg = instance.ansi_colors[1][7];
+
+            if (!instance._use_classes) {
+                // USE INLINE STYLES
+                if (fg)
+                    styles.push(`color:rgb(${fg.rgb.join(',')})`);
+                if (bg)
+                    styles.push(`background-color:rgb(${bg.rgb})`);
+            } else {
+                // USE CLASSES
+                if (fg) {
+                    if (fg.class_name !== 'truecolor') {
+                        classes.push(`${fg.class_name}-fg`);
+                    } else {
+                        styles.push(`color:rgb(${fg.rgb.join(',')})`);
+                    }
+                }
+                if (bg) {
+                    if (bg.class_name !== 'truecolor') {
+                        classes.push(`${bg.class_name}-bg`);
+                    } else {
+                        styles.push(`background-color:rgb(${bg.rgb.join(',')})`);
+                    }
+                }
+            }
+
+            let class_string = '';
+            let style_string = '';
+
+            if (classes.length)
+                class_string = ` class="${classes.join(' ')}"`;
+
+            if (styles.length)
+                style_string = ` style="${styles.join(';')}"`;
+
+            return `<span${class_string}${style_string}>${txt}</span>`;
+        },
+
+        compose(segments:string[], instance:AnsiUp):string {
+            return segments.join("");
+        }
+    };
+
+    textFormatter:Formatter = {
+        transform(fragment:TextWithData, instance:AnsiUp):string {
+            return fragment.text;
+        },
+
+        compose(segments:string[], instance:AnsiUp):string {
+            return segments.join("");
+        }
+    };
 
     // 256 Colors Palette
     // CSS RGB strings - ex. "255, 255, 255"
@@ -203,8 +294,7 @@ class AnsiUp
             return (i + 1);
     }
 
-    ansi_to_html(txt:string):string
-    {
+    ansi_to(txt:string, formatter:Formatter):any {
         var pkt = this._buffer + txt;
         this._buffer = '';
 
@@ -215,27 +305,27 @@ class AnsiUp
 
         this.handle_incomplete_sequences(raw_text_pkts);
 
-        var first_txt = this.wrap_text(raw_text_pkts.shift()); // the first pkt is not the result of the split
+        let first_chunk = this.with_state(raw_text_pkts.shift()); // the first pkt is not the result of the split
+        let blocks = raw_text_pkts.map( (block) => formatter.transform(this.process_ansi(block), this) );
 
-        let blocks = raw_text_pkts.map( (block) => this.wrap_text(this.process_ansi(block)) );
+        if (first_chunk.text.length > 0)
+            blocks.unshift(formatter.transform(first_chunk, this));
 
-         if (first_txt.length > 0)
-            blocks.unshift(first_txt);
+        return formatter.compose(blocks, this);
+    }
 
-        return blocks.join('');
+    ansi_to_html(txt:string):string
+    {
+        return this.ansi_to(txt, this.htmlFormatter);
     }
 
     ansi_to_text(txt:string):string
     {
-        var raw_text_pkts = txt.split(/\x1B\[/);
-        var first_txt = raw_text_pkts.shift(); // the first pkt is not the result of the split
+        return this.ansi_to(txt, this.textFormatter);
+    }
 
-        let blocks = raw_text_pkts.map( (block) => this.process_ansi(block) );
-
-        if (first_txt.length > 0)
-            blocks.unshift(first_txt);
-
-        return blocks.join('');
+    private with_state(text:string):TextWithData {
+        return { bright: this.bright, fg: this.fg, bg: this.bg, text: text };
     }
 
     private handle_incomplete_sequences(chunks:string[]):void {
@@ -275,65 +365,7 @@ class AnsiUp
         // COMPLEX - END
     }
 
-    private wrap_text(txt:string):string
-    {
-        if (txt.length === 0)
-            return txt;
-
-        if (this._escape_for_html)
-            txt = this.old_escape_for_html(txt);
-
-        // If colors not set, default style is used
-        if (!this.bright && this.fg === null && this.bg === null)
-            return txt;
-
-        let styles:string[] = [];
-        let classes:string[] = [];
-
-        let fg = this.fg;
-        let bg = this.bg;
-
-        // Handle the case where we are told to be bright, but without a color
-        if (fg === null && this.bright)
-            fg = this.ansi_colors[1][7];
-
-        if (!this._use_classes) {
-            // USE INLINE STYLES
-            if (fg)
-                styles.push(`color:rgb(${fg.rgb.join(',')})`);
-            if (bg)
-                styles.push(`background-color:rgb(${bg.rgb})`);
-        } else {
-            // USE CLASSES
-            if (fg) {
-                if (fg.class_name !== 'truecolor') {
-                    classes.push(`${fg.class_name}-fg`);
-                } else {
-                    styles.push(`color:rgb(${fg.rgb.join(',')})`);
-                }
-            }
-            if (bg) {
-                if (bg.class_name !== 'truecolor') {
-                    classes.push(`${bg.class_name}-bg`);
-                } else {
-                    styles.push(`background-color:rgb(${bg.rgb.join(',')})`);
-                }
-            }
-        }
-
-        let class_string = '';
-        let style_string = '';
-
-        if (classes.length)
-            class_string = ` class="${classes.join(' ')}"`;
-
-        if (styles.length)
-            style_string = ` style="${styles.join(';')}"`;
-
-        return `<span${class_string}${style_string}>${txt}</span>`;
-    }
-
-    private process_ansi(block:string):string
+    private process_ansi(block:string):TextWithData
     {
       // This must only be called with a string that started with a CSI (the string split above)
       // The CSI must not be in the string. We consider this string to be a 'block'.
@@ -354,13 +386,15 @@ class AnsiUp
       let matches = block.match(SGR_REGEX);
 
       // The regex should have handled all cases!
-      if (!matches)
-            return block;
+      if (!matches) {
+          return this.with_state(block);
+      }
 
       let orig_txt = matches[4];
 
-      if (matches[1] !== '' || matches[3] !== 'm')
-        return orig_txt;
+      if (matches[1] !== '' || matches[3] !== 'm') {
+          return this.with_state(orig_txt);
+      }
 
       // Ok - we have a valid "SGR" (Select Graphic Rendition)
 
@@ -432,6 +466,6 @@ class AnsiUp
           }
       }
 
-      return orig_txt;
+      return this.with_state(orig_txt);
     }
 }
