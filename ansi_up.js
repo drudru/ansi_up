@@ -203,7 +203,6 @@ var AnsiUp = (function () {
             return (i + 1);
     };
     AnsiUp.prototype.ansi_to = function (txt, formatter) {
-        var _this = this;
         var pkt = this._buffer + txt;
         this._buffer = '';
         var raw_text_pkts = pkt.split(/\x1B\[/);
@@ -211,7 +210,10 @@ var AnsiUp = (function () {
             raw_text_pkts.push('');
         this.handle_incomplete_sequences(raw_text_pkts);
         var first_chunk = this.with_state(raw_text_pkts.shift());
-        var blocks = raw_text_pkts.map(function (block) { return formatter.transform(_this.process_ansi(block), _this); });
+        var blocks = new Array(raw_text_pkts.length);
+        for (var i = 0, len = raw_text_pkts.length; i < len; ++i) {
+            blocks[i] = (formatter.transform(this.process_ansi(raw_text_pkts[i]), this));
+        }
         if (first_chunk.text.length > 0)
             blocks.unshift(formatter.transform(first_chunk, this));
         return formatter.compose(blocks, this);

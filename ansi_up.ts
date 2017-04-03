@@ -306,7 +306,11 @@ class AnsiUp
         this.handle_incomplete_sequences(raw_text_pkts);
 
         let first_chunk = this.with_state(raw_text_pkts.shift()); // the first pkt is not the result of the split
-        let blocks = raw_text_pkts.map( (block) => formatter.transform(this.process_ansi(block), this) );
+
+        let blocks = new Array(raw_text_pkts.length);
+        for (let i = 0, len = raw_text_pkts.length; i < len; ++i) {
+            blocks[i] = (formatter.transform(this.process_ansi(raw_text_pkts[i]), this));
+        }
 
         if (first_chunk.text.length > 0)
             blocks.unshift(formatter.transform(first_chunk, this));
