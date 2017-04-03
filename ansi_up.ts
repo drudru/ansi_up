@@ -12,7 +12,9 @@ interface AU_Color
     class_name:string;
 }
 
-// represents the output of process_ansi(): text with parsed ANSI data
+// Represents the output of process_ansi(): a snapshot of the AnsiUp state machine
+// at a given point in time, which wraps a fragment of text. This wouuld allow deferred
+// processing of text fragments and colors, if ever needed.
 interface TextWithData {
     fg:AU_Color;
     bg:AU_Color;
@@ -20,11 +22,17 @@ interface TextWithData {
     text:string;
 }
 
+// Represents an object that is responsible for generating output from parsed ANSI color
+// metadata and text content.
 interface Formatter {
-    // invoked for each generated TextWithData fragment outputted by process_ansi()
+    // Invoked for each generated TextWithData fragment outputted by process_ansi().
+    // this function is responsible for generating output for a single TextWithData
+    // fragment. The result of transform() will be collected into an array that will
+    // be provided to compose().
     transform(fragment:TextWithData, instance:AnsiUp):any;
 
-    // invoked on the set of outputs from transform
+    // Invoked on the set of outputs from transform; the return value of this function
+    // will be the final output of ANSI processing.
     compose(segments:any[], instance:AnsiUp):any;
 }
 
