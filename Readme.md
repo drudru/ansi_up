@@ -84,7 +84,7 @@ This function only interprets ANSI SGR (Select Graphic Rendition) codes that can
 
 The default style uses colors that are very close to the prescribed standard. The standard assumes that the text will have a black background. These colors are set as inline styles on the SPAN tags. Another option is to set 'use_classes: true' in the options argument. This will instead set classes on the spans so the colors can be set via CSS. The class names used are of the format ````ansi-*-fg/bg```` and ````ansi-bright-*-fg/bg```` where * is the colour name, i.e black/red/green/yellow/blue/magenta/cyan/white. See the examples directory for a complete CSS theme for these classes.
 
-#### ansi_to_txt (txt)
+#### ansi_to_text (txt)
 
 This simply removes the ANSI escape codes from the stream.
 No escaping is done.
