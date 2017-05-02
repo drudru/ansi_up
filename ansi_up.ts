@@ -4,11 +4,36 @@
  * http://github.com/drudru/ansi_up
  */
 
+"use strict";
 
 interface AU_Color
 {
     rgb:number[];
     class_name:string;
+}
+
+// Represents the output of process_ansi(): a snapshot of the AnsiUp state machine
+// at a given point in time, which wraps a fragment of text. This wouuld allow deferred
+// processing of text fragments and colors, if ever needed.
+interface TextWithData {
+    fg:AU_Color;
+    bg:AU_Color;
+    bright:boolean;
+    text:string;
+}
+
+// Represents an object that is responsible for generating output from parsed ANSI color
+// metadata and text content.
+interface Formatter {
+    // Invoked for each generated TextWithData fragment outputted by process_ansi().
+    // this function is responsible for generating output for a single TextWithData
+    // fragment. The result of transform() will be collected into an array that will
+    // be provided to compose().
+    transform(fragment:TextWithData, instance:AnsiUp):any;
+
+    // Invoked on the set of outputs from transform; the return value of this function
+    // will be the final output of ANSI processing.
+    compose(segments:any[], instance:AnsiUp):any;
 }
 
 // ES5 template string transformer
@@ -54,6 +79,81 @@ class AnsiUp
         { rgb: [255, 255, 255],  class_name: "ansi-bright-white"   }
         ]
     ];
+
+    htmlFormatter:Formatter = {
+        transform(fragment:TextWithData, instance:AnsiUp):string {
+            let txt = fragment.text;
+
+            if (txt.length === 0)
+                return txt;
+
+            if (instance._escape_for_html)
+                txt = instance.old_escape_for_html(txt);
+
+            // If colors not set, default style is used
+            if (!fragment.bright && fragment.fg === null && fragment.bg === null)
+                return txt;
+
+            let styles:string[] = [];
+            let classes:string[] = [];
+
+            let fg = fragment.fg;
+            let bg = fragment.bg;
+
+            // Handle the case where we are told to be bright, but without a color
+            if (fg === null && fragment.bright)
+                fg = instance.ansi_colors[1][7];
+
+            if (!instance._use_classes) {
+                // USE INLINE STYLES
+                if (fg)
+                    styles.push(`color:rgb(${fg.rgb.join(',')})`);
+                if (bg)
+                    styles.push(`background-color:rgb(${bg.rgb})`);
+            } else {
+                // USE CLASSES
+                if (fg) {
+                    if (fg.class_name !== 'truecolor') {
+                        classes.push(`${fg.class_name}-fg`);
+                    } else {
+                        styles.push(`color:rgb(${fg.rgb.join(',')})`);
+                    }
+                }
+                if (bg) {
+                    if (bg.class_name !== 'truecolor') {
+                        classes.push(`${bg.class_name}-bg`);
+                    } else {
+                        styles.push(`background-color:rgb(${bg.rgb.join(',')})`);
+                    }
+                }
+            }
+
+            let class_string = '';
+            let style_string = '';
+
+            if (classes.length)
+                class_string = ` class="${classes.join(' ')}"`;
+
+            if (styles.length)
+                style_string = ` style="${styles.join(';')}"`;
+
+            return `<span${class_string}${style_string}>${txt}</span>`;
+        },
+
+        compose(segments:string[], instance:AnsiUp):string {
+            return segments.join("");
+        }
+    };
+
+    textFormatter:Formatter = {
+        transform(fragment:TextWithData, instance:AnsiUp):string {
+            return fragment.text;
+        },
+
+        compose(segments:string[], instance:AnsiUp):string {
+            return segments.join("");
+        }
+    };
 
     // 256 Colors Palette
     // CSS RGB strings - ex. "255, 255, 255"
@@ -135,9 +235,9 @@ class AnsiUp
     private old_escape_for_html(txt:string):string
     {
       return txt.replace(/[&<>]/gm, (str) => {
-        if (str == "&") return "&amp;";
-        if (str == "<") return "&lt;";
-        if (str == ">") return "&gt;";
+        if (str === "&") return "&amp;";
+        if (str === "<") return "&lt;";
+        if (str === ">") return "&gt;";
       });
     }
 
@@ -154,9 +254,7 @@ class AnsiUp
         // If one exists, we must assume we are good
         // [\x40-\x7e])               # the command
 
-        if (/.*?[\x40-\x7e]/.test(txt) == false)
-            return true;
-        return false;
+        return !(/.*?[\x40-\x7e]/.test(txt));
     }
 
     private detect_incomplete_link(txt:string)
@@ -167,7 +265,7 @@ class AnsiUp
         // Scan backwards for first whitespace
         var found = false;
         for (var i = txt.length - 1; i > 0; i--) {
-            if (/\s|\033/.test(txt[i])) {
+            if (/\s|\x1B/.test(txt[i])) {
                 found = true;
                 break;
             }
@@ -185,148 +283,92 @@ class AnsiUp
         // Test if possible prefix
         var prefix = txt.substr(i + 1, 4);
 
-        if (prefix.length == 0) return -1;
+        if (prefix.length === 0) return -1;
 
-        if ("http".indexOf(prefix) == 0)
+        if ("http".indexOf(prefix) === 0)
             return (i + 1);
+    }
+
+    ansi_to(txt:string, formatter:Formatter):any {
+        var pkt = this._buffer + txt;
+        this._buffer = '';
+
+        var raw_text_pkts = pkt.split(/\x1B\[/);
+
+        if (raw_text_pkts.length === 1)
+            raw_text_pkts.push('');
+
+        this.handle_incomplete_sequences(raw_text_pkts);
+
+        let first_chunk = this.with_state(raw_text_pkts.shift()); // the first pkt is not the result of the split
+
+        let blocks = new Array(raw_text_pkts.length);
+        for (let i = 0, len = raw_text_pkts.length; i < len; ++i) {
+            blocks[i] = (formatter.transform(this.process_ansi(raw_text_pkts[i]), this));
+        }
+
+        if (first_chunk.text.length > 0)
+            blocks.unshift(formatter.transform(first_chunk, this));
+
+        return formatter.compose(blocks, this);
     }
 
     ansi_to_html(txt:string):string
     {
-        var pkt = this._buffer + txt;
-        this._buffer = '';
+        return this.ansi_to(txt, this.htmlFormatter);
+    }
 
-        var raw_text_pkts = pkt.split(/\033\[/);
+    ansi_to_text(txt:string):string
+    {
+        return this.ansi_to(txt, this.textFormatter);
+    }
 
-        if (raw_text_pkts.length == 1)
-            raw_text_pkts.push('');
+    private with_state(text:string):TextWithData {
+        return { bright: this.bright, fg: this.fg, bg: this.bg, text: text };
+    }
 
+    private handle_incomplete_sequences(chunks:string[]):void {
         // COMPLEX - BEGIN
 
         // Validate the last chunks for:
         // - incomplete ANSI sequence
         // - incomplete ESC
         // If any of these occur, we may have to buffer
-        var last_pkt = raw_text_pkts[raw_text_pkts.length - 1];
+        var last_chunk = chunks[chunks.length - 1];
 
         // - incomplete ANSI sequence
-        if ((last_pkt.length > 0) && this.detect_incomplete_ansi(last_pkt)) {
-            this._buffer = "\033[" + last_pkt;
-            raw_text_pkts.pop();
-            raw_text_pkts.push('');
+        if ((last_chunk.length > 0) && this.detect_incomplete_ansi(last_chunk)) {
+            this._buffer = "\x1B[" + last_chunk;
+            chunks.pop();
+            chunks.push('');
         } else {
             // - incomplete ESC
-            if (last_pkt.slice(-1) == "\033") {
-                this._buffer = "\033";
-                console.log("raw", raw_text_pkts);
-                raw_text_pkts.pop();
-                raw_text_pkts.push(last_pkt.substr(0, last_pkt.length - 1));
-                console.log(raw_text_pkts);
-                console.log(last_pkt);
+            if (last_chunk.slice(-1) === "\x1B") {
+                this._buffer = "\x1B";
+                console.log("raw", chunks);
+                chunks.pop();
+                chunks.push(last_chunk.substr(0, last_chunk.length - 1));
+                console.log(chunks);
+                console.log(last_chunk);
             }
             // - Incomplete ESC, only one packet
-            if (true
-                && (raw_text_pkts.length == 2)
-                && (raw_text_pkts[1] == '')
-                && (raw_text_pkts[0].slice(-1) == "\033")) {
-                this._buffer = "\033";
-                last_pkt = raw_text_pkts.shift();
-                raw_text_pkts.unshift(last_pkt.substr(0, last_pkt.length - 1));
+            if ((chunks.length === 2)
+                && (chunks[1] === '')
+                && (chunks[0].slice(-1) === "\x1B")) {
+                this._buffer = "\x1B";
+                last_chunk = chunks.shift();
+                chunks.unshift(last_chunk.substr(0, last_chunk.length - 1));
             }
         }
 
         // COMPLEX - END
-
-        var first_txt = this.wrap_text(raw_text_pkts.shift()); // the first pkt is not the result of the split
-
-        let blocks = raw_text_pkts.map( (block) => this.wrap_text(this.process_ansi(block)) );
-
-         if (first_txt.length > 0)
-            blocks.unshift(first_txt);
-
-        return blocks.join('');
     }
 
-    ansi_to_text(txt:string):string
-    {
-        var raw_text_pkts = txt.split(/\033\[/);
-        var first_txt = raw_text_pkts.shift(); // the first pkt is not the result of the split
-
-        let blocks = raw_text_pkts.map( (block) => this.process_ansi(block) );
-
-        if (first_txt.length > 0)
-            blocks.unshift(first_txt);
-
-        return blocks.join('');
-    }
-
-    private wrap_text(txt:string):string
-    {
-        if (txt.length == 0)
-            return txt;
-
-        if (this._escape_for_html)
-            txt = this.old_escape_for_html(txt);
-
-        // If colors not set, default style is used
-        if (this.bright == false && this.fg == null && this.bg == null)
-            return txt;
-
-        let styles:string[] = [];
-        let classes:string[] = [];
-
-        let fg = this.fg;
-        let bg = this.bg;
-
-        // Handle the case where we are told to be bright, but without a color
-        if (fg == null && this.bright)
-            fg = this.ansi_colors[1][7];
-
-        if (this._use_classes == false) {
-            // USE INLINE STYLES
-            if (fg)
-                styles.push(`color:rgb(${fg.rgb.join(',')})`);
-            if (bg)
-                styles.push(`background-color:rgb(${bg.rgb})`);
-        } else {
-            // USE CLASSES
-            if (fg) {
-                if (fg.class_name != 'truecolor') {
-                    classes.push(`${fg.class_name}-fg`);
-                } else {
-                    styles.push(`color:rgb(${fg.rgb.join(',')})`);
-                }
-            }
-            if (bg) {
-                if (bg.class_name != 'truecolor') {
-                    classes.push(`${bg.class_name}-bg`);
-                } else {
-                    styles.push(`background-color:rgb(${bg.rgb.join(',')})`);
-                }
-            }
-        }
-
-        let class_string = '';
-        let style_string = '';
-
-        if (classes.length)
-            class_string = ` class="${classes.join(' ')}"`;
-
-        if (styles.length)
-            style_string = ` style="${styles.join(';')}"`;
-
-        return `<span${class_string}${style_string}>${txt}</span>`;
-    }
-
-    private process_ansi(block:string):string
+    private process_ansi(block:string):TextWithData
     {
       // This must only be called with a string that started with a CSI (the string split above)
       // The CSI must not be in the string. We consider this string to be a 'block'.
       // It has an ANSI command at the front that affects the text that follows it.
-      //
-      // This regex is designed to parse an ANSI terminal CSI command. To be more specific,
-      // we follow the XTERM conventions vs. the various other "standards".
-      // http://invisible-island.net/xterm/ctlseqs/ctlseqs.html
       //
       // All ansi codes are typically in the following format. We parse it and focus
       // specifically on the graphics commands (SGR)
@@ -339,32 +381,34 @@ class AnsiUp
       //
       // We use a regex to parse into capture groups the PRIVATE-MODE-CHAR to the COMMAND
       // and the following text
-      //
 
-      // Lazy regex creation to keep nicely commented code here
-      // NOTE: default is multiline (workaround for now til I can
-      // determine flags inline)
       if (!this._sgr_regex) {
+          // This regex is designed to parse an ANSI terminal CSI command. To be more specific,
+          // we follow the XTERM conventions vs. the various other "standards".
+          // http://invisible-island.net/xterm/ctlseqs/ctlseqs.html
+          //
           this._sgr_regex = rgx`
-              ^                           # beginning of line
-              ([!\x3c-\x3f]?)             # a private-mode char (!, <, =, >, ?)
-              ([\d;]*)                    # any digits or semicolons
-              ([\x20-\x2f]?               # an intermediate modifier
-               [\x40-\x7e])               # the command
-              ([\s\S]*)                   # any text following this CSI sequence
-              `;
+            ^                           # beginning of line
+            ([!\x3c-\x3f]?)             # a private-mode char (!, <, =, >, ?)
+            ([\d;]*)                    # any digits or semicolons
+            ([\x20-\x2f]?               # an intermediate modifier
+            [\x40-\x7e])                # the command
+            ([\s\S]*)                   # any text following this CSI sequence
+          `;
       }
 
       let matches = block.match(this._sgr_regex);
 
       // The regex should have handled all cases!
-      if (!matches)
-            return block;
+      if (!matches) {
+          return this.with_state(block);
+      }
 
       let orig_txt = matches[4];
 
-      if (matches[1] !== '' || matches[3] !== 'm')
-        return orig_txt;
+      if (matches[1] !== '' || matches[3] !== 'm') {
+          return this.with_state(orig_txt);
+      }
 
       // Ok - we have a valid "SGR" (Select Graphic Rendition)
 
@@ -383,9 +427,9 @@ class AnsiUp
               this.bright = false;
           } else if (num === 1) {
               this.bright = true;
-          } else if (num == 39) {
+          } else if (num === 39) {
               this.fg = null;
-          } else if (num == 49) {
+          } else if (num === 49) {
               this.bg = null;
           } else if ((num >= 30) && (num < 38)) {
               let bidx = this.bright ? 1 : 0;
@@ -436,6 +480,6 @@ class AnsiUp
           }
       }
 
-      return orig_txt;
+      return this.with_state(orig_txt);
     }
 }
