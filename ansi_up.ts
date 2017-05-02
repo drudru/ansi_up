@@ -36,19 +36,6 @@ interface Formatter {
     compose(segments:any[], instance:AnsiUp):any;
 }
 
-// This regex is designed to parse an ANSI terminal CSI command. To be more specific,
-// we follow the XTERM conventions vs. the various other "standards".
-// http://invisible-island.net/xterm/ctlseqs/ctlseqs.html
-//
-const SGR_REGEX = rgx`
-    ^                           # beginning of line
-    ([!\x3c-\x3f]?)             # a private-mode char (!, <, =, >, ?)
-    ([\d;]*)                    # any digits or semicolons
-    ([\x20-\x2f]?               # an intermediate modifier
-    [\x40-\x7e])               # the command
-    ([\s\S]*)                   # any text following this CSI sequence
-`;
-
 // ES5 template string transformer
 // NOTE: default is multiline (workaround for now til I can
 // determine flags inline)
@@ -394,6 +381,19 @@ class AnsiUp
       //
       // We use a regex to parse into capture groups the PRIVATE-MODE-CHAR to the COMMAND
       // and the following text
+
+      // This regex is designed to parse an ANSI terminal CSI command. To be more specific,
+      // we follow the XTERM conventions vs. the various other "standards".
+      // http://invisible-island.net/xterm/ctlseqs/ctlseqs.html
+      //
+      const SGR_REGEX = rgx`
+          ^                           # beginning of line
+          ([!\x3c-\x3f]?)             # a private-mode char (!, <, =, >, ?)
+          ([\d;]*)                    # any digits or semicolons
+          ([\x20-\x2f]?               # an intermediate modifier
+          [\x40-\x7e])                # the command
+          ([\s\S]*)                   # any text following this CSI sequence
+      `;
 
       let matches = block.match(SGR_REGEX);
 

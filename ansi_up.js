@@ -19,7 +19,6 @@
 })(function (require, exports) {
 
 "use strict";
-var SGR_REGEX = (_a = ["\n    ^                           # beginning of line\n    ([!<-?]?)             # a private-mode char (!, <, =, >, ?)\n    ([d;]*)                    # any digits or semicolons\n    ([ -/]?               # an intermediate modifier\n    [@-~])               # the command\n    ([sS]*)                   # any text following this CSI sequence\n"], _a.raw = ["\n    ^                           # beginning of line\n    ([!\\x3c-\\x3f]?)             # a private-mode char (!, <, =, >, ?)\n    ([\\d;]*)                    # any digits or semicolons\n    ([\\x20-\\x2f]?               # an intermediate modifier\n    [\\x40-\\x7e])               # the command\n    ([\\s\\S]*)                   # any text following this CSI sequence\n"], rgx(_a));
 function rgx(tmplObj) {
     var subst = [];
     for (var _i = 1; _i < arguments.length; _i++) {
@@ -253,6 +252,7 @@ var AnsiUp = (function () {
         }
     };
     AnsiUp.prototype.process_ansi = function (block) {
+        var SGR_REGEX = (_a = ["\n          ^                           # beginning of line\n          ([!<-?]?)             # a private-mode char (!, <, =, >, ?)\n          ([d;]*)                    # any digits or semicolons\n          ([ -/]?               # an intermediate modifier\n          [@-~])                # the command\n          ([sS]*)                   # any text following this CSI sequence\n      "], _a.raw = ["\n          ^                           # beginning of line\n          ([!\\x3c-\\x3f]?)             # a private-mode char (!, <, =, >, ?)\n          ([\\d;]*)                    # any digits or semicolons\n          ([\\x20-\\x2f]?               # an intermediate modifier\n          [\\x40-\\x7e])                # the command\n          ([\\s\\S]*)                   # any text following this CSI sequence\n      "], rgx(_a));
         var matches = block.match(SGR_REGEX);
         if (!matches) {
             return this.with_state(block);
@@ -320,10 +320,10 @@ var AnsiUp = (function () {
             }
         }
         return this.with_state(orig_txt);
+        var _a;
     };
     return AnsiUp;
 }());
-var _a;
 //# sourceMappingURL=ansi_up.js.map
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = AnsiUp;

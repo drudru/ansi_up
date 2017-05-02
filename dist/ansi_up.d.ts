@@ -12,7 +12,6 @@ interface Formatter {
     transform(fragment: TextWithData, instance: AnsiUp): any;
     compose(segments: any[], instance: AnsiUp): any;
 }
-declare const SGR_REGEX: RegExp;
 declare function rgx(tmplObj: any, ...subst: any[]): RegExp;
 declare class AnsiUp {
     VERSION: string;
