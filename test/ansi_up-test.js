@@ -292,6 +292,59 @@ describe('ansi_up', function () {
   });
   */
 
+  describe("ansi_to()", function() {
+
+    // Prove that interaction between AnsiUp and the formatter is correct and that formatters
+    // can be completely isolated code.
+    it("accepts an arbitrary formatter and provides ANSI information related to text segments", function() {
+      var attr = 1; // bright
+      var fg = 32; // green fg
+      var bg = 41; // red bg
+      var lines = [
+        "should have no color",
+        "\033[" + attr + ";" + fg + "m " + "should be bright green foreground" + "\033[0m",
+        "\033[" + attr + ";" + bg + ";" + fg + "m " + "should have bright red background with bright green foreground" + "\033[0m"
+      ];
+
+      var stats = {};
+
+      // A silly formatter that collects statistics about the text it receives.
+      var statsFormatter = {
+        transform: function(data) {
+          var text = data.text.replace(/^\s+|\s+$/, "");
+
+          if (text.length) {
+            if (!stats[text]) {
+              stats[text] = [];
+            }
+
+            if (data.fg) stats[text].push(data.fg.class_name);
+            if (data.bg) stats[text].push(data.bg.class_name);
+          }
+
+          return text;
+        },
+
+        compose: function(segments) {
+          return "processed: " + segments.filter(function (s) { return s.length; }).join(", ");
+        }
+      };
+
+      var au = new AnsiUp();
+      au.use_classes = true;
+
+      var plainText = au.ansi_to(lines.join(""), statsFormatter);
+
+      plainText.should.eql("processed: should have no color, should be bright green foreground, should have bright red background with bright green foreground");
+
+      stats.should.eql({
+        "should have no color": [],
+        "should be bright green foreground": ["ansi-bright-green"],
+        "should have bright red background with bright green foreground": ["ansi-bright-green", "ansi-red"]
+      });
+    });
+  });
+
   describe('ansi to html', function () {
 
     describe('default colors', function () {
