@@ -4,16 +4,17 @@
  *  http://github.com/drudru/ansi_up
  */
 (function (factory) {
+    var v;
     if (typeof module === "object" && typeof module.exports === "object") {
-        var v = factory(require, exports);
-        if (v !== undefined) module.exports = v;
+        v = factory(require, exports);
+        if ("undefined" !== typeof v) module.exports = v;
     }
-    else if (typeof define === "function" && define.amd) {
+    else if ("function" === typeof define && define.amd) {
         define(["require", "exports"], factory);
     }
     else {
         var req, exp = {};
-        var v = factory(req, exp);
+        v = factory(req, exp);
         window.AnsiUp = exp.default;
     }
 })(function (require, exports) {
