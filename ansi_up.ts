@@ -218,8 +218,8 @@ class AnsiUp
         for (let r = 0; r < 6; ++r) {
             for (let g = 0; g < 6; ++g) {
                 for (let b = 0; b < 6; ++b) {
-                    let c = {rgb:[levels[r], levels[g], levels[b]], class_name:'truecolor'};
-                    this.palette_256.push(c);
+                    let col = {rgb:[levels[r], levels[g], levels[b]], class_name:'truecolor'};
+                    this.palette_256.push(col);
                 }
             }
         }
@@ -227,8 +227,8 @@ class AnsiUp
         // Index 232..255 : Grayscale
         let grey_level = 8;
         for (let i = 0; i < 24; ++i, grey_level += 10) {
-            let c = {rgb:[grey_level, grey_level, grey_level], class_name:'truecolor'};
-            this.palette_256.push(c);
+            let gry = {rgb:[grey_level, grey_level, grey_level], class_name:'truecolor'};
+            this.palette_256.push(gry);
         }
     }
 
@@ -352,9 +352,9 @@ class AnsiUp
                 console.log(last_chunk);
             }
             // - Incomplete ESC, only one packet
-            if ((chunks.length === 2)
-                && (chunks[1] === '')
-                && (chunks[0].slice(-1) === "\x1B")) {
+            if (chunks.length === 2 &&
+                chunks[1] === "" &&
+                chunks[0].slice(-1) === "\x1B") {
                 this._buffer = "\x1B";
                 last_chunk = chunks.shift();
                 chunks.unshift(last_chunk.substr(0, last_chunk.length - 1));
