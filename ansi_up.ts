@@ -427,6 +427,8 @@ class AnsiUp
               this.bright = false;
           } else if (num === 1) {
               this.bright = true;
+          } else if (num === 22) {
+              this.bright = false;
           } else if (num === 39) {
               this.fg = null;
           } else if (num === 49) {
