@@ -12,8 +12,8 @@
         factory(exports);
     } else {
         // Browser globals
-        var exp = {}
+        var exp = {};
         factory(exp);
-        root.AnsiUp = exp.default
+        root.AnsiUp = exp.default;
     }
 }(this, function (exports) {
