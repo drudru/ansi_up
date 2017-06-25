@@ -6,18 +6,18 @@
 (function (factory) {
     var v;
     if (typeof module === "object" && typeof module.exports === "object") {
-        v = factory(require, exports);
+        v = factory(exports);
         if ("undefined" !== typeof v) module.exports = v;
     }
     else if ("function" === typeof define && define.amd) {
-        define(["require", "exports"], factory);
+        define(["exports"], factory);
     }
     else {
-        var req, exp = {};
-        v = factory(req, exp);
+        var exp = {};
+        v = factory(exp);
         window.AnsiUp = exp.default;
     }
-})(function (require, exports) {
+})(function (exports) {
 
 "use strict";
 function rgx(tmplObj) {
