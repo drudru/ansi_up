@@ -3,22 +3,20 @@
  *  license : MIT
  *  http://github.com/drudru/ansi_up
  */
-(function (factory) {
-    var v;
-    if (typeof module === "object" && typeof module.exports === "object") {
-        v = factory(require, exports);
-        if ("undefined" !== typeof v) module.exports = v;
+(function (root, factory) {
+    if (typeof define === 'function' && define.amd) {
+        // AMD. Register as an anonymous module.
+        define(['exports'], factory);
+    } else if (typeof exports === 'object' && typeof exports.nodeName !== 'string') {
+        // CommonJS
+        factory(exports);
+    } else {
+        // Browser globals
+        var exp = {};
+        factory(exp);
+        root.AnsiUp = exp.default;
     }
-    else if ("function" === typeof define && define.amd) {
-        define(["require", "exports"], factory);
-    }
-    else {
-        var req, exp = {};
-        v = factory(req, exp);
-        window.AnsiUp = exp.default;
-    }
-})(function (require, exports) {
-
+}(this, function (exports) {
 "use strict";
 function rgx(tmplObj) {
     var subst = [];
@@ -333,4 +331,4 @@ var AnsiUp = (function () {
 //# sourceMappingURL=ansi_up.js.map
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = AnsiUp;
-});
+}));
