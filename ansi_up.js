@@ -30,7 +30,7 @@ function rgx(tmplObj) {
 }
 var AnsiUp = (function () {
     function AnsiUp() {
-        this.VERSION = "2.0.1";
+        this.VERSION = "2.0.2";
         this.ansi_colors = [
             [
                 { rgb: [0, 0, 0], class_name: "ansi-black" },

@@ -51,7 +51,7 @@ function rgx(tmplObj, ...subst) {
 
 class AnsiUp
 {
-    VERSION = "2.0.1";
+    VERSION = "2.0.2";
 
     ansi_colors =
     [
