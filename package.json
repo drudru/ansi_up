@@ -9,6 +9,7 @@
   "author": "drudru <drudru@gmail.com>",
   "license": "MIT",
   "main": "./ansi_up.js",
+  "types": "./dist/ansi_up.d.ts",
   "repository": {
     "type": "git",
     "url": "git://github.com/drudru/ansi_up.git"
