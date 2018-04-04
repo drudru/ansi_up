@@ -1,19 +1,19 @@
-interface AU_Color {
+export interface AU_Color {
     rgb: number[];
     class_name: string;
 }
-interface TextWithData {
+export interface TextWithData {
     fg: AU_Color;
     bg: AU_Color;
     bright: boolean;
     text: string;
 }
-interface Formatter {
+export interface Formatter {
     transform(fragment: TextWithData, instance: AnsiUp): any;
     compose(segments: any[], instance: AnsiUp): any;
 }
 declare function rgx(tmplObj: any, ...subst: any[]): RegExp;
-declare class AnsiUp {
+export default class AnsiUp {
     VERSION: string;
     ansi_colors: {
         rgb: number[];
