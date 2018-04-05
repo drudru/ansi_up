@@ -15,21 +15,21 @@ interface AU_Color
 // Represents the output of process_ansi(): a snapshot of the AnsiUp state machine
 // at a given point in time, which wraps a fragment of text. This wouuld allow deferred
 // processing of text fragments and colors, if ever needed.
-interface TextWithData {
+interface TextWithAttr {
     fg:AU_Color;
     bg:AU_Color;
-    bright:boolean;
+    bold:boolean;
     text:string;
 }
 
 // Represents an object that is responsible for generating output from parsed ANSI color
 // metadata and text content.
 interface Formatter {
-    // Invoked for each generated TextWithData fragment outputted by process_ansi().
-    // this function is responsible for generating output for a single TextWithData
+    // Invoked for each generated TextWithAttr fragment outputted by process_ansi().
+    // this function is responsible for generating output for a single TextWithAttr
     // fragment. The result of transform() will be collected into an array that will
     // be provided to compose().
-    transform(fragment:TextWithData, instance:AnsiUp):any;
+    transform(fragment:TextWithAttr, instance:AnsiUp):any;
 
     // Invoked on the set of outputs from transform; the return value of this function
     // will be the final output of ANSI processing.
@@ -51,7 +51,7 @@ function rgx(tmplObj, ...subst) {
 
 class AnsiUp
 {
-    VERSION = "2.0.3";
+    VERSION = "3.0.0";
 
     ansi_colors =
     [
@@ -81,7 +81,7 @@ class AnsiUp
     ];
 
     htmlFormatter:Formatter = {
-        transform(fragment:TextWithData, instance:AnsiUp):string {
+        transform(fragment:TextWithAttr, instance:AnsiUp):string {
             let txt = fragment.text;
 
             if (txt.length === 0)
@@ -91,7 +91,7 @@ class AnsiUp
                 txt = instance.old_escape_for_html(txt);
 
             // If colors not set, default style is used
-            if (!fragment.bright && fragment.fg === null && fragment.bg === null)
+            if (!fragment.bold && fragment.fg === null && fragment.bg === null)
                 return txt;
 
             let styles:string[] = [];
@@ -100,9 +100,9 @@ class AnsiUp
             let fg = fragment.fg;
             let bg = fragment.bg;
 
-            // Handle the case where we are told to be bright, but without a color
-            if (fg === null && fragment.bright)
-                fg = instance.ansi_colors[1][7];
+            // Note on bold: https://stackoverflow.com/questions/6737005/what-are-some-advantages-to-using-span-style-font-weightbold-rather-than-b?rq=1
+            if (fragment.bold)
+                styles.push('font-weight:bold')
 
             if (!instance._use_classes) {
                 // USE INLINE STYLES
@@ -137,7 +137,7 @@ class AnsiUp
             if (styles.length)
                 style_string = ` style="${styles.join(';')}"`;
 
-            return `<span${class_string}${style_string}>${txt}</span>`;
+            return `<span${style_string}${class_string}>${txt}</span>`;
         },
 
         compose(segments:string[], instance:AnsiUp):string {
@@ -146,7 +146,7 @@ class AnsiUp
     };
 
     textFormatter:Formatter = {
-        transform(fragment:TextWithData, instance:AnsiUp):string {
+        transform(fragment:TextWithAttr, instance:AnsiUp):string {
             return fragment.text;
         },
 
@@ -161,7 +161,7 @@ class AnsiUp
 
     private fg:AU_Color;
     private bg:AU_Color;
-    private bright:boolean;
+    private bold:boolean;
 
     private _use_classes:boolean;
     private _escape_for_html;
@@ -175,7 +175,7 @@ class AnsiUp
         this._use_classes = false;
         this._escape_for_html = true;
 
-        this.bright = false;
+        this.bold = false;
         this.fg = this.bg = null;
 
         this._buffer = '';
@@ -323,8 +323,8 @@ class AnsiUp
         return this.ansi_to(txt, this.textFormatter);
     }
 
-    private with_state(text:string):TextWithData {
-        return { bright: this.bright, fg: this.fg, bg: this.bg, text: text };
+    private with_state(text:string):TextWithAttr {
+        return { bold: this.bold, fg: this.fg, bg: this.bg, text: text };
     }
 
     private handle_incomplete_sequences(chunks:string[]):void {
@@ -364,7 +364,7 @@ class AnsiUp
         // COMPLEX - END
     }
 
-    private process_ansi(block:string):TextWithData
+    private process_ansi(block:string):TextWithAttr
     {
       // This must only be called with a string that started with a CSI (the string split above)
       // The CSI must not be in the string. We consider this string to be a 'block'.
@@ -424,24 +424,23 @@ class AnsiUp
 
           if (isNaN(num) || num === 0) {
               this.fg = this.bg = null;
-              this.bright = false;
+              this.bold = false;
           } else if (num === 1) {
-              this.bright = true;
+              this.bold = true;
           } else if (num === 22) {
-              this.bright = false;
+              this.bold = false;
           } else if (num === 39) {
               this.fg = null;
           } else if (num === 49) {
               this.bg = null;
           } else if ((num >= 30) && (num < 38)) {
-              let bidx = this.bright ? 1 : 0;
-              this.fg = this.ansi_colors[bidx][(num - 30)];
-          } else if ((num >= 90) && (num < 98)) {
-              this.fg = this.ansi_colors[1][(num - 90)];
+              this.fg = this.ansi_colors[0][(num - 30)];
           } else if ((num >= 40) && (num < 48)) {
               this.bg = this.ansi_colors[0][(num - 40)];
+          } else if ((num >= 90) && (num < 98)) {
+              this.fg = this.ansi_colors[1][(num - 90)];
           } else if ((num >= 100) && (num < 108)) {
-              this.bg = this.ansi_colors[1][(num - 100)];
+            this.bg = this.ansi_colors[1][(num - 100)];
           } else if (num === 38 || num === 48) {
 
               // extended set foreground/background color

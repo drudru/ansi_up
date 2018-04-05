@@ -2,14 +2,14 @@ export interface AU_Color {
     rgb: number[];
     class_name: string;
 }
-export interface TextWithData {
+export interface TextWithAttr {
     fg: AU_Color;
     bg: AU_Color;
-    bright: boolean;
+    bold: boolean;
     text: string;
 }
 export interface Formatter {
-    transform(fragment: TextWithData, instance: AnsiUp): any;
+    transform(fragment: TextWithAttr, instance: AnsiUp): any;
     compose(segments: any[], instance: AnsiUp): any;
 }
 declare function rgx(tmplObj: any, ...subst: any[]): RegExp;
@@ -24,7 +24,7 @@ export default class AnsiUp {
     private palette_256;
     private fg;
     private bg;
-    private bright;
+    private bold;
     private _use_classes;
     private _escape_for_html;
     private _sgr_regex;

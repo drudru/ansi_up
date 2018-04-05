@@ -74,8 +74,9 @@ More examples are in the 'examples' directory in the repo.
 
 ## Versions
 
-Version 2.x is the latest stateful, streaming version of the API. It is simpler and more correct.
-Version 1.3.0 was the last of the older, deprecated API.
+Version 3.0 - now treats ANSI bold sequences as CSS font-weight:bold
+Version 2.0 - moved to a stateful, streaming version of the API
+Version 1.3 - was the last of the older, deprecated API.
 
 ## Quick Start
 
@@ -92,7 +93,7 @@ system.
 
 #### ansi_to_html (txt)
 
-This replaces ANSI terminal escape codes with SPAN tags that wrap the content. See the example output above.
+This replaces ANSI terminal escape codes/sequences with SPAN tags that wrap the content.
 
 This function only interprets ANSI SGR (Select Graphic Rendition) codes that can be represented in HTML. For example, cursor movement codes are ignored and hidden from output.
 

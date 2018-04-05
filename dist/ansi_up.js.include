@@ -11,7 +11,7 @@ function rgx(tmplObj) {
 }
 var AnsiUp = (function () {
     function AnsiUp() {
-        this.VERSION = "2.0.1";
+        this.VERSION = "3.0.0";
         this.ansi_colors = [
             [
                 { rgb: [0, 0, 0], class_name: "ansi-black" },
@@ -41,14 +41,14 @@ var AnsiUp = (function () {
                     return txt;
                 if (instance._escape_for_html)
                     txt = instance.old_escape_for_html(txt);
-                if (!fragment.bright && fragment.fg === null && fragment.bg === null)
+                if (!fragment.bold && fragment.fg === null && fragment.bg === null)
                     return txt;
                 var styles = [];
                 var classes = [];
                 var fg = fragment.fg;
                 var bg = fragment.bg;
-                if (fg === null && fragment.bright)
-                    fg = instance.ansi_colors[1][7];
+                if (fragment.bold)
+                    styles.push('font-weight:bold');
                 if (!instance._use_classes) {
                     if (fg)
                         styles.push("color:rgb(" + fg.rgb.join(',') + ")");
@@ -79,7 +79,7 @@ var AnsiUp = (function () {
                     class_string = " class=\"" + classes.join(' ') + "\"";
                 if (styles.length)
                     style_string = " style=\"" + styles.join(';') + "\"";
-                return "<span" + class_string + style_string + ">" + txt + "</span>";
+                return "<span" + style_string + class_string + ">" + txt + "</span>";
             },
             compose: function (segments, instance) {
                 return segments.join("");
@@ -96,7 +96,7 @@ var AnsiUp = (function () {
         this.setup_256_palette();
         this._use_classes = false;
         this._escape_for_html = true;
-        this.bright = false;
+        this.bold = false;
         this.fg = this.bg = null;
         this._buffer = '';
     }
@@ -204,7 +204,7 @@ var AnsiUp = (function () {
         return this.ansi_to(txt, this.textFormatter);
     };
     AnsiUp.prototype.with_state = function (text) {
-        return { bright: this.bright, fg: this.fg, bg: this.bg, text: text };
+        return { bold: this.bold, fg: this.fg, bg: this.bg, text: text };
     };
     AnsiUp.prototype.handle_incomplete_sequences = function (chunks) {
         var last_chunk = chunks[chunks.length - 1];
@@ -249,13 +249,13 @@ var AnsiUp = (function () {
             var num = parseInt(sgr_cmd_str, 10);
             if (isNaN(num) || num === 0) {
                 this.fg = this.bg = null;
-                this.bright = false;
+                this.bold = false;
             }
             else if (num === 1) {
-                this.bright = true;
+                this.bold = true;
             }
             else if (num === 22) {
-                this.bright = false;
+                this.bold = false;
             }
             else if (num === 39) {
                 this.fg = null;
@@ -264,14 +264,13 @@ var AnsiUp = (function () {
                 this.bg = null;
             }
             else if ((num >= 30) && (num < 38)) {
-                var bidx = this.bright ? 1 : 0;
-                this.fg = this.ansi_colors[bidx][(num - 30)];
-            }
-            else if ((num >= 90) && (num < 98)) {
-                this.fg = this.ansi_colors[1][(num - 90)];
+                this.fg = this.ansi_colors[0][(num - 30)];
             }
             else if ((num >= 40) && (num < 48)) {
                 this.bg = this.ansi_colors[0][(num - 40)];
+            }
+            else if ((num >= 90) && (num < 98)) {
+                this.fg = this.ansi_colors[1][(num - 90)];
             }
             else if ((num >= 100) && (num < 108)) {
                 this.bg = this.ansi_colors[1][(num - 100)];
