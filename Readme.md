@@ -74,9 +74,9 @@ More examples are in the 'examples' directory in the repo.
 
 ## Versions
 
-Version 3.0 - now treats ANSI bold sequences as CSS font-weight:bold
-Version 2.0 - moved to a stateful, streaming version of the API
-Version 1.3 - was the last of the older, deprecated API.
+* Version 3.0 - now treats ANSI bold sequences as CSS font-weight:bold
+* Version 2.0 - moved to a stateful, streaming version of the API
+* Version 1.3 - was the last of the older, deprecated API.
 
 ## Quick Start
 
