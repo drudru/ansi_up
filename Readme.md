@@ -104,7 +104,12 @@ The default style uses colors that are very close to the prescribed standard. Th
 This simply removes the ANSI escape codes from the stream.
 No escaping is done.
 
-#### linkify(txt)
+#### linkify(txt) DEPRECATED
+
+** DEPRECATED ** - it turns out that this makes the code much more difficult to achieve while providing
+a streaming API. I should do a write-up on this at some point. For now, I leave this documentation here.
+If the developer knows what they are doing and want this functionality, they can find the code to do this
+in the history of this repo.
 
 This replaces any links in the text with anchor tags that display the link.
 Only strings starting with 'http' or 'https', and surrounded by whitespace are
