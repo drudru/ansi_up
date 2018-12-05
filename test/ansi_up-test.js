@@ -272,6 +272,18 @@ describe('ansi_up', function () {
       l.should.eql(expected);
     });
 
+    it('should handle two in a row (state testing)', function () {
+      var start  = "ABC \x1b]8;;http://1.example.com\x07EXAMPLE1\x1b]8;;\x07 DEF"
+          start += "GHI \x1b]8;;http://2.example.com\x07EXAMPLE2\x1b]8;;\x07 JKL"
+      var expected  = "ABC <a href=\"http://1.example.com\">EXAMPLE1</a> DEF";
+          expected += "GHI <a href=\"http://2.example.com\">EXAMPLE2</a> JKL";
+
+      var au = new AnsiUp();
+      var l = au.ansi_to_html(start);
+      l.should.eql(expected);
+    });
+
+
   });
 
   /*
