@@ -32,100 +32,10 @@ var PacketKind;
     PacketKind[PacketKind["SGR"] = 5] = "SGR";
     PacketKind[PacketKind["OSCURL"] = 6] = "OSCURL";
 })(PacketKind || (PacketKind = {}));
-function rgx(tmplObj) {
-    var subst = [];
-    for (var _i = 1; _i < arguments.length; _i++) {
-        subst[_i - 1] = arguments[_i];
-    }
-    var regexText = tmplObj.raw[0];
-    var wsrgx = /^\s+|\s+\n|\s*#[\s\S]*?\n|\n/gm;
-    var txt2 = regexText.replace(wsrgx, '');
-    return new RegExp(txt2);
-}
-function rgxG(tmplObj) {
-    var subst = [];
-    for (var _i = 1; _i < arguments.length; _i++) {
-        subst[_i - 1] = arguments[_i];
-    }
-    var regexText = tmplObj.raw[0];
-    var wsrgx = /^\s+|\s+\n|\s*#[\s\S]*?\n|\n/gm;
-    var txt2 = regexText.replace(wsrgx, '');
-    return new RegExp(txt2, 'g');
-}
 var AnsiUp = (function () {
     function AnsiUp() {
-        this.VERSION = "3.0.0";
-        this.ansi_colors = [
-            [
-                { rgb: [0, 0, 0], class_name: "ansi-black" },
-                { rgb: [187, 0, 0], class_name: "ansi-red" },
-                { rgb: [0, 187, 0], class_name: "ansi-green" },
-                { rgb: [187, 187, 0], class_name: "ansi-yellow" },
-                { rgb: [0, 0, 187], class_name: "ansi-blue" },
-                { rgb: [187, 0, 187], class_name: "ansi-magenta" },
-                { rgb: [0, 187, 187], class_name: "ansi-cyan" },
-                { rgb: [255, 255, 255], class_name: "ansi-white" }
-            ],
-            [
-                { rgb: [85, 85, 85], class_name: "ansi-bright-black" },
-                { rgb: [255, 85, 85], class_name: "ansi-bright-red" },
-                { rgb: [0, 255, 0], class_name: "ansi-bright-green" },
-                { rgb: [255, 255, 85], class_name: "ansi-bright-yellow" },
-                { rgb: [85, 85, 255], class_name: "ansi-bright-blue" },
-                { rgb: [255, 85, 255], class_name: "ansi-bright-magenta" },
-                { rgb: [85, 255, 255], class_name: "ansi-bright-cyan" },
-                { rgb: [255, 255, 255], class_name: "ansi-bright-white" }
-            ]
-        ];
-        this.htmlFormatter = {
-            transform: function (fragment, instance) {
-                var txt = fragment.text;
-                if (txt.length === 0)
-                    return txt;
-                if (instance._escape_for_html)
-                    txt = instance.old_escape_for_html(txt);
-                if (!fragment.bold && fragment.fg === null && fragment.bg === null)
-                    return txt;
-                var styles = [];
-                var classes = [];
-                var fg = fragment.fg;
-                var bg = fragment.bg;
-                if (fragment.bold)
-                    styles.push('font-weight:bold');
-                if (!instance._use_classes) {
-                    if (fg)
-                        styles.push("color:rgb(" + fg.rgb.join(',') + ")");
-                    if (bg)
-                        styles.push("background-color:rgb(" + bg.rgb + ")");
-                }
-                else {
-                    if (fg) {
-                        if (fg.class_name !== 'truecolor') {
-                            classes.push(fg.class_name + "-fg");
-                        }
-                        else {
-                            styles.push("color:rgb(" + fg.rgb.join(',') + ")");
-                        }
-                    }
-                    if (bg) {
-                        if (bg.class_name !== 'truecolor') {
-                            classes.push(bg.class_name + "-bg");
-                        }
-                        else {
-                            styles.push("background-color:rgb(" + bg.rgb.join(',') + ")");
-                        }
-                    }
-                }
-                var class_string = '';
-                var style_string = '';
-                if (classes.length)
-                    class_string = " class=\"" + classes.join(' ') + "\"";
-                if (styles.length)
-                    style_string = " style=\"" + styles.join(';') + "\"";
-                return "<span" + style_string + class_string + ">" + txt + "</span>";
-            },
-        };
-        this.setup_256_palette();
+        this.VERSION = "4.0.0";
+        this.setup_palettes();
         this._use_classes = false;
         this._escape_for_html = true;
         this.bold = false;
@@ -153,8 +63,41 @@ var AnsiUp = (function () {
         enumerable: true,
         configurable: true
     });
-    AnsiUp.prototype.setup_256_palette = function () {
+    Object.defineProperty(AnsiUp.prototype, "url_whitelist", {
+        get: function () {
+            return this._url_whitelist;
+        },
+        set: function (arg) {
+            this._url_whitelist = arg;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    AnsiUp.prototype.setup_palettes = function () {
         var _this = this;
+        this.ansi_colors =
+            [
+                [
+                    { rgb: [0, 0, 0], class_name: "ansi-black" },
+                    { rgb: [187, 0, 0], class_name: "ansi-red" },
+                    { rgb: [0, 187, 0], class_name: "ansi-green" },
+                    { rgb: [187, 187, 0], class_name: "ansi-yellow" },
+                    { rgb: [0, 0, 187], class_name: "ansi-blue" },
+                    { rgb: [187, 0, 187], class_name: "ansi-magenta" },
+                    { rgb: [0, 187, 187], class_name: "ansi-cyan" },
+                    { rgb: [255, 255, 255], class_name: "ansi-white" }
+                ],
+                [
+                    { rgb: [85, 85, 85], class_name: "ansi-bright-black" },
+                    { rgb: [255, 85, 85], class_name: "ansi-bright-red" },
+                    { rgb: [0, 255, 0], class_name: "ansi-bright-green" },
+                    { rgb: [255, 255, 85], class_name: "ansi-bright-yellow" },
+                    { rgb: [85, 85, 255], class_name: "ansi-bright-blue" },
+                    { rgb: [255, 85, 255], class_name: "ansi-bright-magenta" },
+                    { rgb: [85, 255, 255], class_name: "ansi-bright-cyan" },
+                    { rgb: [255, 255, 255], class_name: "ansi-bright-white" }
+                ]
+            ];
         this.palette_256 = [];
         this.ansi_colors.forEach(function (palette) {
             palette.forEach(function (rec) {
@@ -176,7 +119,7 @@ var AnsiUp = (function () {
             this.palette_256.push(gry);
         }
     };
-    AnsiUp.prototype.old_escape_for_html = function (txt) {
+    AnsiUp.prototype.escape_txt_for_html = function (txt) {
         return txt.replace(/[&<>]/gm, function (str) {
             if (str === "&")
                 return "&amp;";
@@ -305,7 +248,7 @@ var AnsiUp = (function () {
             }
         }
     };
-    AnsiUp.prototype.ansi_to = function (txt, formatter) {
+    AnsiUp.prototype.ansi_to_html = function (txt) {
         this.append_buffer(txt);
         var blocks = [];
         while (true) {
@@ -317,16 +260,13 @@ var AnsiUp = (function () {
                 || (packet.kind == PacketKind.Unknown))
                 continue;
             if (packet.kind == PacketKind.Text)
-                blocks.push(formatter.transform(this.with_state(packet), this));
+                blocks.push(this.transform_to_html(this.with_state(packet)));
             else if (packet.kind == PacketKind.SGR)
                 this.process_ansi(packet);
             else if (packet.kind == PacketKind.OSCURL)
                 blocks.push(this.process_hyperlink(packet));
         }
         return blocks.join("");
-    };
-    AnsiUp.prototype.ansi_to_html = function (txt) {
-        return this.ansi_to(txt, this.htmlFormatter);
     };
     AnsiUp.prototype.with_state = function (pkt) {
         return { bold: this.bold, fg: this.fg, bg: this.bg, text: pkt.text };
@@ -393,17 +333,84 @@ var AnsiUp = (function () {
             }
         }
     };
+    AnsiUp.prototype.transform_to_html = function (fragment) {
+        var txt = fragment.text;
+        if (txt.length === 0)
+            return txt;
+        if (this._escape_for_html)
+            txt = this.escape_txt_for_html(txt);
+        if (!fragment.bold && fragment.fg === null && fragment.bg === null)
+            return txt;
+        var styles = [];
+        var classes = [];
+        var fg = fragment.fg;
+        var bg = fragment.bg;
+        if (fragment.bold)
+            styles.push('font-weight:bold');
+        if (!this._use_classes) {
+            if (fg)
+                styles.push("color:rgb(" + fg.rgb.join(',') + ")");
+            if (bg)
+                styles.push("background-color:rgb(" + bg.rgb + ")");
+        }
+        else {
+            if (fg) {
+                if (fg.class_name !== 'truecolor') {
+                    classes.push(fg.class_name + "-fg");
+                }
+                else {
+                    styles.push("color:rgb(" + fg.rgb.join(',') + ")");
+                }
+            }
+            if (bg) {
+                if (bg.class_name !== 'truecolor') {
+                    classes.push(bg.class_name + "-bg");
+                }
+                else {
+                    styles.push("background-color:rgb(" + bg.rgb.join(',') + ")");
+                }
+            }
+        }
+        var class_string = '';
+        var style_string = '';
+        if (classes.length)
+            class_string = " class=\"" + classes.join(' ') + "\"";
+        if (styles.length)
+            style_string = " style=\"" + styles.join(';') + "\"";
+        return "<span" + style_string + class_string + ">" + txt + "</span>";
+    };
+    ;
     AnsiUp.prototype.process_hyperlink = function (pkt) {
         var parts = pkt.url.split(':');
         if (parts.length < 1)
             return '';
         if (!this._url_whitelist[parts[0]])
             return '';
-        var result = "<a href=\"" + pkt.url + "\">" + this.old_escape_for_html(pkt.text) + "</a>";
+        var result = "<a href=\"" + pkt.url + "\">" + this.escape_txt_for_html(pkt.text) + "</a>";
         return result;
     };
     return AnsiUp;
 }());
+function rgx(tmplObj) {
+    var subst = [];
+    for (var _i = 1; _i < arguments.length; _i++) {
+        subst[_i - 1] = arguments[_i];
+    }
+    var regexText = tmplObj.raw[0];
+    var wsrgx = /^\s+|\s+\n|\s*#[\s\S]*?\n|\n/gm;
+    var txt2 = regexText.replace(wsrgx, '');
+    return new RegExp(txt2);
+}
+function rgxG(tmplObj) {
+    var subst = [];
+    for (var _i = 1; _i < arguments.length; _i++) {
+        subst[_i - 1] = arguments[_i];
+    }
+    var regexText = tmplObj.raw[0];
+    var wsrgx = /^\s+|\s+\n|\s*#[\s\S]*?\n|\n/gm;
+    var txt2 = regexText.replace(wsrgx, '');
+    return new RegExp(txt2, 'g');
+}
 //# sourceMappingURL=ansi_up.js.map
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = AnsiUp;

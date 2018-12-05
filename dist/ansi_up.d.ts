@@ -22,18 +22,9 @@ export interface TextPacket {
     text: string;
     url: string;
 }
-export interface Formatter {
-    transform(fragment: TextWithAttr, instance: AnsiUp): any;
-}
-declare function rgx(tmplObj: any, ...subst: any[]): RegExp;
-declare function rgxG(tmplObj: any, ...subst: any[]): RegExp;
 export default class AnsiUp {
     VERSION: string;
-    ansi_colors: {
-        rgb: number[];
-        class_name: string;
-    }[][];
-    htmlFormatter: Formatter;
+    private ansi_colors;
     private palette_256;
     private fg;
     private bg;
@@ -48,13 +39,16 @@ export default class AnsiUp {
     constructor();
     use_classes: boolean;
     escape_for_html: boolean;
-    private setup_256_palette;
-    private old_escape_for_html;
+    url_whitelist: {};
+    private setup_palettes;
+    private escape_txt_for_html;
     append_buffer(txt: string): void;
     get_next_packet(): TextPacket;
-    private ansi_to;
     ansi_to_html(txt: string): string;
     private with_state;
     private process_ansi;
+    transform_to_html(fragment: TextWithAttr): string;
     private process_hyperlink;
 }
+declare function rgx(tmplObj: any, ...subst: any[]): RegExp;
+declare function rgxG(tmplObj: any, ...subst: any[]): RegExp;

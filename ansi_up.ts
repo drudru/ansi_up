@@ -44,152 +44,21 @@ interface TextPacket {
      url:string;
 }
 
-// Represents an object that is responsible for generating output from parsed ANSI color
-// metadata and text content.
-interface Formatter {
-    // Invoked for each generated TextWithAttr fragment outputted by process_ansi().
-    // this function is responsible for generating output for a single TextWithAttr
-    // fragment. The result of transform() will be collected into an array that will
-    // be provided to compose().
-    transform(fragment:TextWithAttr, instance:AnsiUp):any;
-}
-
-//
-// PRIVATE FUNCTIONS
-//
-
-// ES5 template string transformer
-function rgx(tmplObj, ...subst) {
-    // Use the 'raw' value so we don't have to double backslash in a template string
-    let regexText:string = tmplObj.raw[0];
-
-    // Remove white-space and comments
-    let wsrgx = /^\s+|\s+\n|\s*#[\s\S]*?\n|\n/gm;
-    let txt2 = regexText.replace(wsrgx, '');
-    return new RegExp(txt2);
-}
-
-// ES5 template string transformer
-// Multi-Line On
-function rgxG(tmplObj, ...subst) {
-    // Use the 'raw' value so we don't have to double backslash in a template string
-    let regexText:string = tmplObj.raw[0];
-
-    // Remove white-space and comments
-    let wsrgx = /^\s+|\s+\n|\s*#[\s\S]*?\n|\n/gm;
-    let txt2 = regexText.replace(wsrgx, '');
-    return new RegExp(txt2, 'g');
-}
-
 //
 // MAIN CLASS
 //
 
 class AnsiUp
 {
-    VERSION = "3.0.0";
+    VERSION = "4.0.0";
 
-    // SEE DOCUMENTATION README ON GITHUB
-    // FOR PUBLIC API
-
-    ansi_colors =
-    [
-        // Normal colors
-        [
-        { rgb: [  0,   0,   0],  class_name: "ansi-black"   },
-        { rgb: [187,   0,   0],  class_name: "ansi-red"     },
-        { rgb: [  0, 187,   0],  class_name: "ansi-green"   },
-        { rgb: [187, 187,   0],  class_name: "ansi-yellow"  },
-        { rgb: [  0,   0, 187],  class_name: "ansi-blue"    },
-        { rgb: [187,   0, 187],  class_name: "ansi-magenta" },
-        { rgb: [  0, 187, 187],  class_name: "ansi-cyan"    },
-        { rgb: [255, 255, 255],  class_name: "ansi-white"   }
-        ],
-
-        // Bright colors
-        [
-        { rgb: [ 85,  85,  85],  class_name: "ansi-bright-black"   },
-        { rgb: [255,  85,  85],  class_name: "ansi-bright-red"     },
-        { rgb: [  0, 255,   0],  class_name: "ansi-bright-green"   },
-        { rgb: [255, 255,  85],  class_name: "ansi-bright-yellow"  },
-        { rgb: [ 85,  85, 255],  class_name: "ansi-bright-blue"    },
-        { rgb: [255,  85, 255],  class_name: "ansi-bright-magenta" },
-        { rgb: [ 85, 255, 255],  class_name: "ansi-bright-cyan"    },
-        { rgb: [255, 255, 255],  class_name: "ansi-bright-white"   }
-        ]
-    ];
-
-    htmlFormatter:Formatter = {
-        transform(fragment:TextWithAttr, instance:AnsiUp):string {
-            let txt = fragment.text;
-
-            if (txt.length === 0)
-                return txt;
-
-            if (instance._escape_for_html)
-                txt = instance.old_escape_for_html(txt);
-
-            // If colors not set, default style is used
-            if (!fragment.bold && fragment.fg === null && fragment.bg === null)
-                return txt;
-
-            let styles:string[] = [];
-            let classes:string[] = [];
-
-            let fg = fragment.fg;
-            let bg = fragment.bg;
-
-            // Note on bold: https://stackoverflow.com/questions/6737005/what-are-some-advantages-to-using-span-style-font-weightbold-rather-than-b?rq=1
-            if (fragment.bold)
-                styles.push('font-weight:bold')
-
-            if (!instance._use_classes) {
-                // USE INLINE STYLES
-                if (fg)
-                    styles.push(`color:rgb(${fg.rgb.join(',')})`);
-                if (bg)
-                    styles.push(`background-color:rgb(${bg.rgb})`);
-            } else {
-                // USE CLASSES
-                if (fg) {
-                    if (fg.class_name !== 'truecolor') {
-                        classes.push(`${fg.class_name}-fg`);
-                    } else {
-                        styles.push(`color:rgb(${fg.rgb.join(',')})`);
-                    }
-                }
-                if (bg) {
-                    if (bg.class_name !== 'truecolor') {
-                        classes.push(`${bg.class_name}-bg`);
-                    } else {
-                        styles.push(`background-color:rgb(${bg.rgb.join(',')})`);
-                    }
-                }
-            }
-
-            let class_string = '';
-            let style_string = '';
-
-            if (classes.length)
-                class_string = ` class="${classes.join(' ')}"`;
-
-            if (styles.length)
-                style_string = ` style="${styles.join(';')}"`;
-
-            return `<span${style_string}${class_string}>${txt}</span>`;
-        },
-    };
-
-    /*
-    textFormatter:Formatter = {
-        transform(fragment:TextWithAttr, instance:AnsiUp):string {
-            return fragment.text;
-        },
-    };
-     */
+    //
+    // *** SEE README ON GITHUB FOR PUBLIC API ***
+    //
 
     // 256 Colors Palette
     // CSS RGB strings - ex. "255, 255, 255"
+    private ansi_colors:AU_Color[][];
     private palette_256:AU_Color[];
 
     private fg:AU_Color;
@@ -204,15 +73,14 @@ class AnsiUp
     private _osc_st:RegExp;
     private _osc_regex:RegExp;
 
-    //private _sgr_regex:RegExp;
-
-    private _url_whitelist:any;
+    private _url_whitelist:{};
 
     private _buffer:string;
 
     constructor()
     {
-        this.setup_256_palette();
+        // All construction occurs here
+        this.setup_palettes();
         this._use_classes = false;
         this._escape_for_html = true;
 
@@ -244,8 +112,46 @@ class AnsiUp
         return this._escape_for_html;
     }
 
-    private setup_256_palette():void
+    set url_whitelist(arg:{})
     {
+        this._url_whitelist = arg;
+    }
+
+    get url_whitelist():{}
+    {
+        return this._url_whitelist;
+    }
+
+
+    private setup_palettes():void
+    {
+        this.ansi_colors =
+        [
+            // Normal colors
+            [
+                { rgb: [  0,   0,   0],  class_name: "ansi-black"   },
+                { rgb: [187,   0,   0],  class_name: "ansi-red"     },
+                { rgb: [  0, 187,   0],  class_name: "ansi-green"   },
+                { rgb: [187, 187,   0],  class_name: "ansi-yellow"  },
+                { rgb: [  0,   0, 187],  class_name: "ansi-blue"    },
+                { rgb: [187,   0, 187],  class_name: "ansi-magenta" },
+                { rgb: [  0, 187, 187],  class_name: "ansi-cyan"    },
+                { rgb: [255, 255, 255],  class_name: "ansi-white"   }
+            ],
+
+            // Bright colors
+            [
+                { rgb: [ 85,  85,  85],  class_name: "ansi-bright-black"   },
+                { rgb: [255,  85,  85],  class_name: "ansi-bright-red"     },
+                { rgb: [  0, 255,   0],  class_name: "ansi-bright-green"   },
+                { rgb: [255, 255,  85],  class_name: "ansi-bright-yellow"  },
+                { rgb: [ 85,  85, 255],  class_name: "ansi-bright-blue"    },
+                { rgb: [255,  85, 255],  class_name: "ansi-bright-magenta" },
+                { rgb: [ 85, 255, 255],  class_name: "ansi-bright-cyan"    },
+                { rgb: [255, 255, 255],  class_name: "ansi-bright-white"   }
+            ]
+        ];
+
         this.palette_256 = [];
 
         // Index 0..15 : Ansi-Colors
@@ -275,7 +181,7 @@ class AnsiUp
         }
     }
 
-    private old_escape_for_html(txt:string):string
+    private escape_txt_for_html(txt:string):string
     {
       return txt.replace(/[&<>]/gm, (str) => {
         if (str === "&") return "&amp;";
@@ -283,66 +189,6 @@ class AnsiUp
         if (str === ">") return "&gt;";
       });
     }
-
-        /*
-    private old_linkify(txt:string):string
-    {
-      return txt.replace(/(https?:\/\/[^\s]+)/gm, (str) => {
-        return `<a href="${str}">${str}</a>`;
-      });
-    }
-         */
-
-        /*
-    private detect_incomplete_ansi(txt:string)
-    {
-        // This scans for a valid 'command'
-        // sequence character.
-        // If found, return false
-        // If none found, return true
-        //
-        // This is useful for the invalid sequence detector
-        // Scan forwards for a potential command character
-        // If one exists, we must assume we are good
-        // [\x40-\x7e])               # the command
-
-        return !(/.*?[\x40-\x7e]/.test(txt));
-    }
-         */
-
-        /*
-    private detect_incomplete_link(txt:string)
-    {
-        // It would be nice if Javascript RegExp supported
-        // a hitEnd() method
-
-        // Scan backwards for first whitespace
-        var found = false;
-        for (var i = txt.length - 1; i > 0; i--) {
-            if (/\s|\x1B/.test(txt[i])) {
-                found = true;
-                break;
-            }
-        }
-
-        if (!found) {
-            // Handle one other case
-            // Maybe the whole string is a URL?
-            if (/(https?:\/\/[^\s]+)/.test(txt))
-                return 0;
-            else
-                return -1;
-        }
-
-        // Test if possible prefix
-        var prefix = txt.substr(i + 1, 4);
-
-        if (prefix.length === 0) return -1;
-
-        if ("http".indexOf(prefix) === 0)
-            return (i + 1);
-    }
-         */
 
     append_buffer(txt:string) {
 
@@ -663,7 +509,7 @@ class AnsiUp
         }
     }
 
-    private ansi_to(txt:string, formatter:Formatter):string {
+    ansi_to_html(txt:string):string {
 
         this.append_buffer(txt);
 
@@ -683,7 +529,7 @@ class AnsiUp
                 continue;
 
             if (packet.kind == PacketKind.Text)
-                blocks.push( formatter.transform(this.with_state(packet), this));
+                blocks.push( this.transform_to_html(this.with_state(packet)) );
             else
             if (packet.kind == PacketKind.SGR)
                 this.process_ansi(packet);
@@ -692,75 +538,12 @@ class AnsiUp
                 blocks.push( this.process_hyperlink(packet) );
         }
 
-        //this.handle_incomplete_sequences(raw_text_pkts);
-
-        //let first_chunk = this.with_state(raw_text_pkts.shift());
-
-        //let blocks = new Array(raw_text_pkts.length);
-        //for (let i = 0, len = raw_text_pkts.length; i < len; ++i) {
-        //    blocks[i] = (formatter.transform(this.process_ansi(raw_text_pkts[i]), this));
-        //}
-
-        //if (first_chunk.text.length > 0)
-        //    blocks.unshift(formatter.transform(first_chunk, this));
-
         return blocks.join("");
     }
-
-    ansi_to_html(txt:string):string
-    {
-        return this.ansi_to(txt, this.htmlFormatter);
-    }
-
-        /*
-    ansi_to_text(txt:string):string
-    {
-        return this.ansi_to(txt, this.textFormatter);
-    }
-         */
 
     private with_state(pkt:TextPacket):TextWithAttr {
         return { bold: this.bold, fg: this.fg, bg: this.bg, text: pkt.text };
     }
-
-        /*
-    private handle_incomplete_sequences(chunks:string[]):void {
-        // COMPLEX - BEGIN
-
-        // Validate the last chunks for:
-        // - incomplete ANSI sequence
-        // - incomplete ESC
-        // If any of these occur, we may have to buffer
-        var last_chunk = chunks[chunks.length - 1];
-
-        // - incomplete ANSI sequence
-        if ((last_chunk.length > 0) && this.detect_incomplete_ansi(last_chunk)) {
-            this._buffer = "\x1B[" + last_chunk;
-            chunks.pop();
-            chunks.push('');
-        } else {
-            // - incomplete ESC
-            if (last_chunk.slice(-1) === "\x1B") {
-                this._buffer = "\x1B";
-                console.log("raw", chunks);
-                chunks.pop();
-                chunks.push(last_chunk.substr(0, last_chunk.length - 1));
-                console.log(chunks);
-                console.log(last_chunk);
-            }
-            // - Incomplete ESC, only one packet
-            if (chunks.length === 2 &&
-                chunks[1] === "" &&
-                chunks[0].slice(-1) === "\x1B") {
-                this._buffer = "\x1B";
-                last_chunk = chunks.shift();
-                chunks.unshift(last_chunk.substr(0, last_chunk.length - 1));
-            }
-        }
-
-        // COMPLEX - END
-    }
-         */
 
     private process_ansi(pkt:TextPacket)
     {
@@ -836,6 +619,65 @@ class AnsiUp
       }
     }
 
+    transform_to_html(fragment:TextWithAttr):string {
+        let txt = fragment.text;
+
+        if (txt.length === 0)
+            return txt;
+
+        if (this._escape_for_html)
+            txt = this.escape_txt_for_html(txt);
+
+        // If colors not set, default style is used
+        if (!fragment.bold && fragment.fg === null && fragment.bg === null)
+            return txt;
+
+        let styles:string[] = [];
+        let classes:string[] = [];
+
+        let fg = fragment.fg;
+        let bg = fragment.bg;
+
+        // Note on bold: https://stackoverflow.com/questions/6737005/what-are-some-advantages-to-using-span-style-font-weightbold-rather-than-b?rq=1
+        if (fragment.bold)
+            styles.push('font-weight:bold')
+
+        if (!this._use_classes) {
+            // USE INLINE STYLES
+            if (fg)
+                styles.push(`color:rgb(${fg.rgb.join(',')})`);
+            if (bg)
+                styles.push(`background-color:rgb(${bg.rgb})`);
+        } else {
+            // USE CLASSES
+            if (fg) {
+                if (fg.class_name !== 'truecolor') {
+                    classes.push(`${fg.class_name}-fg`);
+                } else {
+                    styles.push(`color:rgb(${fg.rgb.join(',')})`);
+                }
+            }
+            if (bg) {
+                if (bg.class_name !== 'truecolor') {
+                    classes.push(`${bg.class_name}-bg`);
+                } else {
+                    styles.push(`background-color:rgb(${bg.rgb.join(',')})`);
+                }
+            }
+        }
+
+        let class_string = '';
+        let style_string = '';
+
+        if (classes.length)
+            class_string = ` class="${classes.join(' ')}"`;
+
+        if (styles.length)
+            style_string = ` style="${styles.join(';')}"`;
+
+        return `<span${style_string}${class_string}>${txt}</span>`;
+    };
+
     private process_hyperlink(pkt:TextPacket):string
     {
         // Check URL scheme
@@ -846,7 +688,35 @@ class AnsiUp
         if (! this._url_whitelist[parts[0]])
             return '';
 
-        let result = `<a href="${pkt.url}">${this.old_escape_for_html(pkt.text)}</a>`;
+        let result = `<a href="${pkt.url}">${this.escape_txt_for_html(pkt.text)}</a>`;
         return result;
     }
 }
+
+//
+// PRIVATE FUNCTIONS
+//
+
+// ES5 template string transformer
+function rgx(tmplObj, ...subst) {
+    // Use the 'raw' value so we don't have to double backslash in a template string
+    let regexText:string = tmplObj.raw[0];
+
+    // Remove white-space and comments
+    let wsrgx = /^\s+|\s+\n|\s*#[\s\S]*?\n|\n/gm;
+    let txt2 = regexText.replace(wsrgx, '');
+    return new RegExp(txt2);
+}
+
+// ES5 template string transformer
+// Multi-Line On
+function rgxG(tmplObj, ...subst) {
+    // Use the 'raw' value so we don't have to double backslash in a template string
+    let regexText:string = tmplObj.raw[0];
+
+    // Remove white-space and comments
+    let wsrgx = /^\s+|\s+\n|\s*#[\s\S]*?\n|\n/gm;
+    let txt2 = regexText.replace(wsrgx, '');
+    return new RegExp(txt2, 'g');
+}
+
