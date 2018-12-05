@@ -292,6 +292,7 @@ describe('ansi_up', function () {
   });
   */
 
+  /*
   describe("ansi_to()", function() {
 
     // Prove that interaction between AnsiUp and the formatter is correct and that formatters
@@ -347,6 +348,7 @@ describe('ansi_up', function () {
       });
     });
   });
+  */
 
   describe('ansi to html', function () {
 
@@ -865,6 +867,7 @@ describe('ansi_up', function () {
 
   });
 
+  /*
   describe('ansi to text', function () {
     it('should remove color sequence', function () {
       var start = "foo \033[1;32mbar\033[0m baz";
@@ -885,4 +888,5 @@ describe('ansi_up', function () {
       l.should.eql("foo bar\nbaz qux");
     });
   });
+  */
 });

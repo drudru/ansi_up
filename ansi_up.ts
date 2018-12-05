@@ -6,6 +6,10 @@
 
 "use strict";
 
+//
+// INTERFACES
+//
+
 interface AU_Color
 {
     rgb:number[];
@@ -13,13 +17,31 @@ interface AU_Color
 }
 
 // Represents the output of process_ansi(): a snapshot of the AnsiUp state machine
-// at a given point in time, which wraps a fragment of text. This wouuld allow deferred
+// at a given point in time, which wraps a fragment of text. This would allow deferred
 // processing of text fragments and colors, if ever needed.
 interface TextWithAttr {
     fg:AU_Color;
     bg:AU_Color;
     bold:boolean;
     text:string;
+}
+
+// Used internally when breaking up the raw text into packets
+
+enum PacketKind {
+    EOS,
+    Text,
+    Incomplete,         // An Incomplete ESC sequence
+    ESC,                // A single ESC char - random
+    Unknown,            // A valid CSI but not an SGR code
+    SGR,                // Select Graphic Rendition
+    OSCURL,             // Operating System Command
+}
+
+interface TextPacket {
+    kind:PacketKind;
+    text:string;
+     url:string;
 }
 
 // Represents an object that is responsible for generating output from parsed ANSI color
@@ -30,28 +52,45 @@ interface Formatter {
     // fragment. The result of transform() will be collected into an array that will
     // be provided to compose().
     transform(fragment:TextWithAttr, instance:AnsiUp):any;
-
-    // Invoked on the set of outputs from transform; the return value of this function
-    // will be the final output of ANSI processing.
-    compose(segments:any[], instance:AnsiUp):any;
 }
 
+//
+// PRIVATE FUNCTIONS
+//
+
 // ES5 template string transformer
-// NOTE: default is multiline (workaround for now til I can
-// determine flags inline)
 function rgx(tmplObj, ...subst) {
     // Use the 'raw' value so we don't have to double backslash in a template string
     let regexText:string = tmplObj.raw[0];
 
     // Remove white-space and comments
-    let wsrgx = /^\s+|\s+\n|\s+#[\s\S]+?\n/gm;
+    let wsrgx = /^\s+|\s+\n|\s*#[\s\S]*?\n|\n/gm;
     let txt2 = regexText.replace(wsrgx, '');
-    return new RegExp(txt2, 'm');
+    return new RegExp(txt2);
 }
+
+// ES5 template string transformer
+// Multi-Line On
+function rgxG(tmplObj, ...subst) {
+    // Use the 'raw' value so we don't have to double backslash in a template string
+    let regexText:string = tmplObj.raw[0];
+
+    // Remove white-space and comments
+    let wsrgx = /^\s+|\s+\n|\s+#[\s\S]+?\n|\n/gm;
+    let txt2 = regexText.replace(wsrgx, 'm');
+    return new RegExp(txt2, 'g');
+}
+
+//
+// MAIN CLASS
+//
 
 class AnsiUp
 {
     VERSION = "3.0.0";
+
+    // SEE DOCUMENTATION README ON GITHUB
+    // FOR PUBLIC API
 
     ansi_colors =
     [
@@ -139,21 +178,15 @@ class AnsiUp
 
             return `<span${style_string}${class_string}>${txt}</span>`;
         },
-
-        compose(segments:string[], instance:AnsiUp):string {
-            return segments.join("");
-        }
     };
 
+    /*
     textFormatter:Formatter = {
         transform(fragment:TextWithAttr, instance:AnsiUp):string {
             return fragment.text;
         },
-
-        compose(segments:string[], instance:AnsiUp):string {
-            return segments.join("");
-        }
     };
+     */
 
     // 256 Colors Palette
     // CSS RGB strings - ex. "255, 255, 255"
@@ -165,7 +198,15 @@ class AnsiUp
 
     private _use_classes:boolean;
     private _escape_for_html;
-    private _sgr_regex:RegExp;
+
+    private _csi_regex:RegExp;
+
+    private _osc_st:RegExp;
+    private _osc_regex:RegExp;
+
+    //private _sgr_regex:RegExp;
+
+    private _url_whitelist:any;
 
     private _buffer:string;
 
@@ -179,6 +220,8 @@ class AnsiUp
         this.fg = this.bg = null;
 
         this._buffer = '';
+
+        this._url_whitelist = { 'http':1, 'https':1 };
     }
 
     set use_classes(arg:boolean)
@@ -241,22 +284,33 @@ class AnsiUp
       });
     }
 
+        /*
     private old_linkify(txt:string):string
     {
       return txt.replace(/(https?:\/\/[^\s]+)/gm, (str) => {
         return `<a href="${str}">${str}</a>`;
       });
     }
+         */
 
+        /*
     private detect_incomplete_ansi(txt:string)
     {
+        // This scans for a valid 'command'
+        // sequence character.
+        // If found, return false
+        // If none found, return true
+        //
+        // This is useful for the invalid sequence detector
         // Scan forwards for a potential command character
         // If one exists, we must assume we are good
         // [\x40-\x7e])               # the command
 
         return !(/.*?[\x40-\x7e]/.test(txt));
     }
+         */
 
+        /*
     private detect_incomplete_link(txt:string)
     {
         // It would be nice if Javascript RegExp supported
@@ -288,29 +342,369 @@ class AnsiUp
         if ("http".indexOf(prefix) === 0)
             return (i + 1);
     }
+         */
 
-    ansi_to(txt:string, formatter:Formatter):any {
-        var pkt = this._buffer + txt;
-        this._buffer = '';
+    append_buffer(txt:string) {
 
-        var raw_text_pkts = pkt.split(/\x1B\[/);
+        var str = this._buffer + txt;
+        this._buffer = str;
+    }
 
-        if (raw_text_pkts.length === 1)
-            raw_text_pkts.push('');
+    get_next_packet():TextPacket {
 
-        this.handle_incomplete_sequences(raw_text_pkts);
+        var pkt =
+            {
+                kind: PacketKind.EOS,
+                text: '',
+                 url: ''
+            } ;
 
-        let first_chunk = this.with_state(raw_text_pkts.shift()); // the first pkt is not the result of the split
+        var len = this._buffer.length;
+        if (len == 0)
+            return pkt;
 
-        let blocks = new Array(raw_text_pkts.length);
-        for (let i = 0, len = raw_text_pkts.length; i < len; ++i) {
-            blocks[i] = (formatter.transform(this.process_ansi(raw_text_pkts[i]), this));
+        var pos = this._buffer.indexOf("\x1B");
+
+        // The most common case, no ESC codes
+        if (pos == -1)
+        {
+            pkt.kind = PacketKind.Text;
+            pkt.text = this._buffer;
+            this._buffer = '';
+            return pkt;
         }
 
-        if (first_chunk.text.length > 0)
-            blocks.unshift(formatter.transform(first_chunk, this));
+        if (pos > 0)
+        {
+            pkt.kind = PacketKind.Text;
+            pkt.text = this._buffer.slice(0, pos);
+            this._buffer = this._buffer.slice(pos);
+            return pkt;
+        }
 
-        return formatter.compose(blocks, this);
+        // NOW WE HANDLE ESCAPES
+        if (pos == 0)
+        {
+
+            if (len == 1)        // Lone ESC in Buffer, We don't know yet
+            {
+                pkt.kind = PacketKind.Incomplete;
+                return pkt;
+            }
+
+            var next_char = this._buffer.charAt(1);
+
+            // We treat this as a single ESC
+            // Which effecitvely shows
+            if ((next_char != '[') && (next_char != ']')) // DeMorgan
+            {
+                pkt.kind = PacketKind.ESC;
+                pkt.text = this._buffer.slice(0, 1);
+                this._buffer = this._buffer.slice(1);
+                return pkt;
+            }
+
+            // OK is this an SGR or OSC that we handle
+
+            // SGR CHECK
+            if (next_char == '[')
+            {
+                // We do this regex initialization here so
+                // we can keep the regex close to its use (Readability)
+
+                // All ansi codes are typically in the following format.
+                // We parse it and focus specifically on the
+                // graphics commands (SGR)
+                //
+                // CONTROL-SEQUENCE-INTRODUCER CSI             (ESC, '[')
+                // PRIVATE-MODE-CHAR                           (!, <, >, ?)
+                // Numeric parameters separated by semicolons  ('0' - '9', ';')
+                // Intermediate-modifiers                      (0x20 - 0x2f)
+                // COMMAND-CHAR                                (0x40 - 0x7e)
+                //
+
+                if (!this._csi_regex) {
+
+                    this._csi_regex = rgx`
+                        ^                           # beginning of line
+                                                    # 
+                                                    # First attempt
+                        (?:                         # legal sequence
+                          \x1b\[                      # CSI
+                          ([\x3c-\x3f]?)              # private-mode char
+                          ([\d;]*)                    # any digits or semicolons
+                          ([\x20-\x2f]?               # an intermediate modifier
+                          [\x40-\x7e])                # the command
+                        )
+                        |                           # alternate (second attempt)
+                        (?:                         # illegal sequence
+                          \x1b\[                      # CSI
+                          [\x20-\x7e]*                # anything legal
+                          ([\x00-\x1f:])              # anything illegal
+                        )
+                    `;
+                }
+
+                let match = this._buffer.match(this._csi_regex);
+
+                // This match is guaranteed to terminate (even on 
+                // invalid input). The key is to match on legal and 
+                // illegal sequences.
+                // The first alternate matches everything legal and
+                // the second matches everything illegal.
+                //
+                // If it doesn't match, then we have not received
+                // either the full sequence or an illegal sequence. 
+                // If it does match, the presence of field 4 tells
+                // us whether it was legal or illegal.
+
+                if (match === null)
+                {
+                    pkt.kind = PacketKind.Incomplete;
+                    return pkt;
+                }
+
+                // match is an array
+                // 0 - total match
+                // 1 - private mode chars group
+                // 2 - digits and semicolons group
+                // 3 - command
+                // 4 - illegal char
+
+                if (match[4])
+                {
+                    // Illegal sequence, just remove the ESC
+                    pkt.kind = PacketKind.ESC;
+                    pkt.text = this._buffer.slice(0, 1);
+                    this._buffer = this._buffer.slice(1);
+                    return pkt;
+                }
+
+                // If not a valid SGR, we don't handle
+                if ( (match[1] != '') || (match[3] != 'm'))
+                    pkt.kind = PacketKind.Unknown;
+                else
+                    pkt.kind = PacketKind.SGR;
+
+                pkt.text = match[2] // Just the parameters
+
+                var rpos = match[0].length;
+                this._buffer = this._buffer.slice(rpos);
+                return pkt;
+            }
+
+            // OSC CHECK
+            if (next_char == ']')
+            {
+                if (    (this._buffer.charAt(2) != '8')
+                     || (this._buffer.charAt(2) != ']') )
+                {
+                    // This is not a match, so we'll just treat it as ESC
+                    pkt.kind = PacketKind.ESC;
+                    pkt.text = this._buffer.slice(0, 1);
+                    this._buffer = this._buffer.slice(1);
+                    return pkt;
+                }
+
+                // We do this regex initialization here so
+                // we can keep the regex close to its use (Readability)
+
+                // Matching a Hyperlink OSC with a regex is difficult 
+                // because Javascript's regex engine doesn't support
+                // 'partial match' support.
+                //
+                // Therefore, we require the system to match the
+                // string-terminator(ST) before attempting a match.
+                // Once we find it, we attempt the Hyperlink-Begin
+                // match.
+                // If that goes ok, we scan forward for the next
+                // ST.
+                // Finally, we try to match it all and return
+                // the sequence.
+                // Also, it is important to note that we consider
+                // certain control characters as an invalidation of
+                // the entire sequence.
+
+                // We do regex initializations here so
+                // we can keep the regex close to its use (Readability)
+
+
+                // STRING-TERMINATOR
+                // This is likely to terminate in most scenarios 
+                // because it will terminate on a newline
+
+                if (!this._osc_st) {
+
+                    this._osc_st = rgxG`
+                        (?:                         # legal sequence
+                          (\x1b\\)                    # ESC \
+                          |                           # alternate
+                          (\x07)                      # BEL (what xterm did)
+                        )
+                        |                           # alternate (second attempt)
+                        (                           # illegal sequence
+                          [\x00-\x06]                 # anything illegal
+                          |                           # alternate
+                          [\x08-\x1a]                 # anything illegal
+                          |                           # alternate
+                          [\x1c-\x1f]                 # anything illegal
+                        )
+                    `;
+                }
+
+                // VERY IMPORTANT
+                // We do a stateful regex match with exec.
+                // If the regex is global, and it used with 'exec',
+                // then it will search starting at the 'lastIndex'
+                // If it matches, the regex can be used again to
+                // find the next match.
+                this._osc_st.lastIndex = 0;
+
+
+                {
+                    let match = this._osc_st.exec( this._buffer );
+
+                    if (match === null)
+                    {
+                        pkt.kind = PacketKind.Incomplete;
+                        return pkt;
+                    }
+
+                    // If an illegal character was found, bail on the match
+                    if (match[3])
+                    {
+                        // Illegal sequence, just remove the ESC
+                        pkt.kind = PacketKind.ESC;
+                        pkt.text = this._buffer.slice(0, 1);
+                        this._buffer = this._buffer.slice(1);
+                        return pkt;
+                    }
+                }
+
+
+
+                // OK - we might have the prefix and URI 
+                // Lets start our search for the next ST
+                // past this index
+
+                {
+                    let match = this._osc_st.exec( this._buffer );
+
+                    if (match === null)
+                    {
+                        pkt.kind = PacketKind.Incomplete;
+                        return pkt;
+                    }
+
+                    // If an illegal character was found, bail on the match
+                    if (match[3])
+                    {
+                        // Illegal sequence, just remove the ESC
+                        pkt.kind = PacketKind.ESC;
+                        pkt.text = this._buffer.slice(0, 1);
+                        this._buffer = this._buffer.slice(1);
+                        return pkt;
+                    }
+                }
+
+                // OK, at this point we should have a FULL match!
+                //
+                // Lets try to match that now
+
+                if (!this._osc_regex) {
+
+                    this._osc_regex = rgx`
+                        ^                           # beginning of line
+                                                    #
+                        \x1b\]8;                    # OSC Hyperlink
+                        [\x20-\x3a\x3c-\x7e]*       # params (excluding ;)
+                        ;                           # end of params
+                        ([\x21-\x7e]{0,512})        # URL capture
+                        (?:                         # ST
+                          (?:\x1b\\)                  # ESC \
+                          |                           # alternate
+                          (?:\x07)                    # BEL (what xterm did)
+                        )
+                        ([\x21-\x7e]+)              # TEXT capture
+                        \x1b\]8;;                   # OSC Hyperlink End
+                        (?:                         # ST
+                          (?:\x1b\\)                  # ESC \
+                          |                           # alternate
+                          (?:\x07)                    # BEL (what xterm did)
+                        )
+                    `;
+                }
+
+                let match = this._buffer.match(this._osc_regex);
+
+                if (match === null)
+                {
+                    // Illegal sequence, just remove the ESC
+                    pkt.kind = PacketKind.ESC;
+                    pkt.text = this._buffer.slice(0, 1);
+                    this._buffer = this._buffer.slice(1);
+                    return pkt;
+                }
+
+                // match is an array
+                // 0 - total match
+                // 1 - URL
+                // 2 - Text
+
+                // If a valid SGR
+                pkt.kind = PacketKind.OSCURL;
+                pkt.url  = match[1];
+                pkt.text = match[2];
+
+                var rpos = match[0].length;
+                this._buffer = this._buffer.slice(rpos);
+                return pkt;
+            }
+        }
+    }
+
+    private ansi_to(txt:string, formatter:Formatter):string {
+
+        this.append_buffer(txt);
+
+        var blocks:string[] = [];
+
+        while (true)
+        {
+            var packet = this.get_next_packet();
+
+            if (    (packet.kind == PacketKind.EOS)
+                 || (packet.kind == PacketKind.Incomplete)  )
+                break;
+
+            //Drop single ESC or Unknown CSI
+            if (    (packet.kind == PacketKind.ESC)
+                 || (packet.kind == PacketKind.Unknown)  )
+                continue;
+
+            if (packet.kind == PacketKind.Text)
+                blocks.push( formatter.transform(this.with_state(packet), this));
+            else
+            if (packet.kind == PacketKind.SGR)
+                this.process_ansi(packet);
+            else
+            if (packet.kind == PacketKind.OSCURL)
+                blocks.push( this.process_hyperlink(packet) );
+        }
+
+        //this.handle_incomplete_sequences(raw_text_pkts);
+
+        //let first_chunk = this.with_state(raw_text_pkts.shift());
+
+        //let blocks = new Array(raw_text_pkts.length);
+        //for (let i = 0, len = raw_text_pkts.length; i < len; ++i) {
+        //    blocks[i] = (formatter.transform(this.process_ansi(raw_text_pkts[i]), this));
+        //}
+
+        //if (first_chunk.text.length > 0)
+        //    blocks.unshift(formatter.transform(first_chunk, this));
+
+        return blocks.join("");
     }
 
     ansi_to_html(txt:string):string
@@ -318,15 +712,18 @@ class AnsiUp
         return this.ansi_to(txt, this.htmlFormatter);
     }
 
+        /*
     ansi_to_text(txt:string):string
     {
         return this.ansi_to(txt, this.textFormatter);
     }
+         */
 
-    private with_state(text:string):TextWithAttr {
-        return { bold: this.bold, fg: this.fg, bg: this.bg, text: text };
+    private with_state(pkt:TextPacket):TextWithAttr {
+        return { bold: this.bold, fg: this.fg, bg: this.bg, text: pkt.text };
     }
 
+        /*
     private handle_incomplete_sequences(chunks:string[]):void {
         // COMPLEX - BEGIN
 
@@ -363,56 +760,13 @@ class AnsiUp
 
         // COMPLEX - END
     }
+         */
 
-    private process_ansi(block:string):TextWithAttr
+    private process_ansi(pkt:TextPacket)
     {
-      // This must only be called with a string that started with a CSI (the string split above)
-      // The CSI must not be in the string. We consider this string to be a 'block'.
-      // It has an ANSI command at the front that affects the text that follows it.
-      //
-      // All ansi codes are typically in the following format. We parse it and focus
-      // specifically on the graphics commands (SGR)
-      //
-      // CONTROL-SEQUENCE-INTRODUCER CSI             (ESC, '[')
-      // PRIVATE-MODE-CHAR                           (!, <, >, ?)
-      // Numeric parameters separated by semicolons  ('0' - '9', ';')
-      // Intermediate-modifiers                      (0x20 - 0x2f)
-      // COMMAND-CHAR                                (0x40 - 0x7e)
-      //
-      // We use a regex to parse into capture groups the PRIVATE-MODE-CHAR to the COMMAND
-      // and the following text
-
-      if (!this._sgr_regex) {
-          // This regex is designed to parse an ANSI terminal CSI command. To be more specific,
-          // we follow the XTERM conventions vs. the various other "standards".
-          // http://invisible-island.net/xterm/ctlseqs/ctlseqs.html
-          //
-          this._sgr_regex = rgx`
-            ^                           # beginning of line
-            ([!\x3c-\x3f]?)             # a private-mode char (!, <, =, >, ?)
-            ([\d;]*)                    # any digits or semicolons
-            ([\x20-\x2f]?               # an intermediate modifier
-            [\x40-\x7e])                # the command
-            ([\s\S]*)                   # any text following this CSI sequence
-          `;
-      }
-
-      let matches = block.match(this._sgr_regex);
-
-      // The regex should have handled all cases!
-      if (!matches) {
-          return this.with_state(block);
-      }
-
-      let orig_txt = matches[4];
-
-      if (matches[1] !== '' || matches[3] !== 'm') {
-          return this.with_state(orig_txt);
-      }
-
       // Ok - we have a valid "SGR" (Select Graphic Rendition)
 
-      let sgr_cmds = matches[2].split(';');
+      let sgr_cmds = pkt.text.split(';');
 
       // Each of these params affects the SGR state
 
@@ -480,7 +834,18 @@ class AnsiUp
               }
           }
       }
+    }
 
-      return this.with_state(orig_txt);
+    private process_hyperlink(pkt:TextPacket):string
+    {
+        // Check URL scheme
+        let parts = pkt.url.split(':');
+        if (parts.length < 1)
+            return '';
+
+        if (! this._url_whitelist[parts[0]])
+            return '';
+
+        let result = `<a href="${pkt.url}">${this.old_escape_for_html(pkt.text)}</a>`;
     }
 }
