@@ -76,8 +76,8 @@ function rgxG(tmplObj, ...subst) {
     let regexText:string = tmplObj.raw[0];
 
     // Remove white-space and comments
-    let wsrgx = /^\s+|\s+\n|\s+#[\s\S]+?\n|\n/gm;
-    let txt2 = regexText.replace(wsrgx, 'm');
+    let wsrgx = /^\s+|\s+\n|\s*#[\s\S]*?\n|\n/gm;
+    let txt2 = regexText.replace(wsrgx, '');
     return new RegExp(txt2, 'g');
 }
 
@@ -497,7 +497,7 @@ class AnsiUp
             if (next_char == ']')
             {
                 if (    (this._buffer.charAt(2) != '8')
-                     || (this._buffer.charAt(2) != ']') )
+                     || (this._buffer.charAt(3) != ';') )
                 {
                     // This is not a match, so we'll just treat it as ESC
                     pkt.kind = PacketKind.ESC;
@@ -847,5 +847,6 @@ class AnsiUp
             return '';
 
         let result = `<a href="${pkt.url}">${this.old_escape_for_html(pkt.text)}</a>`;
+        return result;
     }
 }

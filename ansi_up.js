@@ -48,8 +48,8 @@ function rgxG(tmplObj) {
         subst[_i - 1] = arguments[_i];
     }
     var regexText = tmplObj.raw[0];
-    var wsrgx = /^\s+|\s+\n|\s+#[\s\S]+?\n|\n/gm;
-    var txt2 = regexText.replace(wsrgx, 'm');
+    var wsrgx = /^\s+|\s+\n|\s*#[\s\S]*?\n|\n/gm;
+    var txt2 = regexText.replace(wsrgx, '');
     return new RegExp(txt2, 'g');
 }
 var AnsiUp = (function () {
@@ -250,7 +250,7 @@ var AnsiUp = (function () {
             }
             if (next_char == ']') {
                 if ((this._buffer.charAt(2) != '8')
-                    || (this._buffer.charAt(2) != ']')) {
+                    || (this._buffer.charAt(3) != ';')) {
                     pkt.kind = PacketKind.ESC;
                     pkt.text = this._buffer.slice(0, 1);
                     this._buffer = this._buffer.slice(1);
@@ -400,6 +400,7 @@ var AnsiUp = (function () {
         if (!this._url_whitelist[parts[0]])
             return '';
         var result = "<a href=\"" + pkt.url + "\">" + this.old_escape_for_html(pkt.text) + "</a>";
+        return result;
     };
     return AnsiUp;
 }());

@@ -252,45 +252,27 @@ describe('ansi_up', function () {
 
   });
 
-  /* Too difficult
+  describe('hyperlinks', function () {
 
-  describe('linkify', function () {
-
-    it('should linkify a url', function () {
-      var start = "http://link.to/me ";
-      var expected = "<a href=\"http://link.to/me\">http://link.to/me</a> ";
+    it('should create an anchor tag with ST', function () {
+      var start = "ABC \x1b]8;;http://example.com\x1b\\EXAMPLE\x1b]8;;\x1b\\ DEF"
+      var expected = "ABC <a href=\"http://example.com\">EXAMPLE</a> DEF";
 
       var au = new AnsiUp();
       var l = au.ansi_to_html(start);
       l.should.eql(expected);
     });
 
-    it('should linkify a url split into two chunks', function () {
-      var start1 = " https://link.to/m";
-      var start2 = "e ";
-      var expected = "<a href=\"https://link.to/me\">https://link.to/me</a> ";
+    it('should create an anchor tag with BEL', function () {
+      var start = "ABC \x1b]8;;http://example.com\x07EXAMPLE\x1b]8;;\x07 DEF"
+      var expected = "ABC <a href=\"http://example.com\">EXAMPLE</a> DEF";
 
       var au = new AnsiUp();
-      var l = au.ansi_to_html(start1);
-      l.should.eql("");
-      l = au.ansi_to_html(start2);
-      l.should.eql(expected);
-    });
-
-    it('should linkify a url split into two chunks with color state', function () {
-      var start1 = "\033[32mhttps://link.to/m";
-      var start2 = "e ";
-      var expected = "<span style=\"color:rgb(0,187,0)\"><a href=\"https://link.to/me\">https://link.to/me</a> </span>";
-
-      var au = new AnsiUp();
-      var l = au.ansi_to_html(start1);
-      l.should.eql("");
-      l = au.ansi_to_html(start2);
+      var l = au.ansi_to_html(start);
       l.should.eql(expected);
     });
 
   });
-  */
 
   /*
   describe("ansi_to()", function() {
