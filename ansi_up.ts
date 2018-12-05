@@ -273,7 +273,7 @@ class AnsiUp
 
                     this._csi_regex = rgx`
                         ^                           # beginning of line
-                                                    # 
+                                                    #
                                                     # First attempt
                         (?:                         # legal sequence
                           \x1b\[                      # CSI
@@ -293,14 +293,14 @@ class AnsiUp
 
                 let match = this._buffer.match(this._csi_regex);
 
-                // This match is guaranteed to terminate (even on 
-                // invalid input). The key is to match on legal and 
+                // This match is guaranteed to terminate (even on
+                // invalid input). The key is to match on legal and
                 // illegal sequences.
                 // The first alternate matches everything legal and
                 // the second matches everything illegal.
                 //
                 // If it doesn't match, then we have not received
-                // either the full sequence or an illegal sequence. 
+                // either the full sequence or an illegal sequence.
                 // If it does match, the presence of field 4 tells
                 // us whether it was legal or illegal.
 
@@ -355,7 +355,7 @@ class AnsiUp
                 // We do this regex initialization here so
                 // we can keep the regex close to its use (Readability)
 
-                // Matching a Hyperlink OSC with a regex is difficult 
+                // Matching a Hyperlink OSC with a regex is difficult
                 // because Javascript's regex engine doesn't support
                 // 'partial match' support.
                 //
@@ -376,7 +376,7 @@ class AnsiUp
 
 
                 // STRING-TERMINATOR
-                // This is likely to terminate in most scenarios 
+                // This is likely to terminate in most scenarios
                 // because it will terminate on a newline
 
                 if (!this._osc_st) {
@@ -429,7 +429,7 @@ class AnsiUp
 
 
 
-                // OK - we might have the prefix and URI 
+                // OK - we might have the prefix and URI
                 // Lets start our search for the next ST
                 // past this index
 
