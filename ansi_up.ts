@@ -549,7 +549,7 @@ class AnsiUp
     {
       // Ok - we have a valid "SGR" (Select Graphic Rendition)
 
-      let sgr_cmds = pkt.text.split(';');
+      let sgr_cmds = pkt.text.split(';').reverse();
 
       // Each of these params affects the SGR state
 
