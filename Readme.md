@@ -74,6 +74,7 @@ More examples are in the 'examples' directory in the repo.
 
 ## Versions
 
+* Version 4.0 - Re-architect code to support terminal linkify escapes. 
 * Version 3.0 - now treats ANSI bold sequences as CSS font-weight:bold
 * Version 2.0 - moved to a stateful, streaming version of the API
 * Version 1.3 - was the last of the older, deprecated API.
@@ -99,7 +100,7 @@ This function only interprets ANSI SGR (Select Graphic Rendition) codes that can
 
 The default style uses colors that are very close to the prescribed standard. The standard assumes that the text will have a black background. These colors are set as inline styles on the SPAN tags. Another option is to set 'use_classes: true' in the options argument. This will instead set classes on the spans so the colors can be set via CSS. The class names used are of the format ````ansi-*-fg/bg```` and ````ansi-bright-*-fg/bg```` where * is the colour name, i.e black/red/green/yellow/blue/magenta/cyan/white. See the examples directory for a complete CSS theme for these classes.
 
-#### ansi_to_text (txt)
+#### ansi_to_text (txt) DEPRECATED
 
 This simply removes the ANSI escape codes from the stream.
 No escaping is done.

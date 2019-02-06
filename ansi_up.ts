@@ -50,7 +50,7 @@ interface TextPacket {
 
 class AnsiUp
 {
-    VERSION = "4.0.0";
+    VERSION = "4.0.1";
 
     //
     // *** SEE README ON GITHUB FOR PUBLIC API ***
@@ -688,7 +688,7 @@ class AnsiUp
         if (! this._url_whitelist[parts[0]])
             return '';
 
-        let result = `<a href="${pkt.url}">${this.escape_txt_for_html(pkt.text)}</a>`;
+        let result = `<a href="${this.escape_txt_for_html(pkt.url)}">${this.escape_txt_for_html(pkt.text)}</a>`;
         return result;
     }
 }

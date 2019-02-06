@@ -1,8 +1,8 @@
-export interface AU_Color {
+interface AU_Color {
     rgb: number[];
     class_name: string;
 }
-export interface TextWithAttr {
+interface TextWithAttr {
     fg: AU_Color;
     bg: AU_Color;
     bold: boolean;
@@ -17,12 +17,12 @@ declare enum PacketKind {
     SGR = 5,
     OSCURL = 6
 }
-export interface TextPacket {
+interface TextPacket {
     kind: PacketKind;
     text: string;
     url: string;
 }
-export default class AnsiUp {
+declare class AnsiUp {
     VERSION: string;
     private ansi_colors;
     private palette_256;

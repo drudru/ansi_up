@@ -1,13 +1,12 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "es6",
     "module": "none",
-    "noEmitOnError": true,
+    "noEmitOnError": false,
     "removeComments": true,
     "sourceMap": true,
     "declaration": true,
-    "noImplicitUseStrict": true,
-    "outDir": "dist"
+    "noImplicitUseStrict": true
   },
   "exclude": [ "node_modules", "dist" ]
 }
