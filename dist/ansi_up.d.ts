@@ -1,8 +1,8 @@
-interface AU_Color {
+export interface AU_Color {
     rgb: number[];
     class_name: string;
 }
-interface TextWithAttr {
+export interface TextWithAttr {
     fg: AU_Color;
     bg: AU_Color;
     bold: boolean;
@@ -17,12 +17,12 @@ declare enum PacketKind {
     SGR = 5,
     OSCURL = 6
 }
-interface TextPacket {
+export interface TextPacket {
     kind: PacketKind;
     text: string;
     url: string;
 }
-export declare class AnsiUp {
+export default class AnsiUp {
     VERSION: string;
     private ansi_colors;
     private palette_256;
@@ -50,4 +50,5 @@ export declare class AnsiUp {
     transform_to_html(fragment: TextWithAttr): string;
     private process_hyperlink;
 }
-export {};
+declare function rgx(tmplObj: any, ...subst: any[]): RegExp;
+declare function rgxG(tmplObj: any, ...subst: any[]): RegExp;
