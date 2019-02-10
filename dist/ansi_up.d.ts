@@ -42,12 +42,12 @@ export default class AnsiUp {
     url_whitelist: {};
     private setup_palettes;
     private escape_txt_for_html;
-    append_buffer(txt: string): void;
-    get_next_packet(): TextPacket;
+    private append_buffer;
+    private get_next_packet;
     ansi_to_html(txt: string): string;
     private with_state;
     private process_ansi;
-    transform_to_html(fragment: TextWithAttr): string;
+    private transform_to_html;
     private process_hyperlink;
 }
 declare function rgx(tmplObj: any, ...subst: any[]): RegExp;

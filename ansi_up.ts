@@ -50,7 +50,7 @@ interface TextPacket {
 
 class AnsiUp
 {
-    VERSION = "4.0.1";
+    VERSION = "4.0.2";
 
     //
     // *** SEE README ON GITHUB FOR PUBLIC API ***
@@ -190,13 +190,13 @@ class AnsiUp
       });
     }
 
-    append_buffer(txt:string) {
+    private append_buffer(txt:string) {
 
         var str = this._buffer + txt;
         this._buffer = str;
     }
 
-    get_next_packet():TextPacket {
+    private get_next_packet():TextPacket {
 
         var pkt =
             {
@@ -619,7 +619,7 @@ class AnsiUp
       }
     }
 
-    transform_to_html(fragment:TextWithAttr):string {
+    private transform_to_html(fragment:TextWithAttr):string {
         let txt = fragment.text;
 
         if (txt.length === 0)
