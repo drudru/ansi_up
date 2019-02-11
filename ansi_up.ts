@@ -342,6 +342,12 @@ class AnsiUp
             // OSC CHECK
             if (next_char == ']')
             {
+                if (len < 4)
+                {
+                        pkt.kind = PacketKind.Incomplete;
+                        return pkt;
+                }
+
                 if (    (this._buffer.charAt(2) != '8')
                      || (this._buffer.charAt(3) != ';') )
                 {

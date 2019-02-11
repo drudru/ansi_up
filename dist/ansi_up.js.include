@@ -15,7 +15,7 @@ var PacketKind;
 })(PacketKind || (PacketKind = {}));
 var AnsiUp = (function () {
     function AnsiUp() {
-        this.VERSION = "4.0.1";
+        this.VERSION = "4.0.2";
         this.setup_palettes();
         this._use_classes = false;
         this._escape_for_html = true;
@@ -173,6 +173,10 @@ var AnsiUp = (function () {
                 return pkt;
             }
             if (next_char == ']') {
+                if (len < 4) {
+                    pkt.kind = PacketKind.Incomplete;
+                    return pkt;
+                }
                 if ((this._buffer.charAt(2) != '8')
                     || (this._buffer.charAt(3) != ';')) {
                     pkt.kind = PacketKind.ESC;

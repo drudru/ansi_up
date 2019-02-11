@@ -1,6 +1,6 @@
 {
   "name": "ansi_up",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "description": "Convert ansi sequences in strings to colorful HTML",
   "keywords": [
     "ansi",
