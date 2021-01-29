@@ -119,14 +119,6 @@ See the examples directory for a complete CSS theme for these classes.
 
 ## Properties
 
-#### escape_for_html
-(default: true)
-
-This does the minimum escaping of text to make it compliant with HTML.
-In particular, the '&','<', and '>' characters are escaped. It is
-** highly ** recommended that you do not set this to false. It will open
-the door security vulnerabilities.
-
 #### use_classes
 (default: false)
 
@@ -140,12 +132,9 @@ This mapping is a whitelist of URI schemes that will be allowed to render HTML a
 
 ## Buffering
 
-In general, the ansi_to_html *should* emit HTML when invoked with a non-empty string.
-The only exceptions are an incomplete ESC sequence or an incomplete escaped URL.
-For those cases, the library will buffer the escape or the sequence for the escaped URL.
-
-The library is also stateful. If a color is set in a prior invocation, then it will
-continue to emit that color in further invocations until the color/SGR attribute is changed.
+In general, the ansi_to_html *should* emit HTML output when invoked with a non-empty string.
+The only exceptions are an incomplete ESC sequence or an incomplete OSC URL sequence.
+For those cases, the library will buffer (not emit output), until it receives input that completes those sequences.
 
 ### Example of a Use Case
 

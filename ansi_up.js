@@ -34,10 +34,9 @@ var PacketKind;
 })(PacketKind || (PacketKind = {}));
 var AnsiUp = (function () {
     function AnsiUp() {
-        this.VERSION = "4.0.3";
+        this.VERSION = "5.0.0";
         this.setup_palettes();
         this._use_classes = false;
-        this._escape_for_html = true;
         this.bold = false;
         this.fg = this.bg = null;
         this._buffer = '';
@@ -50,17 +49,7 @@ var AnsiUp = (function () {
         set: function (arg) {
             this._use_classes = arg;
         },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(AnsiUp.prototype, "escape_for_html", {
-        get: function () {
-            return this._escape_for_html;
-        },
-        set: function (arg) {
-            this._escape_for_html = arg;
-        },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AnsiUp.prototype, "url_whitelist", {
@@ -70,7 +59,7 @@ var AnsiUp = (function () {
         set: function (arg) {
             this._url_whitelist = arg;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     AnsiUp.prototype.setup_palettes = function () {
@@ -120,13 +109,17 @@ var AnsiUp = (function () {
         }
     };
     AnsiUp.prototype.escape_txt_for_html = function (txt) {
-        return txt.replace(/[&<>]/gm, function (str) {
+        return txt.replace(/[&<>"']/gm, function (str) {
             if (str === "&")
                 return "&amp;";
             if (str === "<")
                 return "&lt;";
             if (str === ">")
                 return "&gt;";
+            if (str === "\"")
+                return "&quot;";
+            if (str === "'")
+                return "&#x27;";
         });
     };
     AnsiUp.prototype.append_buffer = function (txt) {
@@ -341,8 +334,7 @@ var AnsiUp = (function () {
         var txt = fragment.text;
         if (txt.length === 0)
             return txt;
-        if (this._escape_for_html)
-            txt = this.escape_txt_for_html(txt);
+        txt = this.escape_txt_for_html(txt);
         if (!fragment.bold && fragment.fg === null && fragment.bg === null)
             return txt;
         var styles = [];
