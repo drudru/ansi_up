@@ -73,8 +73,8 @@ More examples are in the 'examples' directory in the repo.
     $ npm install ansi_up
 
 ## Versions
-
-* Version 4.0 - Re-architect code to support [https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda](terminal URL codes).
+* Version 5.0 - Security fix for OSC URLs
+* Version 4.0 - Re-architect code to support [terminal URL codes](https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda).
 * Version 3.0 - now treats ANSI bold sequences as CSS font-weight:bold
 * Version 2.0 - moved to a stateful, streaming version of the API
 * Version 1.3 - was the last of the older, deprecated API.
