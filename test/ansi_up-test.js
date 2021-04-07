@@ -154,6 +154,14 @@ describe('ansi_up', function () {
       l.should.eql(expected);
     });
 
+    it('should allow spaces in anchor text', function () {
+      var start = "ABC \x1b]8;;http://example.com\x1b\\A Link\x1b]8;;\x1b\\ DEF"
+      var expected = "ABC <a href=\"http://example.com\">A Link</a> DEF";
+
+      var au = new AnsiUp();
+      var l = au.ansi_to_html(start);
+      l.should.eql(expected);
+    });
 
   });
 

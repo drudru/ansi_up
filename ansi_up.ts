@@ -50,7 +50,7 @@ interface TextPacket {
 
 class AnsiUp
 {
-    VERSION = "5.0.0";
+    VERSION = "5.0.1";
 
     //
     // *** SEE README ON GITHUB FOR PUBLIC API ***
@@ -467,7 +467,7 @@ class AnsiUp
                           |                           # alternate
                           (?:\x07)                    # BEL (what xterm did)
                         )
-                        ([\x21-\x7e]+)              # TEXT capture
+                        ([\x20-\x7e]+)              # TEXT capture
                         \x1b\]8;;                   # OSC Hyperlink End
                         (?:                         # ST
                           (?:\x1b\\)                  # ESC \
