@@ -275,6 +275,30 @@ describe('ansi_up', function () {
         l.should.eql(expected);
       });
 
+      it('should transform an italic attr;foreground to html', function () {
+        var attr = 3;
+        var fg = 32;
+        var start = "\033[" + attr + ";" + fg + "m " + attr + ";" + fg + " \033[0m";
+
+        var expected = "<span style=\"font-style:italic;color:rgb(0,187,0)\"> " + attr + ";" + fg + " </span>";
+
+        var au = new AnsiUp();
+        var l = au.ansi_to_html(start);
+        l.should.eql(expected);
+      });
+
+      it('should transform an underline attr;foreground to html', function () {
+        var attr = 4;
+        var fg = 32;
+        var start = "\033[" + attr + ";" + fg + "m " + attr + ";" + fg + " \033[0m";
+
+        var expected = "<span style=\"text-decoration:underline;color:rgb(0,187,0)\"> " + attr + ";" + fg + " </span>";
+
+        var au = new AnsiUp();
+        var l = au.ansi_to_html(start);
+        l.should.eql(expected);
+      });
+
       it('should transform a bright-foreground to html', function () {
         var fg = 92;
         var start = "\033[" + fg + "m " + fg + " \033[0m";
@@ -533,6 +557,34 @@ describe('ansi_up', function () {
         l.should.eql(expected);
       });
 
+      it('should transform an italic attr;background;bright-foreground to html', function () {
+        var attr = 3;
+        var fg = 33;
+        var bg = 102;
+        var start = "\033[" + attr + ";" + bg + ";" + fg + "m " + attr + ";" + bg + ";" + fg + " \033[0m";
+
+        var expected = '<span style="font-style:italic"' + " class=\"ansi-yellow-fg ansi-bright-green-bg\"> " + attr + ";" + bg + ";" + fg + " </span>";
+
+        var au = new AnsiUp();
+        au.use_classes = true;
+        var l = au.ansi_to_html(start);
+        l.should.eql(expected);
+      });
+
+      it('should transform an underline attr;background;bright-foreground to html', function () {
+        var attr = 4;
+        var fg = 33;
+        var bg = 102;
+        var start = "\033[" + attr + ";" + bg + ";" + fg + "m " + attr + ";" + bg + ";" + fg + " \033[0m";
+
+        var expected = '<span style="text-decoration:underline"' + " class=\"ansi-yellow-fg ansi-bright-green-bg\"> " + attr + ";" + bg + ";" + fg + " </span>";
+
+        var au = new AnsiUp();
+        au.use_classes = true;
+        var l = au.ansi_to_html(start);
+        l.should.eql(expected);
+      });
+
       it('should transform a complex multi-line sequence to html', function () {
         var attr = 1;
         var fg = 32;
@@ -662,12 +714,6 @@ describe('ansi_up', function () {
         l.should.containEql('bar');
         l.should.containEql('baz');
         l.should.containEql('1;31m');
-      });
-      it('(italic)', function () {
-        var start = "foo\033[3mbar\033[0mbaz";
-        var au = new AnsiUp();
-        var l = au.ansi_to_html(start);
-        l.should.eql('foobarbaz');
       });
       it('(cursor-up)', function () {
         var start = "foo\033[1Abar";
