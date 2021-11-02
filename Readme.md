@@ -73,6 +73,7 @@ More examples are in the 'examples' directory in the repo.
     $ npm install ansi_up
 
 ## Versions
+* Version 5.1 - Add italic and underline styles (@DaoDaoNoCode)
 * Version 5.0 - Security fix for OSC URLs
 * Version 4.0 - Re-architect code to support [terminal URL codes](https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda).
 * Version 3.0 - now treats ANSI bold sequences as CSS font-weight:bold
@@ -182,6 +183,7 @@ This code was developed by Dru Nelson (<https://github.com/drudru>).
 
 Thanks goes to the following contributors for their patches:
 
+- Juntao Wang (<https://github.com/DaoDaoNoCode>)
 - AIZAWA Hina (<https://github.com/fetus-hina>)
 - James R. White (<https://github.com/jamesrwhite>)
 - Aaron Stone (<https://github.com/sodabrew>)
