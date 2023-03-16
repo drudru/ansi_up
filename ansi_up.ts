@@ -226,8 +226,9 @@ class AnsiUp
         // NOW WE HANDLE ESCAPES
         if (pos == 0)
         {
-
-            if (len == 1)        // Lone ESC in Buffer, We don't know yet
+            // All of the sequences typically need at least 3 characters
+            // So, wait until we have at least that many
+            if (len < 3)
             {
                 pkt.kind = PacketKind.Incomplete;
                 return pkt;
@@ -236,8 +237,8 @@ class AnsiUp
             var next_char = this._buffer.charAt(1);
 
             // We treat this as a single ESC
-            // Which effecitvely shows
-            if ((next_char != '[') && (next_char != ']')) // DeMorgan
+            // No transformation
+            if ((next_char != '[') && (next_char != ']') && (next_char != '('))
             {
                 pkt.kind = PacketKind.ESC;
                 pkt.text = this._buffer.slice(0, 1);
@@ -333,7 +334,7 @@ class AnsiUp
                 this._buffer = this._buffer.slice(rpos);
                 return pkt;
             }
-
+            else
             // OSC CHECK
             if (next_char == ']')
             {
@@ -505,6 +506,18 @@ class AnsiUp
 
                 var rpos = match[0].length;
                 this._buffer = this._buffer.slice(rpos);
+                return pkt;
+            }
+            else
+            // Other ESC CHECK
+            if (next_char == '(')
+            {
+                // This specifies the character set, which
+                // should just be ignored
+
+                // We have at least 3, so drop the sequence
+                pkt.kind = PacketKind.Unknown;
+                this._buffer = this._buffer.slice(3);
                 return pkt;
             }
         }

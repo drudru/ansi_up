@@ -151,12 +151,12 @@ var AnsiUp = (function () {
             return pkt;
         }
         if (pos == 0) {
-            if (len == 1) {
+            if (len < 3) {
                 pkt.kind = PacketKind.Incomplete;
                 return pkt;
             }
             var next_char = this._buffer.charAt(1);
-            if ((next_char != '[') && (next_char != ']')) {
+            if ((next_char != '[') && (next_char != ']') && (next_char != '(')) {
                 pkt.kind = PacketKind.ESC;
                 pkt.text = this._buffer.slice(0, 1);
                 this._buffer = this._buffer.slice(1);
@@ -186,7 +186,7 @@ var AnsiUp = (function () {
                 this._buffer = this._buffer.slice(rpos);
                 return pkt;
             }
-            if (next_char == ']') {
+            else if (next_char == ']') {
                 if (len < 4) {
                     pkt.kind = PacketKind.Incomplete;
                     return pkt;
@@ -243,6 +243,11 @@ var AnsiUp = (function () {
                 pkt.text = match[2];
                 var rpos = match[0].length;
                 this._buffer = this._buffer.slice(rpos);
+                return pkt;
+            }
+            else if (next_char == '(') {
+                pkt.kind = PacketKind.Unknown;
+                this._buffer = this._buffer.slice(3);
                 return pkt;
             }
         }
