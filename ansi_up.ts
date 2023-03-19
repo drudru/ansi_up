@@ -732,7 +732,6 @@ class AnsiUp
             return '';
 
         let result = `<a href="${this.escape_txt_for_html(pkt.url)}">${this.escape_txt_for_html(pkt.text)}</a>`;
-        
         return result;
     }
 }
