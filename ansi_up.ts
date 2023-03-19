@@ -76,6 +76,7 @@ class AnsiUp
     private _osc_regex:RegExp;
 
     private _url_whitelist:{};
+    private _escape_html:boolean;
 
     private _buffer:string;
 
@@ -93,6 +94,7 @@ class AnsiUp
         this._buffer = '';
 
         this._url_whitelist = { 'http':1, 'https':1 };
+        this._escape_html = true;
     }
 
     set use_classes(arg:boolean)
@@ -113,6 +115,16 @@ class AnsiUp
     get url_whitelist():{}
     {
         return this._url_whitelist;
+    }
+
+    set escape_html(arg:boolean)
+    {
+        this._escape_html = arg;
+    }
+
+    get escape_html():boolean
+    {
+        return this._escape_html;
     }
 
 
@@ -649,7 +661,8 @@ class AnsiUp
         if (txt.length === 0)
             return txt;
 
-        txt = this.escape_txt_for_html(txt);
+        if (this._escape_html)
+            txt = this.escape_txt_for_html(txt);
 
         // If colors not set, default style is used
         if (!fragment.bold && !fragment.italic && !fragment.underline && fragment.fg === null && fragment.bg === null)
@@ -717,7 +730,9 @@ class AnsiUp
         if (! this._url_whitelist[parts[0]])
             return '';
 
-        let result = `<a href="${this.escape_txt_for_html(pkt.url)}">${this.escape_txt_for_html(pkt.text)}</a>`;
+        let result = `<a href="${this.escape_txt_for_html(pkt.url)}">${this._escape_html ? this.escape_txt_for_html(pkt.text) : pkt.text}</a>`;
+        // Escape href="" even if this._escape_html is false, to avoid breaking the <a> in case pkt.url contains a double quote.
+        
         return result;
     }
 }
