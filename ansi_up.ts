@@ -188,6 +188,8 @@ class AnsiUp
 
     private escape_txt_for_html(txt:string):string
     {
+      if (!this._escape_html)
+          return txt;
       return txt.replace(/[&<>"']/gm, (str) => {
         if (str === "&")  return "&amp;";
         if (str === "<")  return "&lt;";
@@ -661,8 +663,7 @@ class AnsiUp
         if (txt.length === 0)
             return txt;
 
-        if (this._escape_html)
-            txt = this.escape_txt_for_html(txt);
+        txt = this.escape_txt_for_html(txt);
 
         // If colors not set, default style is used
         if (!fragment.bold && !fragment.italic && !fragment.underline && fragment.fg === null && fragment.bg === null)
@@ -730,8 +731,7 @@ class AnsiUp
         if (! this._url_whitelist[parts[0]])
             return '';
 
-        let result = `<a href="${this.escape_txt_for_html(pkt.url)}">${this._escape_html ? this.escape_txt_for_html(pkt.text) : pkt.text}</a>`;
-        // Escape href="" even if this._escape_html is false, to avoid breaking the <a> in case pkt.url contains a double quote.
+        let result = `<a href="${this.escape_txt_for_html(pkt.url)}">${this.escape_txt_for_html(pkt.text)}</a>`;
         
         return result;
     }
