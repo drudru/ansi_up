@@ -120,6 +120,11 @@ See the examples directory for a complete CSS theme for these classes.
 
 ## Properties
 
+#### escape_html
+(default: true)
+
+By default, HTML's reserved characters `& < > " '` are replaced with <a href="https://www.w3schools.com/html/html_entities.asp">HTML entities</a> to make them appear as literal characters in your application, rather than being interpreted as HTML structure. If you prefer keeping HTML's reserved characters untouched, you can set this to false.
+
 #### use_classes
 (default: false)
 

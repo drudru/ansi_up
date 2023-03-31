@@ -76,6 +76,7 @@ class AnsiUp
     private _osc_regex:RegExp;
 
     private _url_whitelist:{};
+    private _escape_html:boolean;
 
     private _buffer:string;
 
@@ -93,6 +94,7 @@ class AnsiUp
         this._buffer = '';
 
         this._url_whitelist = { 'http':1, 'https':1 };
+        this._escape_html = true;
     }
 
     set use_classes(arg:boolean)
@@ -113,6 +115,16 @@ class AnsiUp
     get url_whitelist():{}
     {
         return this._url_whitelist;
+    }
+
+    set escape_html(arg:boolean)
+    {
+        this._escape_html = arg;
+    }
+
+    get escape_html():boolean
+    {
+        return this._escape_html;
     }
 
 
@@ -176,6 +188,8 @@ class AnsiUp
 
     private escape_txt_for_html(txt:string):string
     {
+      if (!this._escape_html)
+          return txt;
       return txt.replace(/[&<>"']/gm, (str) => {
         if (str === "&")  return "&amp;";
         if (str === "<")  return "&lt;";
