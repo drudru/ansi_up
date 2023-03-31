@@ -38,12 +38,15 @@ export default class AnsiUp {
     private _osc_st;
     private _osc_regex;
     private _url_whitelist;
+    private _escape_html;
     private _buffer;
     constructor();
     set use_classes(arg: boolean);
     get use_classes(): boolean;
     set url_whitelist(arg: {});
     get url_whitelist(): {};
+    set escape_html(arg: boolean);
+    get escape_html(): boolean;
     private setup_palettes;
     private escape_txt_for_html;
     private append_buffer;

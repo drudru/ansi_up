@@ -34,7 +34,7 @@ var PacketKind;
 })(PacketKind || (PacketKind = {}));
 var AnsiUp = (function () {
     function AnsiUp() {
-        this.VERSION = "5.1.0";
+        this.VERSION = "5.2.0";
         this.setup_palettes();
         this._use_classes = false;
         this.bold = false;
@@ -43,6 +43,7 @@ var AnsiUp = (function () {
         this.fg = this.bg = null;
         this._buffer = '';
         this._url_whitelist = { 'http': 1, 'https': 1 };
+        this._escape_html = true;
     }
     Object.defineProperty(AnsiUp.prototype, "use_classes", {
         get: function () {
@@ -60,6 +61,16 @@ var AnsiUp = (function () {
         },
         set: function (arg) {
             this._url_whitelist = arg;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(AnsiUp.prototype, "escape_html", {
+        get: function () {
+            return this._escape_html;
+        },
+        set: function (arg) {
+            this._escape_html = arg;
         },
         enumerable: false,
         configurable: true
@@ -111,6 +122,8 @@ var AnsiUp = (function () {
         }
     };
     AnsiUp.prototype.escape_txt_for_html = function (txt) {
+        if (!this._escape_html)
+            return txt;
         return txt.replace(/[&<>"']/gm, function (str) {
             if (str === "&")
                 return "&amp;";
