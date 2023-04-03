@@ -52,7 +52,7 @@ interface TextPacket {
 
 class AnsiUp
 {
-    VERSION = "5.2.0";
+    VERSION = "5.2.1";
 
     //
     // *** SEE README ON GITHUB FOR PUBLIC API ***

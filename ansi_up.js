@@ -34,7 +34,7 @@ var PacketKind;
 })(PacketKind || (PacketKind = {}));
 var AnsiUp = (function () {
     function AnsiUp() {
-        this.VERSION = "5.2.0";
+        this.VERSION = "5.2.1";
         this.setup_palettes();
         this._use_classes = false;
         this.bold = false;

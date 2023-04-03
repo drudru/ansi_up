@@ -1,6 +1,6 @@
 {
   "name": "ansi_up",
-  "version": "5.2.0",
+  "version": "5.2.1",
   "description": "Convert ansi sequences in strings to colorful HTML",
   "keywords": [
     "ansi",
@@ -25,11 +25,9 @@
     "build": "make typescript"
   },
   "devDependencies": {
+    "npm": "^9.6.3",
     "mocha": "^10.2.0",
     "should": "*",
     "typescript": "^3.9.10"
-  },
-  "dependencies": {
-    "npm": "^9.6.3"
   }
 }
