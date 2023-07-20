@@ -10,6 +10,7 @@
   "license": "MIT",
   "main": "./ansi_up.js",
   "types": "./dist/ansi_up.d.ts",
+  "type":"module",
   "repository": {
     "type": "git",
     "url": "git://github.com/drudru/ansi_up.git"
