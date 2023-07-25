@@ -8,7 +8,7 @@
   ],
   "author": "drudru <drudru@gmail.com>",
   "license": "MIT",
-  "main": "./ansi_up.js",
+  "main": "./ansi_up.mjs",
   "types": "./dist/ansi_up.d.ts",
   "type":"module",
   "repository": {

@@ -23,39 +23,35 @@ export interface TextPacket {
     kind: PacketKind;
     text: string;
     url: string;
-}
-export default class AnsiUp {
-    VERSION: string;
-    private ansi_colors;
-    private palette_256;
-    private fg;
-    private bg;
-    private bold;
-    private italic;
-    private underline;
-    private _use_classes;
-    private _csi_regex;
-    private _osc_st;
-    private _osc_regex;
-    private _url_whitelist;
-    private _escape_html;
-    private _buffer;
+}export class AnsiUp {
+    ansi_colors: { rgb: number[]; class_name: string }[][];
+    _useClasses: boolean;
+    _escapeForHtml: boolean;
+    bright: boolean;
+    fg: null | { rgb: number[]; class_name: string };
+    bg: null | { rgb: number[]; class_name: string };
+    _buffer: string;
+    palette_256: { rgb: number[]; class_name: string }[];
+  
     constructor();
-    set use_classes(arg: boolean);
-    get use_classes(): boolean;
-    set url_whitelist(arg: {});
-    get url_whitelist(): {};
-    set escape_html(arg: boolean);
-    get escape_html(): boolean;
-    private setup_palettes;
-    private escape_txt_for_html;
-    private append_buffer;
-    private get_next_packet;
+  
+    setup_256_palette(): void;
+  
+    doEscape(txt: string): string;
+  
+    old_linkify(txt: string): string;
+  
+    detect_incomplete_ansi(txt: string): boolean;
+  
+    detect_incomplete_link(txt: string): number;
+  
     ansi_to_html(txt: string): string;
-    private with_state;
-    private process_ansi;
-    private transform_to_html;
-    private process_hyperlink;
-}
+  
+    ansi_to_text(txt: string): string;
+  
+    wrap_text(txt: string): string;
+  
+    process_ansi(block: string): string;
+  }
 declare function rgx(tmplObj: any, ...subst: any[]): RegExp;
 declare function rgxG(tmplObj: any, ...subst: any[]): RegExp;
