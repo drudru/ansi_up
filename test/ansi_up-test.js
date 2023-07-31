@@ -1,7 +1,5 @@
-var AU = require('../ansi_up');
-var AnsiUp = AU.default;
 
-var should = require('should');
+import { AnsiUp } from '../ansi_up.js';
 
 describe('ansi_up', function () {
 
@@ -176,9 +174,9 @@ describe('ansi_up', function () {
       var bg = 41; // red bg
       var lines = [
         "should have no color",
-        "\033[" + attr + ";" + fg + "m " + "should be bold with green foreground" + "\033[0m",
-        "\033[" + attr + ";" + bg + ";" + fg + "m " + "should have bold with red background with green foreground" + "\033[0m",
-        "\033[" +              bg + ";" + fg + "m " + "should have red background with green foreground" + "\033[0m"
+        "\x1B[" + attr + ";" + fg + "m " + "should be bold with green foreground" + "\x1B[0m",
+        "\x1B[" + attr + ";" + bg + ";" + fg + "m " + "should have bold with red background with green foreground" + "\x1B[0m",
+        "\x1B[" +              bg + ";" + fg + "m " + "should have red background with green foreground" + "\x1B[0m"
       ];
 
       var stats = {};
@@ -229,7 +227,7 @@ describe('ansi_up', function () {
       it('should transform a foreground to html', function () {
         var attr = 0;
         var fg = 32;
-        var start = "\033[" + fg + "m " + fg + " \033[0m";
+        var start = "\x1B[" + fg + "m " + fg + " \x1B[0m";
 
         var expected = "<span style=\"color:rgb(0,187,0)\"> " + fg + " </span>";
 
@@ -242,7 +240,7 @@ describe('ansi_up', function () {
       it('should transform a attr;foreground to html', function () {
         var attr = 0;
         var fg = 32;
-        var start = "\033[" + attr + ";" + fg + "m " + fg + "  \033[0m";
+        var start = "\x1B[" + attr + ";" + fg + "m " + fg + "  \x1B[0m";
 
         var expected = "<span style=\"color:rgb(0,187,0)\"> " + fg + "  </span>";
 
@@ -254,7 +252,7 @@ describe('ansi_up', function () {
       it('should transform an empty code to a normal/reset html', function () {
         var attr = 0;
         var fg = 32;
-        var start = "\033[" + attr + ";" + fg + "m " + fg + "  \033[m x";
+        var start = "\x1B[" + attr + ";" + fg + "m " + fg + "  \x1B[m x";
 
         var expected = "<span style=\"color:rgb(0,187,0)\"> " + fg + "  </span> x";
 
@@ -266,7 +264,7 @@ describe('ansi_up', function () {
       it('should transform a bold attr;foreground to html', function () {
         var attr = 1;
         var fg = 32;
-        var start = "\033[" + attr + ";" + fg + "m " + attr + ";" + fg + " \033[0m";
+        var start = "\x1B[" + attr + ";" + fg + "m " + attr + ";" + fg + " \x1B[0m";
 
         var expected = "<span style=\"font-weight:bold;color:rgb(0,187,0)\"> " + attr + ";" + fg + " </span>";
 
@@ -278,7 +276,7 @@ describe('ansi_up', function () {
       it('should transform an italic attr;foreground to html', function () {
         var attr = 3;
         var fg = 32;
-        var start = "\033[" + attr + ";" + fg + "m " + attr + ";" + fg + " \033[0m";
+        var start = "\x1B[" + attr + ";" + fg + "m " + attr + ";" + fg + " \x1B[0m";
 
         var expected = "<span style=\"font-style:italic;color:rgb(0,187,0)\"> " + attr + ";" + fg + " </span>";
 
@@ -290,7 +288,7 @@ describe('ansi_up', function () {
       it('should transform an underline attr;foreground to html', function () {
         var attr = 4;
         var fg = 32;
-        var start = "\033[" + attr + ";" + fg + "m " + attr + ";" + fg + " \033[0m";
+        var start = "\x1B[" + attr + ";" + fg + "m " + attr + ";" + fg + " \x1B[0m";
 
         var expected = "<span style=\"text-decoration:underline;color:rgb(0,187,0)\"> " + attr + ";" + fg + " </span>";
 
@@ -301,7 +299,7 @@ describe('ansi_up', function () {
 
       it('should transform a bright-foreground to html', function () {
         var fg = 92;
-        var start = "\033[" + fg + "m " + fg + " \033[0m";
+        var start = "\x1B[" + fg + "m " + fg + " \x1B[0m";
 
         var expected = "<span style=\"color:rgb(0,255,0)\"> " + fg + " </span>";
 
@@ -314,7 +312,7 @@ describe('ansi_up', function () {
         var attr = 1;
         var fg = 33;
         var bg = 42;
-        var start = "\033[" + attr + ";" + bg + ";" + fg + "m " + attr + ";" + bg + ";" + fg + " \033[0m";
+        var start = "\x1B[" + attr + ";" + bg + ";" + fg + "m " + attr + ";" + bg + ";" + fg + " \x1B[0m";
 
         var expected = "<span style=\"font-weight:bold;color:rgb(187,187,0);background-color:rgb(0,187,0)\"> " + attr + ";" + bg + ";" + fg + " </span>";
 
@@ -326,7 +324,7 @@ describe('ansi_up', function () {
       it('should transform a bright-background;foreground to html', function () {
         var fg = 33;
         var bg = 102;
-        var start = "\033[" + bg + ";" + fg + "m " + bg + ";" + fg + " \033[0m";
+        var start = "\x1B[" + bg + ";" + fg + "m " + bg + ";" + fg + " \x1B[0m";
 
         var expected = "<span style=\"color:rgb(187,187,0);background-color:rgb(0,255,0)\"> " + bg + ";" + fg + " </span>";
 
@@ -340,7 +338,7 @@ describe('ansi_up', function () {
         var attr = 1;
         var fg = 32;
         var bg = 42;
-        var start = "\n \033[" + fg + "m " + fg + "  \033[0m \n  \033[" + bg + "m " + bg + "  \033[0m \n zimpper ";
+        var start = "\n \x1B[" + fg + "m " + fg + "  \x1B[0m \n  \x1B[" + bg + "m " + bg + "  \x1B[0m \n zimpper ";
 
         var expected = "\n <span style=\"color:rgb(0,187,0)\"> " + fg + "  </span> \n  <span style=\"background-color:rgb(0,187,0)\"> " + bg + "  </span> \n zimpper ";
 
@@ -352,7 +350,7 @@ describe('ansi_up', function () {
       it('should transform a foreground and background and reset foreground to html', function () {
         var fg = 37;
         var bg = 42;
-        var start = "\n\033[40m \033[49m\033[" + fg + ";" + bg + "m " + bg + " \033[39m foobar ";
+        var start = "\n\x1B[40m \x1B[49m\x1B[" + fg + ";" + bg + "m " + bg + " \x1B[39m foobar ";
 
         var expected = "\n<span style=\"background-color:rgb(0,0,0)\"> </span><span style=\"color:rgb(255,255,255);background-color:rgb(0,187,0)\"> " + bg + " </span><span style=\"background-color:rgb(0,187,0)\"> foobar </span>";
 
@@ -364,7 +362,7 @@ describe('ansi_up', function () {
       it('should transform a foreground and background and reset background to html', function () {
         var fg = 37;
         var bg = 42;
-        var start = "\n\033[40m \033[49m\033[" + fg + ";" + bg + "m " + fg + " \033[49m foobar ";
+        var start = "\n\x1B[40m \x1B[49m\x1B[" + fg + ";" + bg + "m " + fg + " \x1B[49m foobar ";
 
         var expected = "\n<span style=\"background-color:rgb(0,0,0)\"> </span><span style=\"color:rgb(255,255,255);background-color:rgb(0,187,0)\"> " + fg + " </span><span style=\"color:rgb(255,255,255)\"> foobar </span>";
 
@@ -376,7 +374,7 @@ describe('ansi_up', function () {
       it('should transform a foreground and background and reset them to html', function () {
         var fg = 37;
         var bg = 42;
-        var start = "\n\033[40m \033[49m\033[" + fg + ";" + bg + "m " + fg + ';' + bg + " \033[39;49m foobar ";
+        var start = "\n\x1B[40m \x1B[49m\x1B[" + fg + ";" + bg + "m " + fg + ';' + bg + " \x1B[39;49m foobar ";
 
         var expected = "\n<span style=\"background-color:rgb(0,0,0)\"> </span><span style=\"color:rgb(255,255,255);background-color:rgb(0,187,0)\"> " + fg + ';' + bg + " </span> foobar ";
 
@@ -387,7 +385,7 @@ describe('ansi_up', function () {
 
       describe('transform extended colors (palette)', function () {
         it('system color, foreground', function () {
-          var start = "\033[38;5;1m" + "red" + "\033[0m";
+          var start = "\x1B[38;5;1m" + "red" + "\x1B[0m";
           var expected = '<span style="color:rgb(187,0,0)">red</span>';
           var au = new AnsiUp();
           var l = au.ansi_to_html(start);
@@ -395,7 +393,7 @@ describe('ansi_up', function () {
         });
 
         it('system color, foreground (bright)', function () {
-          var start = "\033[38;5;9m" + "red" + "\033[0m";
+          var start = "\x1B[38;5;9m" + "red" + "\x1B[0m";
           var expected = '<span style="color:rgb(255,85,85)">red</span>';
           var au = new AnsiUp();
           var l = au.ansi_to_html(start);
@@ -403,7 +401,7 @@ describe('ansi_up', function () {
         });
 
         it('system color, background', function () {
-          var start = "\033[48;5;1m" + "red" + "\033[0m";
+          var start = "\x1B[48;5;1m" + "red" + "\x1B[0m";
           var expected = '<span style="background-color:rgb(187,0,0)">red</span>';
           var au = new AnsiUp();
           var l = au.ansi_to_html(start);
@@ -411,7 +409,7 @@ describe('ansi_up', function () {
         });
 
         it('system color, background (bright)', function () {
-          var start = "\033[48;5;9m" + "red" + "\033[0m";
+          var start = "\x1B[48;5;9m" + "red" + "\x1B[0m";
           var expected = '<span style="background-color:rgb(255,85,85)">red</span>';
           var au = new AnsiUp();
           var l = au.ansi_to_html(start);
@@ -419,7 +417,7 @@ describe('ansi_up', function () {
         });
 
         it('palette, foreground', function () {
-          var start = "\033[38;5;171m" + "foo" + "\033[0m";
+          var start = "\x1B[38;5;171m" + "foo" + "\x1B[0m";
           var expected = '<span style="color:rgb(215,95,255)">foo</span>';
           var au = new AnsiUp();
           var l = au.ansi_to_html(start);
@@ -427,7 +425,7 @@ describe('ansi_up', function () {
         });
 
         it('palette, background', function () {
-          var start = "\033[48;5;171m" + "foo" + "\033[0m";
+          var start = "\x1B[48;5;171m" + "foo" + "\x1B[0m";
           var expected = '<span style="background-color:rgb(215,95,255)">foo</span>';
           var au = new AnsiUp();
           var l = au.ansi_to_html(start);
@@ -435,7 +433,7 @@ describe('ansi_up', function () {
         });
 
         it('combination of bold and palette', function () {
-          var start = "\033[1;38;5;171m" + "foo" + "\033[0m";
+          var start = "\x1B[1;38;5;171m" + "foo" + "\x1B[0m";
           var expected = '<span style="font-weight:bold;color:rgb(215,95,255)">foo</span>';
           var au = new AnsiUp();
           var l = au.ansi_to_html(start);
@@ -443,7 +441,7 @@ describe('ansi_up', function () {
         });
 
         it('combination of palette and bold', function () {
-          var start = "\033[38;5;171;1m" + "foo" + "\033[0m";
+          var start = "\x1B[38;5;171;1m" + "foo" + "\x1B[0m";
           var expected = '<span style="font-weight:bold;color:rgb(215,95,255)">foo</span>';
           var au = new AnsiUp();
           var l = au.ansi_to_html(start);
@@ -453,21 +451,21 @@ describe('ansi_up', function () {
 
       describe('transform extended colors (true color)', function () {
         it('foreground', function () {
-          var start = "\033[38;2;42;142;242m" + "foo" + "\033[0m";
+          var start = "\x1B[38;2;42;142;242m" + "foo" + "\x1B[0m";
           var expected = '<span style="color:rgb(42,142,242)">foo</span>';
           var au = new AnsiUp();
           var l = au.ansi_to_html(start);
           l.should.eql(expected);
         });
         it('background', function () {
-          var start = "\033[48;2;42;142;242m" + "foo" + "\033[0m";
+          var start = "\x1B[48;2;42;142;242m" + "foo" + "\x1B[0m";
           var expected = '<span style="background-color:rgb(42,142,242)">foo</span>';
           var au = new AnsiUp();
           var l = au.ansi_to_html(start);
           l.should.eql(expected);
         });
         it('both foreground and background', function () {
-          var start = "\033[38;2;42;142;242;48;2;1;2;3m" + "foo" + "\033[0m";
+          var start = "\x1B[38;2;42;142;242;48;2;1;2;3m" + "foo" + "\x1B[0m";
           var expected = '<span style="color:rgb(42,142,242);background-color:rgb(1,2,3)">foo</span>';
           var au = new AnsiUp();
           var l = au.ansi_to_html(start);
@@ -480,7 +478,7 @@ describe('ansi_up', function () {
       it('should transform a foreground to html', function () {
         var attr = 0;
         var fg = 32;
-        var start = "\033[" + fg + "m " + fg + " \033[0m";
+        var start = "\x1B[" + fg + "m " + fg + " \x1B[0m";
 
         var expected = "<span class=\"ansi-green-fg\"> " + fg + " </span>";
 
@@ -493,7 +491,7 @@ describe('ansi_up', function () {
       it('should transform a attr;foreground to html', function () {
         var attr = 0;
         var fg = 32;
-        var start = "\033[" + attr + ";" + fg + "m " + fg + "  \033[0m";
+        var start = "\x1B[" + attr + ";" + fg + "m " + fg + "  \x1B[0m";
 
         var expected = "<span class=\"ansi-green-fg\"> " + fg + "  </span>";
 
@@ -506,7 +504,7 @@ describe('ansi_up', function () {
       it('should transform a bold attr;foreground to html', function () {
         var attr = 1;
         var fg = 32;
-        var start = "\033[" + attr + ";" + fg + "m " + attr + ";" + fg + " \033[0m";
+        var start = "\x1B[" + attr + ";" + fg + "m " + attr + ";" + fg + " \x1B[0m";
 
         var expected = '<span style="font-weight:bold"' + " class=\"ansi-green-fg\"> " + attr + ";" + fg + " </span>";
 
@@ -519,7 +517,7 @@ describe('ansi_up', function () {
       it('should transform a bold attr;bright-foreground to html', function () {
         var attr = 1;
         var fg = 92;
-        var start = "\033[" + attr + ";" + fg + "m " + attr + ";" + fg + " \033[0m";
+        var start = "\x1B[" + attr + ";" + fg + "m " + attr + ";" + fg + " \x1B[0m";
 
         var expected = '<span style="font-weight:bold"' + " class=\"ansi-bright-green-fg\"> " + attr + ";" + fg + " </span>";
 
@@ -533,7 +531,7 @@ describe('ansi_up', function () {
         var attr = 1;
         var fg = 33;
         var bg = 42;
-        var start = "\033[" + attr + ";" + bg + ";" + fg + "m " + attr + ";" + bg + ";" + fg + " \033[0m";
+        var start = "\x1B[" + attr + ";" + bg + ";" + fg + "m " + attr + ";" + bg + ";" + fg + " \x1B[0m";
 
         var expected = '<span style="font-weight:bold"' + " class=\"ansi-yellow-fg ansi-green-bg\"> " + attr + ";" + bg + ";" + fg + " </span>";
 
@@ -547,7 +545,7 @@ describe('ansi_up', function () {
         var attr = 1;
         var fg = 33;
         var bg = 102;
-        var start = "\033[" + attr + ";" + bg + ";" + fg + "m " + attr + ";" + bg + ";" + fg + " \033[0m";
+        var start = "\x1B[" + attr + ";" + bg + ";" + fg + "m " + attr + ";" + bg + ";" + fg + " \x1B[0m";
 
         var expected = '<span style="font-weight:bold"' + " class=\"ansi-yellow-fg ansi-bright-green-bg\"> " + attr + ";" + bg + ";" + fg + " </span>";
 
@@ -561,7 +559,7 @@ describe('ansi_up', function () {
         var attr = 3;
         var fg = 33;
         var bg = 102;
-        var start = "\033[" + attr + ";" + bg + ";" + fg + "m " + attr + ";" + bg + ";" + fg + " \033[0m";
+        var start = "\x1B[" + attr + ";" + bg + ";" + fg + "m " + attr + ";" + bg + ";" + fg + " \x1B[0m";
 
         var expected = '<span style="font-style:italic"' + " class=\"ansi-yellow-fg ansi-bright-green-bg\"> " + attr + ";" + bg + ";" + fg + " </span>";
 
@@ -575,7 +573,7 @@ describe('ansi_up', function () {
         var attr = 4;
         var fg = 33;
         var bg = 102;
-        var start = "\033[" + attr + ";" + bg + ";" + fg + "m " + attr + ";" + bg + ";" + fg + " \033[0m";
+        var start = "\x1B[" + attr + ";" + bg + ";" + fg + "m " + attr + ";" + bg + ";" + fg + " \x1B[0m";
 
         var expected = '<span style="text-decoration:underline"' + " class=\"ansi-yellow-fg ansi-bright-green-bg\"> " + attr + ";" + bg + ";" + fg + " </span>";
 
@@ -589,7 +587,7 @@ describe('ansi_up', function () {
         var attr = 1;
         var fg = 32;
         var bg = 42;
-        var start = "\n \033[" + fg + "m " + fg + "  \033[0m \n  \033[" + bg + "m " + bg + "  \033[0m \n zimpper ";
+        var start = "\n \x1B[" + fg + "m " + fg + "  \x1B[0m \n  \x1B[" + bg + "m " + bg + "  \x1B[0m \n zimpper ";
 
         var expected = "\n <span class=\"ansi-green-fg\"> " + fg + "  </span> \n  <span class=\"ansi-green-bg\"> " + bg + "  </span> \n zimpper ";
 
@@ -601,7 +599,7 @@ describe('ansi_up', function () {
 
       describe('transform extended colors (palette)', function () {
         it('system color, foreground', function () {
-          var start = "\033[38;5;1m" + "red" + "\033[0m";
+          var start = "\x1B[38;5;1m" + "red" + "\x1B[0m";
           var expected = '<span class="ansi-red-fg">red</span>';
           var au = new AnsiUp();
           au.use_classes = true;
@@ -610,7 +608,7 @@ describe('ansi_up', function () {
         });
 
         it('system color, foreground (bright)', function () {
-          var start = "\033[38;5;9m" + "red" + "\033[0m";
+          var start = "\x1B[38;5;9m" + "red" + "\x1B[0m";
           var expected = '<span class="ansi-bright-red-fg">red</span>';
           var au = new AnsiUp();
           au.use_classes = true;
@@ -619,7 +617,7 @@ describe('ansi_up', function () {
         });
 
         it('system color, background', function () {
-          var start = "\033[48;5;1m" + "red" + "\033[0m";
+          var start = "\x1B[48;5;1m" + "red" + "\x1B[0m";
           var expected = '<span class="ansi-red-bg">red</span>';
           var au = new AnsiUp();
           au.use_classes = true;
@@ -628,7 +626,7 @@ describe('ansi_up', function () {
         });
 
         it('system color, background (bright)', function () {
-          var start = "\033[48;5;9m" + "red" + "\033[0m";
+          var start = "\x1B[48;5;9m" + "red" + "\x1B[0m";
           var expected = '<span class="ansi-bright-red-bg">red</span>';
           var au = new AnsiUp();
           au.use_classes = true;
@@ -637,7 +635,7 @@ describe('ansi_up', function () {
         });
 
         it('palette, foreground', function () {
-          var start = "\033[38;5;171m" + "foo" + "\033[0m";
+          var start = "\x1B[38;5;171m" + "foo" + "\x1B[0m";
           var expected = '<span style="color:rgb(215,95,255)">foo</span>';
           var au = new AnsiUp();
           au.use_classes = true;
@@ -646,7 +644,7 @@ describe('ansi_up', function () {
         });
 
         it('palette, background', function () {
-          var start = "\033[48;5;171m" + "foo" + "\033[0m";
+          var start = "\x1B[48;5;171m" + "foo" + "\x1B[0m";
           var expected = '<span style="background-color:rgb(215,95,255)">foo</span>';
           var au = new AnsiUp();
           au.use_classes = true;
@@ -655,7 +653,7 @@ describe('ansi_up', function () {
         });
 
         it('combination of bold and palette', function () {
-          var start = "\033[1;38;5;171m" + "foo" + "\033[0m";
+          var start = "\x1B[1;38;5;171m" + "foo" + "\x1B[0m";
           var expected = '<span style="font-weight:bold;color:rgb(215,95,255)">foo</span>';
           var au = new AnsiUp();
           au.use_classes = true;
@@ -664,7 +662,7 @@ describe('ansi_up', function () {
         });
 
         it('combination of palette and bold', function () {
-          var start = "\033[38;5;171;1m" + "foo" + "\033[0m";
+          var start = "\x1B[38;5;171;1m" + "foo" + "\x1B[0m";
           var expected = '<span style="font-weight:bold;color:rgb(215,95,255)">foo</span>';
           var au = new AnsiUp();
           au.use_classes = true;
@@ -675,7 +673,7 @@ describe('ansi_up', function () {
 
       describe('transform extended colors (true color)', function () {
         it('foreground', function () {
-          var start = "\033[38;2;42;142;242m" + "foo" + "\033[0m";
+          var start = "\x1B[38;2;42;142;242m" + "foo" + "\x1B[0m";
           var expected = '<span style="color:rgb(42,142,242)">foo</span>';
           var au = new AnsiUp();
           au.use_classes = true;
@@ -683,7 +681,7 @@ describe('ansi_up', function () {
           l.should.eql(expected);
         });
         it('background', function () {
-          var start = "\033[48;2;42;142;242m" + "foo" + "\033[0m";
+          var start = "\x1B[48;2;42;142;242m" + "foo" + "\x1B[0m";
           var expected = '<span style="background-color:rgb(42,142,242)">foo</span>';
           var au = new AnsiUp();
           au.use_classes = true;
@@ -691,7 +689,7 @@ describe('ansi_up', function () {
           l.should.eql(expected);
         });
         it('both foreground and background', function () {
-          var start = "\033[38;2;42;142;242;48;2;1;2;3m" + "foo" + "\033[0m";
+          var start = "\x1B[38;2;42;142;242;48;2;1;2;3m" + "foo" + "\x1B[0m";
           var expected = '<span style="color:rgb(42,142,242);background-color:rgb(1,2,3)">foo</span>';
           var au = new AnsiUp();
           au.use_classes = true;
@@ -705,7 +703,7 @@ describe('ansi_up', function () {
       it('should correctly convert a string similar to CSI', function () {
         // https://github.com/drudru/ansi_up/pull/15
         // "[1;31m" is a plain text. not an escape sequence.
-        var start = "foo\033[1@bar[1;31mbaz\033[0m";
+        var start = "foo\x1B[1@bar[1;31mbaz\x1B[0m";
         var au = new AnsiUp();
         var l = au.ansi_to_html(start);
 
@@ -716,34 +714,34 @@ describe('ansi_up', function () {
         l.should.containEql('1;31m');
       });
       it('(cursor-up)', function () {
-        var start = "foo\033[1Abar";
+        var start = "foo\x1B[1Abar";
         var au = new AnsiUp();
         var l = au.ansi_to_html(start);
         l.should.eql('foobar');
       });
       it('(scroll-left)', function () {
         // <ESC>[1 @ (including ascii space)
-        var start = "foo\033[1 @bar";
+        var start = "foo\x1B[1 @bar";
         var au = new AnsiUp();
         var l = au.ansi_to_html(start);
         l.should.eql('foobar');
       });
       it('(DECMC)', function () {
-        var start = "foo\033[?11ibar";
+        var start = "foo\x1B[?11ibar";
         var au = new AnsiUp();
         var l = au.ansi_to_html(start);
         l.should.eql('foobar');
       });
       /* I cannot find this in the XTERM specs
       it('(RLIMGCP)', function () {
-        var start = "foo\033[<!3ibar";
+        var start = "foo\x1B[<!3ibar";
         var au = new AnsiUp();
         var l = au.ansi_to_html(start);
         l.should.eql('foobar');
       });
       */
       it('(DECSCL)', function () {
-        var start = "foo\033[61;0\"pbar"
+        var start = "foo\x1B[61;0\"pbar"
         var au = new AnsiUp();
         var l = au.ansi_to_html(start);
         l.should.eql('foobar');
@@ -753,7 +751,7 @@ describe('ansi_up', function () {
     describe('ignore controls beginning with ESC', function () {
 
       it('Designate G0 Character Set (UK)', function () {
-        var start = "foo\033(Abar";
+        var start = "foo\x1B(Abar";
         var au = new AnsiUp();
         var l = au.ansi_to_html(start);
         l.should.eql('foobar');
@@ -767,8 +765,8 @@ describe('ansi_up', function () {
       it('should transform an incomplete prefix', function () {
         var attr = 0;
         var fg = 32;
-        var start1 = "\033[" + attr + ";";
-        var start2 = fg + "m " + fg + "  \033[0m";
+        var start1 = "\x1B[" + attr + ";";
+        var start2 = fg + "m " + fg + "  \x1B[0m";
 
         var expected = "<span style=\"color:rgb(0,187,0)\"> " + fg + "  </span>";
 
@@ -782,8 +780,8 @@ describe('ansi_up', function () {
       it('should transform a lonely escape', function () {
         var attr = 0;
         var fg = 32;
-        var start1 = "xyz \033";
-        var start2 = "[" + attr + ";" + fg + "m " + fg + "  \033[0m";
+        var start1 = "xyz \x1B";
+        var start2 = "[" + attr + ";" + fg + "m " + fg + "  \x1B[0m";
 
         var expected = "<span style=\"color:rgb(0,187,0)\"> " + fg + "  </span>";
 
@@ -801,19 +799,19 @@ describe('ansi_up', function () {
   /*
   describe('ansi to text', function () {
     it('should remove color sequence', function () {
-      var start = "foo \033[1;32mbar\033[0m baz";
+      var start = "foo \x1B[1;32mbar\x1B[0m baz";
       var au = new AnsiUp();
       var l = au.ansi_to_text(start);
       l.should.eql("foo bar baz");
     });
     it('should remove unsupported sequence', function () {
-      var start = "foo \033[1Abar";
+      var start = "foo \x1B[1Abar";
       var au = new AnsiUp();
       var l = au.ansi_to_text(start);
       l.should.eql('foo bar');
     });
     it('should keep multiline', function () {
-      var start = "foo \033[1;32mbar\nbaz\033[0m qux";
+      var start = "foo \x1B[1;32mbar\nbaz\x1B[0m qux";
       var au = new AnsiUp();
       var l = au.ansi_to_text(start);
       l.should.eql("foo bar\nbaz qux");

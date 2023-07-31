@@ -50,7 +50,7 @@ interface TextPacket {
 // MAIN CLASS
 //
 
-class AnsiUp
+export class AnsiUp
 {
     VERSION = "5.2.1";
 

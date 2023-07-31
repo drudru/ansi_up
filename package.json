@@ -9,6 +9,7 @@
   "author": "drudru <drudru@gmail.com>",
   "license": "MIT",
   "main": "./ansi_up.js",
+  "type": "module",
   "types": "./dist/ansi_up.d.ts",
   "repository": {
     "type": "git",
@@ -28,6 +29,6 @@
     "npm": "^9.6.3",
     "mocha": "^10.2.0",
     "should": "*",
-    "typescript": "^3.9.10"
+    "typescript": "^5.1.0"
   }
 }
