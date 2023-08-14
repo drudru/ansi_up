@@ -273,6 +273,18 @@ describe('ansi_up', function () {
         l.should.eql(expected);
       });
 
+      it('should transform a faint attr;foreground to html', function () {
+        var attr = 2;
+        var fg = 32;
+        var start = "\x1B[" + attr + ";" + fg + "m " + attr + ";" + fg + " \x1B[0m";
+
+        var expected = "<span style=\"opacity:0.7;color:rgb(0,187,0)\"> " + attr + ";" + fg + " </span>";
+
+        var au = new AnsiUp();
+        var l = au.ansi_to_html(start);
+        l.should.eql(expected);
+      });
+
       it('should transform an italic attr;foreground to html', function () {
         var attr = 3;
         var fg = 32;

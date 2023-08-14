@@ -5,6 +5,7 @@ export declare class AnsiUp {
     private fg;
     private bg;
     private bold;
+    private faint;
     private italic;
     private underline;
     private _use_classes;
@@ -14,6 +15,10 @@ export declare class AnsiUp {
     private _url_whitelist;
     private _escape_html;
     private _buffer;
+    private _boldStyle;
+    private _faintStyle;
+    private _italicStyle;
+    private _underlineStyle;
     constructor();
     set use_classes(arg: boolean);
     get use_classes(): boolean;
@@ -21,6 +26,14 @@ export declare class AnsiUp {
     get url_whitelist(): {};
     set escape_html(arg: boolean);
     get escape_html(): boolean;
+    set boldStyle(arg: string);
+    get boldStyle(): string;
+    set faintStyle(arg: string);
+    get faintStyle(): string;
+    set italicStyle(arg: string);
+    get italicStyle(): string;
+    set underlineStyle(arg: string);
+    get underlineStyle(): string;
     private setup_palettes;
     private escape_txt_for_html;
     private append_buffer;

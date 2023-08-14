@@ -23,6 +23,7 @@ interface TextWithAttr {
     fg:AU_Color;
     bg:AU_Color;
     bold:boolean;
+    faint:boolean;
     italic: boolean;
     underline: boolean;
     text:string;
@@ -66,6 +67,7 @@ export class AnsiUp
     private fg:AU_Color;
     private bg:AU_Color;
     private bold:boolean;
+    private faint:boolean;
     private italic: boolean;
     private underline:boolean;
     private _use_classes:boolean;
@@ -80,6 +82,12 @@ export class AnsiUp
 
     private _buffer:string;
 
+    private _boldStyle:string;
+    private _faintStyle:string;
+    private _italicStyle:string;
+    private _underlineStyle:string;
+
+
     constructor()
     {
         // All construction occurs here
@@ -87,6 +95,7 @@ export class AnsiUp
         this._use_classes = false;
 
         this.bold = false;
+        this.faint = false;
         this.italic = false;
         this.underline = false;
         this.fg = this.bg = null;
@@ -95,6 +104,11 @@ export class AnsiUp
 
         this._url_whitelist = { 'http':1, 'https':1 };
         this._escape_html = true;
+
+        this.boldStyle        = 'font-weight:bold';
+        this.faintStyle       = 'opacity:0.7';
+        this.italicStyle      = 'font-style:italic';
+        this.underlineStyle   = 'text-decoration:underline'
     }
 
     set use_classes(arg:boolean)
@@ -126,6 +140,15 @@ export class AnsiUp
     {
         return this._escape_html;
     }
+
+    set boldStyle(arg:string)      {        this._boldStyle      = arg; }
+    get boldStyle():string         { return this._boldStyle;            }
+    set faintStyle(arg:string)     {        this._faintStyle     = arg; }
+    get faintStyle():string        { return this._faintStyle;           }
+    set italicStyle(arg:string)    {        this._italicStyle    = arg; }
+    get italicStyle():string       { return this._italicStyle;          }
+    set underlineStyle(arg:string) {        this._underlineStyle = arg; }
+    get underlineStyle():string    { return this._underlineStyle;       }
 
 
     private setup_palettes():void
@@ -570,7 +593,7 @@ export class AnsiUp
     }
 
     private with_state(pkt:TextPacket):TextWithAttr {
-        return { bold: this.bold, italic: this.italic, underline: this.underline, fg: this.fg, bg: this.bg, text: pkt.text };
+        return { bold: this.bold, faint: this.faint, italic: this.italic, underline: this.underline, fg: this.fg, bg: this.bg, text: pkt.text };
     }
 
     private process_ansi(pkt:TextPacket)
@@ -583,39 +606,38 @@ export class AnsiUp
 
       // Why do we shift through the array instead of a forEach??
       // ... because some commands consume the params that follow !
+
       while (sgr_cmds.length > 0) {
           let sgr_cmd_str = sgr_cmds.shift();
           let num = parseInt(sgr_cmd_str, 10);
 
+      // TODO
+      // AT SOME POINT, JUST CONVERT TO A LOOKUP TABLE
           if (isNaN(num) || num === 0) {
-              this.fg = this.bg = null;
-              this.bold = false;
-              this.italic = false;
+              this.fg        = null;
+              this.bg        = null;
+              this.bold      = false;
+              this.faint     = false;
+              this.italic    = false;
               this.underline = false;
-          } else if (num === 1) {
-              this.bold = true;
-          } else if (num === 3) {
-              this.italic = true;
-          } else if (num === 4) {
-              this.underline = true;
-          } else if (num === 22) {
-              this.bold = false;
-          } else if (num === 23) {
-              this.italic = false;
-          } else if (num === 24) {
-              this.underline = false;
-          } else if (num === 39) {
-              this.fg = null;
-          } else if (num === 49) {
-              this.bg = null;
-          } else if ((num >= 30) && (num < 38)) {
-              this.fg = this.ansi_colors[0][(num - 30)];
-          } else if ((num >= 40) && (num < 48)) {
-              this.bg = this.ansi_colors[0][(num - 40)];
-          } else if ((num >= 90) && (num < 98)) {
-              this.fg = this.ansi_colors[1][(num - 90)];
-          } else if ((num >= 100) && (num < 108)) {
-            this.bg = this.ansi_colors[1][(num - 100)];
+
+          } else if (num ===  1) { this.bold      = true;
+          } else if (num ===  2) { this.faint     = true;
+          } else if (num ===  3) { this.italic    = true;
+          } else if (num ===  4) { this.underline = true;
+          } else if (num === 21) { this.bold      = false;
+          } else if (num === 22) { this.faint     = false;
+          } else if (num === 23) { this.italic    = false;
+          } else if (num === 24) { this.underline = false;
+
+          } else if (num === 39) { this.fg = null;
+          } else if (num === 49) { this.bg = null;
+
+          } else if ((num >=  30) && (num <  38)) { this.fg = this.ansi_colors[0][(num -  30)];
+          } else if ((num >=  40) && (num <  48)) { this.bg = this.ansi_colors[0][(num -  40)];
+          } else if ((num >=  90) && (num <  98)) { this.fg = this.ansi_colors[1][(num -  90)];
+          } else if ((num >= 100) && (num < 108)) { this.bg = this.ansi_colors[1][(num - 100)];
+
           } else if (num === 38 || num === 48) {
 
               // extended set foreground/background color
@@ -676,14 +698,10 @@ export class AnsiUp
         let bg = fragment.bg;
 
         // Note on bold: https://stackoverflow.com/questions/6737005/what-are-some-advantages-to-using-span-style-font-weightbold-rather-than-b?rq=1
-        if (fragment.bold)
-            styles.push('font-weight:bold');
-        
-        if (fragment.italic)
-            styles.push('font-style:italic');
-
-        if (fragment.underline)
-            styles.push('text-decoration:underline');
+        if (fragment.bold)      styles.push(this._boldStyle);
+        if (fragment.faint)     styles.push(this._faintStyle);
+        if (fragment.italic)    styles.push(this._italicStyle);
+        if (fragment.underline) styles.push(this._underlineStyle);
 
         if (!this._use_classes) {
             // USE INLINE STYLES

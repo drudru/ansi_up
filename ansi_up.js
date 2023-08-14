@@ -19,12 +19,17 @@ export class AnsiUp {
         this.setup_palettes();
         this._use_classes = false;
         this.bold = false;
+        this.faint = false;
         this.italic = false;
         this.underline = false;
         this.fg = this.bg = null;
         this._buffer = '';
         this._url_whitelist = { 'http': 1, 'https': 1 };
         this._escape_html = true;
+        this.boldStyle = 'font-weight:bold';
+        this.faintStyle = 'opacity:0.7';
+        this.italicStyle = 'font-style:italic';
+        this.underlineStyle = 'text-decoration:underline';
     }
     set use_classes(arg) {
         this._use_classes = arg;
@@ -44,6 +49,14 @@ export class AnsiUp {
     get escape_html() {
         return this._escape_html;
     }
+    set boldStyle(arg) { this._boldStyle = arg; }
+    get boldStyle() { return this._boldStyle; }
+    set faintStyle(arg) { this._faintStyle = arg; }
+    get faintStyle() { return this._faintStyle; }
+    set italicStyle(arg) { this._italicStyle = arg; }
+    get italicStyle() { return this._italicStyle; }
+    set underlineStyle(arg) { this._underlineStyle = arg; }
+    get underlineStyle() { return this._underlineStyle; }
     setup_palettes() {
         this.ansi_colors =
             [
@@ -254,7 +267,7 @@ export class AnsiUp {
         return blocks.join("");
     }
     with_state(pkt) {
-        return { bold: this.bold, italic: this.italic, underline: this.underline, fg: this.fg, bg: this.bg, text: pkt.text };
+        return { bold: this.bold, faint: this.faint, italic: this.italic, underline: this.underline, fg: this.fg, bg: this.bg, text: pkt.text };
     }
     process_ansi(pkt) {
         let sgr_cmds = pkt.text.split(';');
@@ -262,13 +275,18 @@ export class AnsiUp {
             let sgr_cmd_str = sgr_cmds.shift();
             let num = parseInt(sgr_cmd_str, 10);
             if (isNaN(num) || num === 0) {
-                this.fg = this.bg = null;
+                this.fg = null;
+                this.bg = null;
                 this.bold = false;
+                this.faint = false;
                 this.italic = false;
                 this.underline = false;
             }
             else if (num === 1) {
                 this.bold = true;
+            }
+            else if (num === 2) {
+                this.faint = true;
             }
             else if (num === 3) {
                 this.italic = true;
@@ -276,8 +294,11 @@ export class AnsiUp {
             else if (num === 4) {
                 this.underline = true;
             }
-            else if (num === 22) {
+            else if (num === 21) {
                 this.bold = false;
+            }
+            else if (num === 22) {
+                this.faint = false;
             }
             else if (num === 23) {
                 this.italic = false;
@@ -344,11 +365,13 @@ export class AnsiUp {
         let fg = fragment.fg;
         let bg = fragment.bg;
         if (fragment.bold)
-            styles.push('font-weight:bold');
+            styles.push(this._boldStyle);
+        if (fragment.faint)
+            styles.push(this._faintStyle);
         if (fragment.italic)
-            styles.push('font-style:italic');
+            styles.push(this._italicStyle);
         if (fragment.underline)
-            styles.push('text-decoration:underline');
+            styles.push(this._underlineStyle);
         if (!this._use_classes) {
             if (fg)
                 styles.push(`color:rgb(${fg.rgb.join(',')})`);
