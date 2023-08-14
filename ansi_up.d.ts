@@ -12,7 +12,7 @@ export declare class AnsiUp {
     private _csi_regex;
     private _osc_st;
     private _osc_regex;
-    private _url_whitelist;
+    private _url_acceptlist;
     private _escape_html;
     private _buffer;
     private _boldStyle;
@@ -22,8 +22,8 @@ export declare class AnsiUp {
     constructor();
     set use_classes(arg: boolean);
     get use_classes(): boolean;
-    set url_whitelist(arg: {});
-    get url_whitelist(): {};
+    set url_acceptlist(arg: {});
+    get url_acceptlist(): {};
     set escape_html(arg: boolean);
     get escape_html(): boolean;
     set boldStyle(arg: string);
