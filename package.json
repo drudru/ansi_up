@@ -26,8 +26,8 @@
     "build": "make typescript"
   },
   "devDependencies": {
-    "npm": "^9.6.3",
     "mocha": "^10.2.0",
+    "npm": "^9.8.1",
     "should": "*",
     "typescript": "^5.1.0"
   }
