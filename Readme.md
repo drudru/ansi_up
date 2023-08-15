@@ -3,7 +3,7 @@
 __ansi_up__ is an easy to use library that transforms text containing
 [ANSI color escape codes](http://en.wikipedia.org/wiki/ANSI_escape_code#Colors) into HTML.
 
-This module is a single Javascript file with no dependencies.
+This module is a single ES6 Javascript file with no dependencies.
 It is "isomorphic" javascript. This is just another way of saying that
 the ansi_up.js file will work in both the browser or node.js.
 The js library is compiled from TypeScript and its type description ships with the NPM.
@@ -25,12 +25,13 @@ For example, turn this terminal output:
 ## Browser Example
 
 ```HTML
-    <script src="ansi_up.js" type="text/javascript"></script>
-    <script type="text/javascript">
+
+    <script type="module" type="text/javascript">
 
     var txt  = "\n\n\033[1;33;40m 33;40  \033[1;33;41m 33;41  \033[1;33;42m 33;42  \033[1;33;43m 33;43  \033[1;33;44m 33;44  \033[1;33;45m 33;45  \033[1;33;46m 33;46  \033[1m\033[0\n\n\033[1;33;42m >> Tests OK\n\n"
 
-    var ansi_up = new AnsiUp;
+    import { AnsiUp } from './ansi_up.js'
+    var ansi_up = new AnsiUp();
 
     var html = ansi_up.ansi_to_html(txt);
 
@@ -44,8 +45,8 @@ For example, turn this terminal output:
 ## Node Example
 
 ```JavaScript
-    var AU = require('ansi_up');
-    var ansi_up = new AU.default;
+    import { AnsiUp } from './ansi_up.js'
+    var ansi_up = new AnsiUp();
 
     var txt  = "\n\n\033[1;33;40m 33;40  \033[1;33;41m 33;41  \033[1;33;42m 33;42  \033[1;33;43m 33;43  \033[1;33;44m 33;44  \033[1;33;45m 33;45  \033[1;33;46m 33;46  \033[1m\033[0\n\n\033[1;33;42m >> Tests OK\n\n"
 
@@ -57,10 +58,7 @@ More examples are in the 'examples' directory in the repo.
 ## Typescript Example
 
 ```TypeScript
-    import {
-        default as AnsiUp
-    } from 'ansi_up';
-
+    import { AnsiUp } from './ansi_up.js'
     const ansi_up = new AnsiUp();
 
     const txt  = "\n\n\x1B[1;33;40m 33;40  \x1B[1;33;41m 33;41  \x1B[1;33;42m 33;42  \x1B[1;33;43m 33;43  \x1B[1;33;44m 33;44  \x1B[1;33;45m 33;45  \x1B[1;33;46m 33;46  \x1B[1m\x1B[0\n\n\x1B[1;33;42m >> Tests OK\n\n"
@@ -73,6 +71,7 @@ More examples are in the 'examples' directory in the repo.
     $ npm install ansi_up
 
 ## Versions
+* Version 6.0 - Switch to ES6 module. Add faint styles. Style css configurable.
 * Version 5.1 - Add italic and underline styles (@DaoDaoNoCode)
 * Version 5.0 - Security fix for OSC URLs
 * Version 4.0 - Re-architect code to support [terminal URL codes](https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda).
@@ -131,10 +130,19 @@ By default, HTML's reserved characters `& < > " '` are replaced with <a href="ht
 This causes the SPAN tags to use classes to style the SPAN tags instead
 of specified RGB values.
 
-#### url_whitelist
-(default: { 'http':1, 'https':1 };
+#### url_acceptlist
+(default: { 'http':1, 'https':1 })
 
-This mapping is a whitelist of URI schemes that will be allowed to render HTML anchor tags.
+This mapping is an 'accept' list of URI schemes that will be allowed to render HTML anchor tags.
+
+#### boldStyle
+(default: 'font-weight:bold')
+#### faintStyle
+(default: 'opacity:0.7')
+#### italicStyle
+(default: 'font-style:italic')
+#### underlineStyle
+(default: 'text-decoration:underline')
 
 ## Buffering
 

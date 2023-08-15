@@ -1,22 +1,3 @@
-/*  ansi_up.js
- *  author : Dru Nelson
- *  license : MIT
- *  http://github.com/drudru/ansi_up
- */
-(function (root, factory) {
-    if (typeof define === 'function' && define.amd) {
-        // AMD. Register as an anonymous module.
-        define(['exports'], factory);
-    } else if (typeof exports === 'object' && typeof exports.nodeName !== 'string') {
-        // CommonJS
-        factory(exports);
-    } else {
-        // Browser globals
-        var exp = {};
-        factory(exp);
-        root.AnsiUp = exp.default;
-    }
-}(this, function (exports) {
 "use strict";
 var __makeTemplateObject = (this && this.__makeTemplateObject) || function (cooked, raw) {
     if (Object.defineProperty) { Object.defineProperty(cooked, "raw", { value: raw }); } else { cooked.raw = raw; }
@@ -32,51 +13,51 @@ var PacketKind;
     PacketKind[PacketKind["SGR"] = 5] = "SGR";
     PacketKind[PacketKind["OSCURL"] = 6] = "OSCURL";
 })(PacketKind || (PacketKind = {}));
-var AnsiUp = (function () {
-    function AnsiUp() {
-        this.VERSION = "5.2.1";
+export class AnsiUp {
+    constructor() {
+        this.VERSION = "6.0.0";
         this.setup_palettes();
         this._use_classes = false;
         this.bold = false;
+        this.faint = false;
         this.italic = false;
         this.underline = false;
         this.fg = this.bg = null;
         this._buffer = '';
-        this._url_whitelist = { 'http': 1, 'https': 1 };
+        this._url_acceptlist = { 'http': 1, 'https': 1 };
         this._escape_html = true;
+        this.boldStyle = 'font-weight:bold';
+        this.faintStyle = 'opacity:0.7';
+        this.italicStyle = 'font-style:italic';
+        this.underlineStyle = 'text-decoration:underline';
     }
-    Object.defineProperty(AnsiUp.prototype, "use_classes", {
-        get: function () {
-            return this._use_classes;
-        },
-        set: function (arg) {
-            this._use_classes = arg;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(AnsiUp.prototype, "url_whitelist", {
-        get: function () {
-            return this._url_whitelist;
-        },
-        set: function (arg) {
-            this._url_whitelist = arg;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(AnsiUp.prototype, "escape_html", {
-        get: function () {
-            return this._escape_html;
-        },
-        set: function (arg) {
-            this._escape_html = arg;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    AnsiUp.prototype.setup_palettes = function () {
-        var _this = this;
+    set use_classes(arg) {
+        this._use_classes = arg;
+    }
+    get use_classes() {
+        return this._use_classes;
+    }
+    set url_acceptlist(arg) {
+        this._url_acceptlist = arg;
+    }
+    get url_acceptlist() {
+        return this._url_acceptlist;
+    }
+    set escape_html(arg) {
+        this._escape_html = arg;
+    }
+    get escape_html() {
+        return this._escape_html;
+    }
+    set boldStyle(arg) { this._boldStyle = arg; }
+    get boldStyle() { return this._boldStyle; }
+    set faintStyle(arg) { this._faintStyle = arg; }
+    get faintStyle() { return this._faintStyle; }
+    set italicStyle(arg) { this._italicStyle = arg; }
+    get italicStyle() { return this._italicStyle; }
+    set underlineStyle(arg) { this._underlineStyle = arg; }
+    get underlineStyle() { return this._underlineStyle; }
+    setup_palettes() {
         this.ansi_colors =
             [
                 [
@@ -101,30 +82,30 @@ var AnsiUp = (function () {
                 ]
             ];
         this.palette_256 = [];
-        this.ansi_colors.forEach(function (palette) {
-            palette.forEach(function (rec) {
-                _this.palette_256.push(rec);
+        this.ansi_colors.forEach(palette => {
+            palette.forEach(rec => {
+                this.palette_256.push(rec);
             });
         });
-        var levels = [0, 95, 135, 175, 215, 255];
-        for (var r = 0; r < 6; ++r) {
-            for (var g = 0; g < 6; ++g) {
-                for (var b = 0; b < 6; ++b) {
-                    var col = { rgb: [levels[r], levels[g], levels[b]], class_name: 'truecolor' };
+        let levels = [0, 95, 135, 175, 215, 255];
+        for (let r = 0; r < 6; ++r) {
+            for (let g = 0; g < 6; ++g) {
+                for (let b = 0; b < 6; ++b) {
+                    let col = { rgb: [levels[r], levels[g], levels[b]], class_name: 'truecolor' };
                     this.palette_256.push(col);
                 }
             }
         }
-        var grey_level = 8;
-        for (var i = 0; i < 24; ++i, grey_level += 10) {
-            var gry = { rgb: [grey_level, grey_level, grey_level], class_name: 'truecolor' };
+        let grey_level = 8;
+        for (let i = 0; i < 24; ++i, grey_level += 10) {
+            let gry = { rgb: [grey_level, grey_level, grey_level], class_name: 'truecolor' };
             this.palette_256.push(gry);
         }
-    };
-    AnsiUp.prototype.escape_txt_for_html = function (txt) {
+    }
+    escape_txt_for_html(txt) {
         if (!this._escape_html)
             return txt;
-        return txt.replace(/[&<>"']/gm, function (str) {
+        return txt.replace(/[&<>"']/gm, (str) => {
             if (str === "&")
                 return "&amp;";
             if (str === "<")
@@ -136,12 +117,12 @@ var AnsiUp = (function () {
             if (str === "'")
                 return "&#x27;";
         });
-    };
-    AnsiUp.prototype.append_buffer = function (txt) {
+    }
+    append_buffer(txt) {
         var str = this._buffer + txt;
         this._buffer = str;
-    };
-    AnsiUp.prototype.get_next_packet = function () {
+    }
+    get_next_packet() {
         var pkt = {
             kind: PacketKind.EOS,
             text: '',
@@ -177,9 +158,9 @@ var AnsiUp = (function () {
             }
             if (next_char == '[') {
                 if (!this._csi_regex) {
-                    this._csi_regex = rgx(__makeTemplateObject(["\n                        ^                           # beginning of line\n                                                    #\n                                                    # First attempt\n                        (?:                         # legal sequence\n                          \u001B[                      # CSI\n                          ([<-?]?)              # private-mode char\n                          ([d;]*)                    # any digits or semicolons\n                          ([ -/]?               # an intermediate modifier\n                          [@-~])                # the command\n                        )\n                        |                           # alternate (second attempt)\n                        (?:                         # illegal sequence\n                          \u001B[                      # CSI\n                          [ -~]*                # anything legal\n                          ([\0-\u001F:])              # anything illegal\n                        )\n                    "], ["\n                        ^                           # beginning of line\n                                                    #\n                                                    # First attempt\n                        (?:                         # legal sequence\n                          \\x1b\\[                      # CSI\n                          ([\\x3c-\\x3f]?)              # private-mode char\n                          ([\\d;]*)                    # any digits or semicolons\n                          ([\\x20-\\x2f]?               # an intermediate modifier\n                          [\\x40-\\x7e])                # the command\n                        )\n                        |                           # alternate (second attempt)\n                        (?:                         # illegal sequence\n                          \\x1b\\[                      # CSI\n                          [\\x20-\\x7e]*                # anything legal\n                          ([\\x00-\\x1f:])              # anything illegal\n                        )\n                    "]));
+                    this._csi_regex = rgx(templateObject_1 || (templateObject_1 = __makeTemplateObject(["\n                        ^                           # beginning of line\n                                                    #\n                                                    # First attempt\n                        (?:                         # legal sequence\n                          \u001B[                      # CSI\n                          ([<-?]?)              # private-mode char\n                          ([d;]*)                    # any digits or semicolons\n                          ([ -/]?               # an intermediate modifier\n                          [@-~])                # the command\n                        )\n                        |                           # alternate (second attempt)\n                        (?:                         # illegal sequence\n                          \u001B[                      # CSI\n                          [ -~]*                # anything legal\n                          ([\0-\u001F:])              # anything illegal\n                        )\n                    "], ["\n                        ^                           # beginning of line\n                                                    #\n                                                    # First attempt\n                        (?:                         # legal sequence\n                          \\x1b\\[                      # CSI\n                          ([\\x3c-\\x3f]?)              # private-mode char\n                          ([\\d;]*)                    # any digits or semicolons\n                          ([\\x20-\\x2f]?               # an intermediate modifier\n                          [\\x40-\\x7e])                # the command\n                        )\n                        |                           # alternate (second attempt)\n                        (?:                         # illegal sequence\n                          \\x1b\\[                      # CSI\n                          [\\x20-\\x7e]*                # anything legal\n                          ([\\x00-\\x1f:])              # anything illegal\n                        )\n                    "])));
                 }
-                var match = this._buffer.match(this._csi_regex);
+                let match = this._buffer.match(this._csi_regex);
                 if (match === null) {
                     pkt.kind = PacketKind.Incomplete;
                     return pkt;
@@ -212,16 +193,16 @@ var AnsiUp = (function () {
                     return pkt;
                 }
                 if (!this._osc_st) {
-                    this._osc_st = rgxG(__makeTemplateObject(["\n                        (?:                         # legal sequence\n                          (\u001B\\)                    # ESC                           |                           # alternate\n                          (\u0007)                      # BEL (what xterm did)\n                        )\n                        |                           # alternate (second attempt)\n                        (                           # illegal sequence\n                          [\0-\u0006]                 # anything illegal\n                          |                           # alternate\n                          [\b-\u001A]                 # anything illegal\n                          |                           # alternate\n                          [\u001C-\u001F]                 # anything illegal\n                        )\n                    "], ["\n                        (?:                         # legal sequence\n                          (\\x1b\\\\)                    # ESC \\\n                          |                           # alternate\n                          (\\x07)                      # BEL (what xterm did)\n                        )\n                        |                           # alternate (second attempt)\n                        (                           # illegal sequence\n                          [\\x00-\\x06]                 # anything illegal\n                          |                           # alternate\n                          [\\x08-\\x1a]                 # anything illegal\n                          |                           # alternate\n                          [\\x1c-\\x1f]                 # anything illegal\n                        )\n                    "]));
+                    this._osc_st = rgxG(templateObject_2 || (templateObject_2 = __makeTemplateObject(["\n                        (?:                         # legal sequence\n                          (\u001B\\)                    # ESC                           |                           # alternate\n                          (\u0007)                      # BEL (what xterm did)\n                        )\n                        |                           # alternate (second attempt)\n                        (                           # illegal sequence\n                          [\0-\u0006]                 # anything illegal\n                          |                           # alternate\n                          [\b-\u001A]                 # anything illegal\n                          |                           # alternate\n                          [\u001C-\u001F]                 # anything illegal\n                        )\n                    "], ["\n                        (?:                         # legal sequence\n                          (\\x1b\\\\)                    # ESC \\\n                          |                           # alternate\n                          (\\x07)                      # BEL (what xterm did)\n                        )\n                        |                           # alternate (second attempt)\n                        (                           # illegal sequence\n                          [\\x00-\\x06]                 # anything illegal\n                          |                           # alternate\n                          [\\x08-\\x1a]                 # anything illegal\n                          |                           # alternate\n                          [\\x1c-\\x1f]                 # anything illegal\n                        )\n                    "])));
                 }
                 this._osc_st.lastIndex = 0;
                 {
-                    var match_1 = this._osc_st.exec(this._buffer);
-                    if (match_1 === null) {
+                    let match = this._osc_st.exec(this._buffer);
+                    if (match === null) {
                         pkt.kind = PacketKind.Incomplete;
                         return pkt;
                     }
-                    if (match_1[3]) {
+                    if (match[3]) {
                         pkt.kind = PacketKind.ESC;
                         pkt.text = this._buffer.slice(0, 1);
                         this._buffer = this._buffer.slice(1);
@@ -229,12 +210,12 @@ var AnsiUp = (function () {
                     }
                 }
                 {
-                    var match_2 = this._osc_st.exec(this._buffer);
-                    if (match_2 === null) {
+                    let match = this._osc_st.exec(this._buffer);
+                    if (match === null) {
                         pkt.kind = PacketKind.Incomplete;
                         return pkt;
                     }
-                    if (match_2[3]) {
+                    if (match[3]) {
                         pkt.kind = PacketKind.ESC;
                         pkt.text = this._buffer.slice(0, 1);
                         this._buffer = this._buffer.slice(1);
@@ -242,9 +223,9 @@ var AnsiUp = (function () {
                     }
                 }
                 if (!this._osc_regex) {
-                    this._osc_regex = rgx(__makeTemplateObject(["\n                        ^                           # beginning of line\n                                                    #\n                        \u001B]8;                    # OSC Hyperlink\n                        [ -:<-~]*       # params (excluding ;)\n                        ;                           # end of params\n                        ([!-~]{0,512})        # URL capture\n                        (?:                         # ST\n                          (?:\u001B\\)                  # ESC                           |                           # alternate\n                          (?:\u0007)                    # BEL (what xterm did)\n                        )\n                        ([ -~]+)              # TEXT capture\n                        \u001B]8;;                   # OSC Hyperlink End\n                        (?:                         # ST\n                          (?:\u001B\\)                  # ESC                           |                           # alternate\n                          (?:\u0007)                    # BEL (what xterm did)\n                        )\n                    "], ["\n                        ^                           # beginning of line\n                                                    #\n                        \\x1b\\]8;                    # OSC Hyperlink\n                        [\\x20-\\x3a\\x3c-\\x7e]*       # params (excluding ;)\n                        ;                           # end of params\n                        ([\\x21-\\x7e]{0,512})        # URL capture\n                        (?:                         # ST\n                          (?:\\x1b\\\\)                  # ESC \\\n                          |                           # alternate\n                          (?:\\x07)                    # BEL (what xterm did)\n                        )\n                        ([\\x20-\\x7e]+)              # TEXT capture\n                        \\x1b\\]8;;                   # OSC Hyperlink End\n                        (?:                         # ST\n                          (?:\\x1b\\\\)                  # ESC \\\n                          |                           # alternate\n                          (?:\\x07)                    # BEL (what xterm did)\n                        )\n                    "]));
+                    this._osc_regex = rgx(templateObject_3 || (templateObject_3 = __makeTemplateObject(["\n                        ^                           # beginning of line\n                                                    #\n                        \u001B]8;                    # OSC Hyperlink\n                        [ -:<-~]*       # params (excluding ;)\n                        ;                           # end of params\n                        ([!-~]{0,512})        # URL capture\n                        (?:                         # ST\n                          (?:\u001B\\)                  # ESC                           |                           # alternate\n                          (?:\u0007)                    # BEL (what xterm did)\n                        )\n                        ([ -~]+)              # TEXT capture\n                        \u001B]8;;                   # OSC Hyperlink End\n                        (?:                         # ST\n                          (?:\u001B\\)                  # ESC                           |                           # alternate\n                          (?:\u0007)                    # BEL (what xterm did)\n                        )\n                    "], ["\n                        ^                           # beginning of line\n                                                    #\n                        \\x1b\\]8;                    # OSC Hyperlink\n                        [\\x20-\\x3a\\x3c-\\x7e]*       # params (excluding ;)\n                        ;                           # end of params\n                        ([\\x21-\\x7e]{0,512})        # URL capture\n                        (?:                         # ST\n                          (?:\\x1b\\\\)                  # ESC \\\n                          |                           # alternate\n                          (?:\\x07)                    # BEL (what xterm did)\n                        )\n                        ([\\x20-\\x7e]+)              # TEXT capture\n                        \\x1b\\]8;;                   # OSC Hyperlink End\n                        (?:                         # ST\n                          (?:\\x1b\\\\)                  # ESC \\\n                          |                           # alternate\n                          (?:\\x07)                    # BEL (what xterm did)\n                        )\n                    "])));
                 }
-                var match = this._buffer.match(this._osc_regex);
+                let match = this._buffer.match(this._osc_regex);
                 if (match === null) {
                     pkt.kind = PacketKind.ESC;
                     pkt.text = this._buffer.slice(0, 1);
@@ -264,8 +245,8 @@ var AnsiUp = (function () {
                 return pkt;
             }
         }
-    };
-    AnsiUp.prototype.ansi_to_html = function (txt) {
+    }
+    ansi_to_html(txt) {
         this.append_buffer(txt);
         var blocks = [];
         while (true) {
@@ -284,23 +265,28 @@ var AnsiUp = (function () {
                 blocks.push(this.process_hyperlink(packet));
         }
         return blocks.join("");
-    };
-    AnsiUp.prototype.with_state = function (pkt) {
-        return { bold: this.bold, italic: this.italic, underline: this.underline, fg: this.fg, bg: this.bg, text: pkt.text };
-    };
-    AnsiUp.prototype.process_ansi = function (pkt) {
-        var sgr_cmds = pkt.text.split(';');
+    }
+    with_state(pkt) {
+        return { bold: this.bold, faint: this.faint, italic: this.italic, underline: this.underline, fg: this.fg, bg: this.bg, text: pkt.text };
+    }
+    process_ansi(pkt) {
+        let sgr_cmds = pkt.text.split(';');
         while (sgr_cmds.length > 0) {
-            var sgr_cmd_str = sgr_cmds.shift();
-            var num = parseInt(sgr_cmd_str, 10);
+            let sgr_cmd_str = sgr_cmds.shift();
+            let num = parseInt(sgr_cmd_str, 10);
             if (isNaN(num) || num === 0) {
-                this.fg = this.bg = null;
+                this.fg = null;
+                this.bg = null;
                 this.bold = false;
+                this.faint = false;
                 this.italic = false;
                 this.underline = false;
             }
             else if (num === 1) {
                 this.bold = true;
+            }
+            else if (num === 2) {
+                this.faint = true;
             }
             else if (num === 3) {
                 this.italic = true;
@@ -308,8 +294,11 @@ var AnsiUp = (function () {
             else if (num === 4) {
                 this.underline = true;
             }
-            else if (num === 22) {
+            else if (num === 21) {
                 this.bold = false;
+            }
+            else if (num === 22) {
+                this.faint = false;
             }
             else if (num === 23) {
                 this.italic = false;
@@ -337,10 +326,10 @@ var AnsiUp = (function () {
             }
             else if (num === 38 || num === 48) {
                 if (sgr_cmds.length > 0) {
-                    var is_foreground = (num === 38);
-                    var mode_cmd = sgr_cmds.shift();
+                    let is_foreground = (num === 38);
+                    let mode_cmd = sgr_cmds.shift();
                     if (mode_cmd === '5' && sgr_cmds.length > 0) {
-                        var palette_index = parseInt(sgr_cmds.shift(), 10);
+                        let palette_index = parseInt(sgr_cmds.shift(), 10);
                         if (palette_index >= 0 && palette_index <= 255) {
                             if (is_foreground)
                                 this.fg = this.palette_256[palette_index];
@@ -349,11 +338,11 @@ var AnsiUp = (function () {
                         }
                     }
                     if (mode_cmd === '2' && sgr_cmds.length > 2) {
-                        var r = parseInt(sgr_cmds.shift(), 10);
-                        var g = parseInt(sgr_cmds.shift(), 10);
-                        var b = parseInt(sgr_cmds.shift(), 10);
+                        let r = parseInt(sgr_cmds.shift(), 10);
+                        let g = parseInt(sgr_cmds.shift(), 10);
+                        let b = parseInt(sgr_cmds.shift(), 10);
                         if ((r >= 0 && r <= 255) && (g >= 0 && g <= 255) && (b >= 0 && b <= 255)) {
-                            var c = { rgb: [r, g, b], class_name: 'truecolor' };
+                            let c = { rgb: [r, g, b], class_name: 'truecolor' };
                             if (is_foreground)
                                 this.fg = c;
                             else
@@ -363,89 +352,79 @@ var AnsiUp = (function () {
                 }
             }
         }
-    };
-    AnsiUp.prototype.transform_to_html = function (fragment) {
-        var txt = fragment.text;
+    }
+    transform_to_html(fragment) {
+        let txt = fragment.text;
         if (txt.length === 0)
             return txt;
         txt = this.escape_txt_for_html(txt);
         if (!fragment.bold && !fragment.italic && !fragment.underline && fragment.fg === null && fragment.bg === null)
             return txt;
-        var styles = [];
-        var classes = [];
-        var fg = fragment.fg;
-        var bg = fragment.bg;
+        let styles = [];
+        let classes = [];
+        let fg = fragment.fg;
+        let bg = fragment.bg;
         if (fragment.bold)
-            styles.push('font-weight:bold');
+            styles.push(this._boldStyle);
+        if (fragment.faint)
+            styles.push(this._faintStyle);
         if (fragment.italic)
-            styles.push('font-style:italic');
+            styles.push(this._italicStyle);
         if (fragment.underline)
-            styles.push('text-decoration:underline');
+            styles.push(this._underlineStyle);
         if (!this._use_classes) {
             if (fg)
-                styles.push("color:rgb(" + fg.rgb.join(',') + ")");
+                styles.push(`color:rgb(${fg.rgb.join(',')})`);
             if (bg)
-                styles.push("background-color:rgb(" + bg.rgb + ")");
+                styles.push(`background-color:rgb(${bg.rgb})`);
         }
         else {
             if (fg) {
                 if (fg.class_name !== 'truecolor') {
-                    classes.push(fg.class_name + "-fg");
+                    classes.push(`${fg.class_name}-fg`);
                 }
                 else {
-                    styles.push("color:rgb(" + fg.rgb.join(',') + ")");
+                    styles.push(`color:rgb(${fg.rgb.join(',')})`);
                 }
             }
             if (bg) {
                 if (bg.class_name !== 'truecolor') {
-                    classes.push(bg.class_name + "-bg");
+                    classes.push(`${bg.class_name}-bg`);
                 }
                 else {
-                    styles.push("background-color:rgb(" + bg.rgb.join(',') + ")");
+                    styles.push(`background-color:rgb(${bg.rgb.join(',')})`);
                 }
             }
         }
-        var class_string = '';
-        var style_string = '';
+        let class_string = '';
+        let style_string = '';
         if (classes.length)
-            class_string = " class=\"" + classes.join(' ') + "\"";
+            class_string = ` class="${classes.join(' ')}"`;
         if (styles.length)
-            style_string = " style=\"" + styles.join(';') + "\"";
-        return "<span" + style_string + class_string + ">" + txt + "</span>";
-    };
+            style_string = ` style="${styles.join(';')}"`;
+        return `<span${style_string}${class_string}>${txt}</span>`;
+    }
     ;
-    AnsiUp.prototype.process_hyperlink = function (pkt) {
-        var parts = pkt.url.split(':');
+    process_hyperlink(pkt) {
+        let parts = pkt.url.split(':');
         if (parts.length < 1)
             return '';
-        if (!this._url_whitelist[parts[0]])
+        if (!this._url_acceptlist[parts[0]])
             return '';
-        var result = "<a href=\"" + this.escape_txt_for_html(pkt.url) + "\">" + this.escape_txt_for_html(pkt.text) + "</a>";
+        let result = `<a href="${this.escape_txt_for_html(pkt.url)}">${this.escape_txt_for_html(pkt.text)}</a>`;
         return result;
-    };
-    return AnsiUp;
-}());
-function rgx(tmplObj) {
-    var subst = [];
-    for (var _i = 1; _i < arguments.length; _i++) {
-        subst[_i - 1] = arguments[_i];
     }
-    var regexText = tmplObj.raw[0];
-    var wsrgx = /^\s+|\s+\n|\s*#[\s\S]*?\n|\n/gm;
-    var txt2 = regexText.replace(wsrgx, '');
+}
+function rgx(tmplObj, ...subst) {
+    let regexText = tmplObj.raw[0];
+    let wsrgx = /^\s+|\s+\n|\s*#[\s\S]*?\n|\n/gm;
+    let txt2 = regexText.replace(wsrgx, '');
     return new RegExp(txt2);
 }
-function rgxG(tmplObj) {
-    var subst = [];
-    for (var _i = 1; _i < arguments.length; _i++) {
-        subst[_i - 1] = arguments[_i];
-    }
-    var regexText = tmplObj.raw[0];
-    var wsrgx = /^\s+|\s+\n|\s*#[\s\S]*?\n|\n/gm;
-    var txt2 = regexText.replace(wsrgx, '');
+function rgxG(tmplObj, ...subst) {
+    let regexText = tmplObj.raw[0];
+    let wsrgx = /^\s+|\s+\n|\s*#[\s\S]*?\n|\n/gm;
+    let txt2 = regexText.replace(wsrgx, '');
     return new RegExp(txt2, 'g');
 }
-//# sourceMappingURL=ansi_up.js.map
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.default = AnsiUp;
-}));
+var templateObject_1, templateObject_2, templateObject_3;

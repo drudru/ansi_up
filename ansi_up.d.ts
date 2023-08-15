@@ -1,27 +1,3 @@
-interface AU_Color {
-    rgb: number[];
-    class_name: string;
-}
-interface TextWithAttr {
-    fg: AU_Color;
-    bg: AU_Color;
-    bold: boolean;
-    text: string;
-}
-declare enum PacketKind {
-    EOS = 0,
-    Text = 1,
-    Incomplete = 2,
-    ESC = 3,
-    Unknown = 4,
-    SGR = 5,
-    OSCURL = 6
-}
-interface TextPacket {
-    kind: PacketKind;
-    text: string;
-    url: string;
-}
 export declare class AnsiUp {
     VERSION: string;
     private ansi_colors;
@@ -29,25 +5,42 @@ export declare class AnsiUp {
     private fg;
     private bg;
     private bold;
+    private faint;
+    private italic;
+    private underline;
     private _use_classes;
-    private _escape_for_html;
     private _csi_regex;
     private _osc_st;
     private _osc_regex;
-    private _url_whitelist;
+    private _url_acceptlist;
+    private _escape_html;
     private _buffer;
+    private _boldStyle;
+    private _faintStyle;
+    private _italicStyle;
+    private _underlineStyle;
     constructor();
-    use_classes: boolean;
-    escape_for_html: boolean;
-    url_whitelist: {};
+    set use_classes(arg: boolean);
+    get use_classes(): boolean;
+    set url_acceptlist(arg: {});
+    get url_acceptlist(): {};
+    set escape_html(arg: boolean);
+    get escape_html(): boolean;
+    set boldStyle(arg: string);
+    get boldStyle(): string;
+    set faintStyle(arg: string);
+    get faintStyle(): string;
+    set italicStyle(arg: string);
+    get italicStyle(): string;
+    set underlineStyle(arg: string);
+    get underlineStyle(): string;
     private setup_palettes;
     private escape_txt_for_html;
-    append_buffer(txt: string): void;
-    get_next_packet(): TextPacket;
+    private append_buffer;
+    private get_next_packet;
     ansi_to_html(txt: string): string;
     private with_state;
     private process_ansi;
-    transform_to_html(fragment: TextWithAttr): string;
+    private transform_to_html;
     private process_hyperlink;
 }
-export {};
