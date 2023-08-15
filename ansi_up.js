@@ -24,7 +24,7 @@ export class AnsiUp {
         this.underline = false;
         this.fg = this.bg = null;
         this._buffer = '';
-        this._url_acceptlist = { 'http': 1, 'https': 1 };
+        this._url_allowlist = { 'http': 1, 'https': 1 };
         this._escape_html = true;
         this.boldStyle = 'font-weight:bold';
         this.faintStyle = 'opacity:0.7';
@@ -37,11 +37,11 @@ export class AnsiUp {
     get use_classes() {
         return this._use_classes;
     }
-    set url_acceptlist(arg) {
-        this._url_acceptlist = arg;
+    set url_allowlist(arg) {
+        this._url_allowlist = arg;
     }
-    get url_acceptlist() {
-        return this._url_acceptlist;
+    get url_allowlist() {
+        return this._url_allowlist;
     }
     set escape_html(arg) {
         this._escape_html = arg;
@@ -409,7 +409,7 @@ export class AnsiUp {
         let parts = pkt.url.split(':');
         if (parts.length < 1)
             return '';
-        if (!this._url_acceptlist[parts[0]])
+        if (!this._url_allowlist[parts[0]])
             return '';
         let result = `<a href="${this.escape_txt_for_html(pkt.url)}">${this.escape_txt_for_html(pkt.text)}</a>`;
         return result;

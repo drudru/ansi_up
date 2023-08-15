@@ -77,7 +77,7 @@ export class AnsiUp
     private _osc_st:RegExp;
     private _osc_regex:RegExp;
 
-    private _url_acceptlist:{};
+    private _url_allowlist:{};
     private _escape_html:boolean;
 
     private _buffer:string;
@@ -102,7 +102,7 @@ export class AnsiUp
 
         this._buffer = '';
 
-        this._url_acceptlist = { 'http':1, 'https':1 };
+        this._url_allowlist = { 'http':1, 'https':1 };
         this._escape_html = true;
 
         this.boldStyle        = 'font-weight:bold';
@@ -121,14 +121,14 @@ export class AnsiUp
         return this._use_classes;
     }
 
-    set url_acceptlist(arg:{})
+    set url_allowlist(arg:{})
     {
-        this._url_acceptlist = arg;
+        this._url_allowlist = arg;
     }
 
-    get url_acceptlist():{}
+    get url_allowlist():{}
     {
-        return this._url_acceptlist;
+        return this._url_allowlist;
     }
 
     set escape_html(arg:boolean)
@@ -746,7 +746,7 @@ export class AnsiUp
         if (parts.length < 1)
             return '';
 
-        if (! this._url_acceptlist[parts[0]])
+        if (! this._url_allowlist[parts[0]])
             return '';
 
         let result = `<a href="${this.escape_txt_for_html(pkt.url)}">${this.escape_txt_for_html(pkt.text)}</a>`;

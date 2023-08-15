@@ -130,10 +130,10 @@ By default, HTML's reserved characters `& < > " '` are replaced with <a href="ht
 This causes the SPAN tags to use classes to style the SPAN tags instead
 of specified RGB values.
 
-#### url_acceptlist
+#### url_allowlist
 (default: { 'http':1, 'https':1 })
 
-This mapping is an 'accept' list of URI schemes that will be allowed to render HTML anchor tags.
+This mapping is an 'allow' list of URI schemes that will be allowed to render HTML anchor tags.
 
 #### boldStyle
 (default: 'font-weight:bold')
