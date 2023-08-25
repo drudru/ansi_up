@@ -1,6 +1,6 @@
 {
   "name": "ansi_up",
-  "version": "6.0.1",
+  "version": "6.0.2",
   "description": "Convert ansi sequences in strings to colorful HTML",
   "keywords": [
     "ansi",
@@ -10,7 +10,7 @@
   "license": "MIT",
   "main": "./ansi_up.js",
   "type": "module",
-  "types": "./dist/ansi_up.d.ts",
+  "types": "./ansi_up.d.ts",
   "repository": {
     "type": "git",
     "url": "git://github.com/drudru/ansi_up.git"

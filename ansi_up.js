@@ -15,7 +15,7 @@ var PacketKind;
 })(PacketKind || (PacketKind = {}));
 export class AnsiUp {
     constructor() {
-        this.VERSION = "6.0.1";
+        this.VERSION = "6.0.2";
         this.setup_palettes();
         this._use_classes = false;
         this.bold = false;
