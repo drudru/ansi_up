@@ -285,6 +285,55 @@ describe('ansi_up', function () {
         l.should.eql(expected);
       });
 
+      it('should reset a bold attr to html', function () {
+        var attr = 1;
+        var fg = 32;
+        var start = "\x1B[" + attr + ";" + fg + ";21m " + attr + ";" + fg + " \x1B[0m";
+
+        var expected = "<span style=\"color:rgb(0,187,0)\"> " + attr + ";" + fg + " </span>";
+
+        var au = new AnsiUp();
+        var l = au.ansi_to_html(start);
+        l.should.eql(expected);
+      });
+
+      it('should reset a faint attr to html', function () {
+        var attr = 2;
+        var fg = 32;
+        var start = "\x1B[" + attr + ";" + fg + ";22m " + attr + ";" + fg + " \x1B[0m";
+
+        var expected = "<span style=\"color:rgb(0,187,0)\"> " + attr + ";" + fg + " </span>";
+
+        var au = new AnsiUp();
+        var l = au.ansi_to_html(start);
+        l.should.eql(expected);
+      });
+
+      it('should reset a bold and faint attr to just faint html', function () {
+        var attr = "1;2";
+        var fg = 32;
+        var start = "\x1B[" + attr + ";" + fg + ";21m " + attr + ";" + fg + " \x1B[0m";
+
+        var expected = "<span style=\"opacity:0.7;color:rgb(0,187,0)\"> " + attr + ";" + fg + " </span>";
+
+        var au = new AnsiUp();
+        var l = au.ansi_to_html(start);
+        l.should.eql(expected);
+      });
+
+      it('should reset a bold and faint attr to just html', function () {
+        var attr = "1;2";
+        var fg = 32;
+        var start = "\x1B[" + attr + ";" + fg + ";22m " + attr + ";" + fg + " \x1B[0m";
+
+        var expected = "<span style=\"color:rgb(0,187,0)\"> " + attr + ";" + fg + " </span>";
+
+        var au = new AnsiUp();
+        var l = au.ansi_to_html(start);
+        l.should.eql(expected);
+      });
+
+
       it('should transform an italic attr;foreground to html', function () {
         var attr = 3;
         var fg = 32;

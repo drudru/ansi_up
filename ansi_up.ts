@@ -53,7 +53,7 @@ interface TextPacket {
 
 export class AnsiUp
 {
-    VERSION = "6.0.0";
+    VERSION = "6.0.1";
 
     //
     // *** SEE README ON GITHUB FOR PUBLIC API ***
@@ -626,7 +626,7 @@ export class AnsiUp
           } else if (num ===  3) { this.italic    = true;
           } else if (num ===  4) { this.underline = true;
           } else if (num === 21) { this.bold      = false;
-          } else if (num === 22) { this.faint     = false;
+          } else if (num === 22) { this.faint     = false; this.bold = false;
           } else if (num === 23) { this.italic    = false;
           } else if (num === 24) { this.underline = false;
 

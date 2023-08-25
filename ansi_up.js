@@ -15,7 +15,7 @@ var PacketKind;
 })(PacketKind || (PacketKind = {}));
 export class AnsiUp {
     constructor() {
-        this.VERSION = "6.0.0";
+        this.VERSION = "6.0.1";
         this.setup_palettes();
         this._use_classes = false;
         this.bold = false;
@@ -299,6 +299,7 @@ export class AnsiUp {
             }
             else if (num === 22) {
                 this.faint = false;
+                this.bold = false;
             }
             else if (num === 23) {
                 this.italic = false;
