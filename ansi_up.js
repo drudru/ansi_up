@@ -359,7 +359,7 @@ export class AnsiUp {
         if (txt.length === 0)
             return txt;
         txt = this.escape_txt_for_html(txt);
-        if (!fragment.bold && !fragment.italic && !fragment.underline && fragment.fg === null && fragment.bg === null)
+        if (!fragment.bold && !fragment.faint && !fragment.italic && !fragment.underline && fragment.fg === null && fragment.bg === null)
             return txt;
         let styles = [];
         let classes = [];
