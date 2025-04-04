@@ -53,7 +53,7 @@ interface TextPacket {
 
 export class AnsiUp
 {
-    VERSION = "6.0.4";
+    VERSION = "6.0.5";
 
     //
     // *** SEE README ON GITHUB FOR PUBLIC API ***
