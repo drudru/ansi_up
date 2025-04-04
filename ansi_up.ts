@@ -688,7 +688,7 @@ export class AnsiUp
         txt = this.escape_txt_for_html(txt);
 
         // If colors not set, default style is used
-        if (!fragment.bold && !fragment.italic && !fragment.underline && fragment.fg === null && fragment.bg === null)
+        if (!fragment.bold && !fragment.italic && !fragment.faint && !fragment.underline && fragment.fg === null && fragment.bg === null)
             return txt;
 
         let styles:string[] = [];
