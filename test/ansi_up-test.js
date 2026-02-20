@@ -161,6 +161,94 @@ describe('ansi_up', function () {
       l.should.eql(expected);
     });
 
+    it('should allow empty text (invisible hyperlink)', function () {
+      var start = "\x1b]8;;http://example.com\x07\x1b]8;;\x07"
+      var expected = "<a href=\"http://example.com\"></a>";
+
+      var au = new AnsiUp();
+      var l = au.ansi_to_html(start);
+      l.should.eql(expected);
+    });
+
+    it('should allow blank text (partially visible hyperlink)', function () {
+      var start = "\x1b]8;;http://example.com\x07 \x1b]8;;\x07"
+      var expected = "<a href=\"http://example.com\"> </a>";
+
+      var au = new AnsiUp();
+      var l = au.ansi_to_html(start);
+      l.should.eql(expected);
+    });
+
+    it('should retain encoding inside urls', function () {
+      var start = "\x1b]8;;https://example.com/%E6%B1%89%E5%AD%97\x07chinese link\x1b]8;;\x07"
+      var expected = '<a href="https://example.com/%E6%B1%89%E5%AD%97">chinese link</a>';
+
+      var au = new AnsiUp();
+      var l = au.ansi_to_html(start);
+      l.should.eql(expected);
+    });
+
+    it('should allow unicode inside text', function () {
+      var start = "\x1b]8;;https://example.com\x07✅\x1b]8;;\x07"
+      var expected = '<a href="https://example.com">✅</a>';
+
+      var au = new AnsiUp();
+      var l = au.ansi_to_html(start);
+      l.should.eql(expected);
+    });
+
+    it('should handle formatting inside hyperlink text', function () {
+      var start = "\x1b]8;;http://example.com\x07\x1b[93mColored\x1b[39m Not Colored\x1b]8;;\x07"
+      var expected =
+        '<a href="http://example.com">' +
+          '<span style="color:rgb(255,255,85)">Colored</span>' +
+          ' Not Colored' +
+        '</a>';
+
+      var au = new AnsiUp();
+      var l = au.ansi_to_html(start);
+      l.should.eql(expected);
+    });
+
+    it('should handle formatting outside hyperlink text', function () {
+      var start = "\x1b[4m\x1b]8;;http://example.com\x1b\\underlined\x1b]8;;\x1b\\\x1b[m"
+      var expected =
+        '<a href="http://example.com">' +
+          '<span style="text-decoration:underline">underlined</span>' +
+        '</a>';
+
+      var au = new AnsiUp();
+      var l = au.ansi_to_html(start);
+      l.should.eql(expected);
+    });
+
+    it('should handle formatting outside hyperlink with intermediary text', function () {
+      var start = "\x1b[4moutside underlined \x1b]8;;http://example.com\x1b\\inside underlined\x1b]8;;\x1b\\ outside underlined\x1b[m"
+      var expected =
+        '<span style="text-decoration:underline">outside underlined </span>' +
+        '<a href="http://example.com">' +
+          '<span style="text-decoration:underline">inside underlined</span>' +
+        '</a>' +
+        '<span style="text-decoration:underline"> outside underlined</span>';
+
+      var au = new AnsiUp();
+      var l = au.ansi_to_html(start);
+      l.should.eql(expected);
+    });
+
+    it('should handle style reset inside hyperlink text', function () {
+      var start = "\x1b]8;;http://example.com\x07\x1b[1mbold \x1b[93mwith color\x1b[0m plain\x1b]8;;\x07"
+      var expected =
+        '<a href="http://example.com">' +
+          '<span style="font-weight:bold">bold </span>' +
+          '<span style="font-weight:bold;color:rgb(255,255,85)">with color</span>' +
+          ' plain' +
+        '</a>';
+
+      var au = new AnsiUp();
+      var l = au.ansi_to_html(start);
+      l.should.eql(expected);
+    });
   });
 
   /*
