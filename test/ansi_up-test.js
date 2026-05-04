@@ -567,7 +567,7 @@ describe('ansi_up', function () {
         var fg = 32;
         var start = "\x1B[" + attr + ";" + fg + "m " + attr + ";" + fg + " \x1B[0m";
 
-        var expected = '<span style="font-weight:bold"' + " class=\"ansi-green-fg\"> " + attr + ";" + fg + " </span>";
+        var expected = '<span class="ansi-bold ansi-green-fg"> ' + attr + ";" + fg + " </span>";
 
         var au = new AnsiUp();
         au.use_classes = true;
@@ -580,7 +580,7 @@ describe('ansi_up', function () {
         var fg = 92;
         var start = "\x1B[" + attr + ";" + fg + "m " + attr + ";" + fg + " \x1B[0m";
 
-        var expected = '<span style="font-weight:bold"' + " class=\"ansi-bright-green-fg\"> " + attr + ";" + fg + " </span>";
+        var expected = '<span class="ansi-bold ansi-bright-green-fg"> ' + attr + ";" + fg + " </span>";
 
         var au = new AnsiUp();
         au.use_classes = true;
@@ -594,7 +594,7 @@ describe('ansi_up', function () {
         var bg = 42;
         var start = "\x1B[" + attr + ";" + bg + ";" + fg + "m " + attr + ";" + bg + ";" + fg + " \x1B[0m";
 
-        var expected = '<span style="font-weight:bold"' + " class=\"ansi-yellow-fg ansi-green-bg\"> " + attr + ";" + bg + ";" + fg + " </span>";
+        var expected = '<span class="ansi-bold ansi-yellow-fg ansi-green-bg"> ' + attr + ";" + bg + ";" + fg + " </span>";
 
         var au = new AnsiUp();
         au.use_classes = true;
@@ -608,7 +608,7 @@ describe('ansi_up', function () {
         var bg = 102;
         var start = "\x1B[" + attr + ";" + bg + ";" + fg + "m " + attr + ";" + bg + ";" + fg + " \x1B[0m";
 
-        var expected = '<span style="font-weight:bold"' + " class=\"ansi-yellow-fg ansi-bright-green-bg\"> " + attr + ";" + bg + ";" + fg + " </span>";
+        var expected = '<span class="ansi-bold ansi-yellow-fg ansi-bright-green-bg"> ' + attr + ";" + bg + ";" + fg + " </span>";
 
         var au = new AnsiUp();
         au.use_classes = true;
@@ -622,7 +622,7 @@ describe('ansi_up', function () {
         var bg = 102;
         var start = "\x1B[" + attr + ";" + bg + ";" + fg + "m " + attr + ";" + bg + ";" + fg + " \x1B[0m";
 
-        var expected = '<span style="font-style:italic"' + " class=\"ansi-yellow-fg ansi-bright-green-bg\"> " + attr + ";" + bg + ";" + fg + " </span>";
+        var expected = '<span class="ansi-italic ansi-yellow-fg ansi-bright-green-bg"> ' + attr + ";" + bg + ";" + fg + " </span>";
 
         var au = new AnsiUp();
         au.use_classes = true;
@@ -636,7 +636,7 @@ describe('ansi_up', function () {
         var bg = 102;
         var start = "\x1B[" + attr + ";" + bg + ";" + fg + "m " + attr + ";" + bg + ";" + fg + " \x1B[0m";
 
-        var expected = '<span style="text-decoration:underline"' + " class=\"ansi-yellow-fg ansi-bright-green-bg\"> " + attr + ";" + bg + ";" + fg + " </span>";
+        var expected = '<span class="ansi-underline ansi-yellow-fg ansi-bright-green-bg"> ' + attr + ";" + bg + ";" + fg + " </span>";
 
         var au = new AnsiUp();
         au.use_classes = true;
@@ -715,7 +715,7 @@ describe('ansi_up', function () {
 
         it('combination of bold and palette', function () {
           var start = "\x1B[1;38;5;171m" + "foo" + "\x1B[0m";
-          var expected = '<span style="font-weight:bold;color:rgb(215,95,255)">foo</span>';
+          var expected = '<span style="color:rgb(215,95,255)" class="ansi-bold">foo</span>';
           var au = new AnsiUp();
           au.use_classes = true;
           var l = au.ansi_to_html(start);
@@ -724,7 +724,7 @@ describe('ansi_up', function () {
 
         it('combination of palette and bold', function () {
           var start = "\x1B[38;5;171;1m" + "foo" + "\x1B[0m";
-          var expected = '<span style="font-weight:bold;color:rgb(215,95,255)">foo</span>';
+          var expected = '<span style="color:rgb(215,95,255)" class="ansi-bold">foo</span>';
           var au = new AnsiUp();
           au.use_classes = true;
           var l = au.ansi_to_html(start);
