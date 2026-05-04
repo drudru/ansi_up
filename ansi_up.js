@@ -30,6 +30,10 @@ export class AnsiUp {
         this.faintStyle = 'opacity:0.7';
         this.italicStyle = 'font-style:italic';
         this.underlineStyle = 'text-decoration:underline';
+        this._boldClass = 'ansi-bold';
+        this._faintClass = 'ansi-faint';
+        this._italicClass = 'ansi-italic';
+        this._underlineClass = 'ansi-underline';
     }
     set use_classes(arg) {
         this._use_classes = arg;
@@ -365,14 +369,26 @@ export class AnsiUp {
         let classes = [];
         let fg = fragment.fg;
         let bg = fragment.bg;
-        if (fragment.bold)
-            styles.push(this._boldStyle);
-        if (fragment.faint)
-            styles.push(this._faintStyle);
-        if (fragment.italic)
-            styles.push(this._italicStyle);
-        if (fragment.underline)
-            styles.push(this._underlineStyle);
+        if (this._use_classes) {
+            if (fragment.bold)
+                classes.push(this._boldClass);
+            if (fragment.faint)
+                classes.push(this._faintClass);
+            if (fragment.italic)
+                classes.push(this._italicClass);
+            if (fragment.underline)
+                classes.push(this._underlineClass);
+        }
+        else {
+            if (fragment.bold)
+                styles.push(this._boldStyle);
+            if (fragment.faint)
+                styles.push(this._faintStyle);
+            if (fragment.italic)
+                styles.push(this._italicStyle);
+            if (fragment.underline)
+                styles.push(this._underlineStyle);
+        }
         if (!this._use_classes) {
             if (fg)
                 styles.push(`color:rgb(${fg.rgb.join(',')})`);

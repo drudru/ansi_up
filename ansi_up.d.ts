@@ -19,6 +19,10 @@ export declare class AnsiUp {
     private _faintStyle;
     private _italicStyle;
     private _underlineStyle;
+    private _boldClass;
+    private _faintClass;
+    private _italicClass;
+    private _underlineClass;
     constructor();
     set use_classes(arg: boolean);
     get use_classes(): boolean;
